@@ -44,7 +44,7 @@ public class PhysX {
     }
 
     protected void startThread() {
-        this.worldThread.setName("physx");
+        this.worldThread.setName("phys");
         this.worldThread.start();
     }
 
