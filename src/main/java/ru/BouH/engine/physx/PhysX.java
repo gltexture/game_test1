@@ -46,6 +46,7 @@ public class PhysX {
     protected void startThread() {
         this.worldThread.setName("phys");
         this.worldThread.start();
+        this.worldThread.start();
     }
 
     private void addLocalPlayer() {
