@@ -15,7 +15,7 @@ public class PhysEntityLamp extends PhysEntity {
         this.setCollisionBox3D(new CollisionBox3D(this, 1, 1));
         this.pointLight = (PointLight) Game.getGame().getProxy().createLight(LightType.POINT_LIGHT);
         this.pointLight.doEnable();
-        this.pointLight.setIntensity(3.3f);
+        this.pointLight.setIntensity(3.125f);
     }
 
     public void updateEntity() {
