@@ -1,26 +1,23 @@
 package ru.BouH.engine.physx.entities.living.player;
 
 import org.joml.Vector2d;
-import org.lwjgl.glfw.GLFW;
-import ru.BouH.engine.game.init.controller.Controller;
+import org.joml.Vector3d;
 import ru.BouH.engine.game.init.Game;
+import ru.BouH.engine.game.init.controller.Controller;
 import ru.BouH.engine.physx.components.CollisionBox3D;
 import ru.BouH.engine.physx.entities.PhysMoving;
 import ru.BouH.engine.physx.entities.prop.PhysEntityLamp;
 import ru.BouH.engine.physx.entities.prop.PhysEntityProp;
 import ru.BouH.engine.physx.world.World;
-import ru.BouH.engine.proxy.entity.EntityRenderInfo;
 import ru.BouH.engine.proxy.init.EntitiesInit;
 import ru.BouH.engine.proxy.init.KeysInit;
-import ru.BouH.engine.render.scene.render.entities.EntityRenderer;
-import ru.BouH.engine.render.scene.world.render.RenderManager;
+import ru.BouH.engine.render.RenderManager;
 
 public class EntityPlayerSP extends PhysMoving {
     private final double eyeHeight;
-    private boolean flying;
-
     public PhysEntityProp entityPropInfo;
     public PhysEntityProp entityPropInfo2;
+    private boolean flying;
 
     public EntityPlayerSP(World world) {
         super(world, "local_player");
@@ -33,12 +30,11 @@ public class EntityPlayerSP extends PhysMoving {
     public void onSpawn() {
         entityPropInfo = new PhysEntityProp(this.getWorld());
         entityPropInfo.getPosition().set(-1, -1, -1);
-        EntityRenderInfo entityRenderInfo = new EntityRenderInfo("cube", EntitiesInit.entityCube, EntityRenderer.class);
-        Game.getGame().getProxy().addEntityInWorlds(entityPropInfo, entityRenderInfo);
+        Game.getGame().getProxy().addEntityInWorlds(entityPropInfo, EntitiesInit.entityCube);
 
         entityPropInfo2 = new PhysEntityProp(this.getWorld());
         entityPropInfo.getPosition().set(3, 3, 3);
-        Game.getGame().getProxy().addEntityInWorlds(entityPropInfo2, entityRenderInfo);
+        Game.getGame().getProxy().addEntityInWorlds(entityPropInfo2, EntitiesInit.entityLamp);
     }
 
     public void updateEntity() {
@@ -64,23 +60,31 @@ public class EntityPlayerSP extends PhysMoving {
                 this.getRotation().set(-90, this.getRotation().y, this.getRotation().z);
             }
         }
+        if (KeysInit.keyPlaceBlock2.isClicked()) {
+            PhysEntityProp entityPropInfo = new PhysEntityProp(this.getWorld());
+            entityPropInfo.getPosition().set(this.getPosition());
+            entityPropInfo.setScale(5.0f);
+            Game.getGame().getProxy().addEntityInWorlds(entityPropInfo, EntitiesInit.entityCube3);
+        }
         if (KeysInit.keyPlaceBlock.isClicked()) {
             PhysEntityProp entityPropInfo = new PhysEntityProp(this.getWorld());
             entityPropInfo.getPosition().set(this.getPosition());
-            EntityRenderInfo entityRenderInfo = new EntityRenderInfo("cube", EntitiesInit.entityCube, EntityRenderer.class);
-            Game.getGame().getProxy().addEntityInWorlds(entityPropInfo, entityRenderInfo);
+            entityPropInfo.setScale(10.0f);
+            Game.getGame().getProxy().addEntityInWorlds(entityPropInfo, EntitiesInit.entityCube2);
         }
         if (KeysInit.keyPlaceLamp.isClicked()) {
             PhysEntityLamp entityPropInfo = new PhysEntityLamp(this.getWorld());
-            entityPropInfo.getPosition().set(this.getPosition());
-            EntityRenderInfo entityRenderInfo = new EntityRenderInfo("lamp", EntitiesInit.entityLamp, EntityRenderer.class);
-            Game.getGame().getProxy().addEntityInWorlds(entityPropInfo, entityRenderInfo);
+            entityPropInfo.getPosition().set(new Vector3d(0.0d));
+            Game.getGame().getProxy().addEntityInWorlds(entityPropInfo, EntitiesInit.entityLamp);
         }
         if (KeysInit.keyFly.isClicked()) {
-            this.flying = !this.flying;
+            Game.getGame().getScreen().getScene().getEntityRender().unBindProgram();
+            Game.getGame().getScreen().getScene().getEntityRender().onStartRender();
+            Game.getGame().getScreen().getScene().getEntityRender().bindProgram();
+            //this.flying = !this.flying;
         }
         //if (GLFW.glfwGetKey(controller.getWindow().getDescriptor(), GLFW.GLFW_KEY_X) == GLFW.GLFW_PRESS) {
-            //Game.getGame().getProxy().clearEntities();
+        //Game.getGame().getProxy().clearEntities();
         //}
     }
 

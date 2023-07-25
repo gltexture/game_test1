@@ -112,6 +112,7 @@ public class Utils {
         indicesArr = indices.stream().mapToInt((Integer v) -> v).toArray();
         return new Model3D(posArr, indicesArr, textCoordArr, normArr);
     }
+
     private static void processFaceVertex(Face.IdxGroup indices, List<Vector2f> textCoordList, List<Vector3f> normList, List<Integer> indicesList, float[] texCoordArr, float[] normArr) {
         int posIndex = indices.idxPos;
         indicesList.add(posIndex);

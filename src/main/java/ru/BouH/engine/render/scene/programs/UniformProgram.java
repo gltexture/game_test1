@@ -1,6 +1,9 @@
 package ru.BouH.engine.render.scene.programs;
 
-import org.joml.*;
+import org.joml.Matrix4d;
+import org.joml.Vector2d;
+import org.joml.Vector3d;
+import org.joml.Vector4d;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryStack;
 import ru.BouH.engine.game.init.Game;
@@ -26,6 +29,28 @@ public class UniformProgram {
         this.uniforms.put(uniformName, uniformLocation);
     }
 
+    public boolean setUniform(String uniformName, Object value) {
+        if (value instanceof Vector2d) {
+            this.setUniform(uniformName, (Vector2d) value);
+            return true;
+        } else if (value instanceof Vector4d) {
+            this.setUniform(uniformName, (Vector4d) value);
+            return true;
+        } else if (value instanceof Matrix4d) {
+            this.setUniform(uniformName, (Matrix4d) value);
+            return true;
+        } else if (value instanceof Vector3d) {
+            this.setUniform(uniformName, (Vector3d) value);
+            return true;
+        } else if (value instanceof Integer) {
+            this.setUniform(uniformName, (int) value);
+            return true;
+        } else if (value instanceof Float) {
+            this.setUniform(uniformName, (float) value);
+            return true;
+        }
+        return false;
+    }
 
     public void setUniform(String uniformName, Matrix4d value) {
         try (MemoryStack memoryStack = MemoryStack.stackPush()) {
@@ -35,12 +60,16 @@ public class UniformProgram {
         }
     }
 
+    public void setUniform(String uniformName, Vector2d value) {
+        GL20.glUniform2f(this.uniforms.get(uniformName), (float) value.x, (float) value.y);
+    }
+
     public void setUniform(String uniformName, Vector4d value) {
         GL20.glUniform4f(this.uniforms.get(uniformName), (float) value.x, (float) value.y, (float) value.z, (float) value.w);
     }
 
     public void setUniform(String uniformName, Vector3d value) {
-        GL20.glUniform3f(this.uniforms.get(uniformName), (float) value.x, (float) value.y,(float) value.z);
+        GL20.glUniform3f(this.uniforms.get(uniformName), (float) value.x, (float) value.y, (float) value.z);
     }
 
     public void setUniform(String uniformName, int value) {

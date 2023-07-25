@@ -6,8 +6,6 @@ import ru.BouH.engine.physx.entities.PhysEntity;
 import ru.BouH.engine.physx.entities.living.player.EntityPlayerSP;
 import ru.BouH.engine.physx.world.surface.Terrain;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 

@@ -6,14 +6,14 @@ import ru.BouH.engine.proxy.Proxy;
 import ru.BouH.engine.render.screen.Screen;
 
 public class Game {
-    private final GameLogging logManager;
+    public static final boolean DEBUG = true;
+    public static final String build = "25.07.2023";
     private static Game startScreen;
+    private final GameLogging logManager;
     private final Screen screen;
     private final PhysX physX;
     private final Proxy proxy;
     public boolean shouldBeClosed = false;
-
-    public static final boolean DEBUG = true;
 
     private Game() {
         this.logManager = new GameLogging();
@@ -24,6 +24,15 @@ public class Game {
 
     public static Game getGame() {
         return Game.startScreen;
+    }
+
+    public static void main(String[] args) {
+        Game.startScreen = new Game();
+        Game.getGame().shouldBeClosed = false;
+        Game.getGame().getScreen().init();
+        Game.getGame().getPhysX().init();
+        Game.getGame().getProxy().addLocalPlayer();
+        Game.getGame().getScreen().startScreen();
     }
 
     public GameLogging getLogManager() {
@@ -40,13 +49,5 @@ public class Game {
 
     public Proxy getProxy() {
         return this.proxy;
-    }
-
-    public static void main(String[] args) {
-        Game.startScreen = new Game();
-        Game.getGame().shouldBeClosed = false;
-        Game.getGame().getScreen().init();
-        Game.getGame().getPhysX().init();
-        Game.getGame().getScreen().startScreen();
     }
 }

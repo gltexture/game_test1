@@ -95,26 +95,26 @@ public class CollisionBox3D implements ICollision {
     }
 
     public double getMinX() {
-        return this.minX - (this.getScale() - 1.0f);
+        return this.minX - ((this.getScale() - 1.0f) / 2.0f);
     }
 
     public double getMinY() {
-        return this.minY - (this.getScale() - 1.0f);
+        return this.minY - ((this.getScale() - 1.0f) / 2.0f);
     }
 
     public double getMinZ() {
-        return this.minZ - (this.getScale() - 1.0f);
+        return this.minZ - ((this.getScale() - 1.0f) / 2.0f);
     }
 
     public double getMaxX() {
-        return this.maxX + (this.getScale() - 1.0f);
+        return this.maxX + ((this.getScale() - 1.0f) / 2.0f);
     }
 
     public double getMaxY() {
-        return this.maxY + (this.getScale() - 1.0f);
+        return this.maxY + ((this.getScale() - 1.0f) / 2.0f);
     }
 
     public double getMaxZ() {
-        return this.maxZ + (this.getScale() - 1.0f);
+        return this.maxZ + ((this.getScale() - 1.0f) / 2.0f);
     }
 }

@@ -1,9 +1,7 @@
 package ru.BouH.engine.physx.entities;
 
 import org.joml.Vector3d;
-import org.joml.Vector3f;
 import ru.BouH.engine.physx.components.CollisionBox3D;
-import ru.BouH.engine.physx.entities.living.player.EntityPlayerSP;
 import ru.BouH.engine.physx.world.World;
 
 public class PhysMoving extends PhysEntity {

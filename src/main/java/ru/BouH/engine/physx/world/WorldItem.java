@@ -1,9 +1,9 @@
 package ru.BouH.engine.physx.world;
 
 public class WorldItem {
+    private static int globalId;
     private final String itemName;
     private final int itemId;
-    private static int globalId;
 
     public WorldItem(String itemName) {
         this.itemName = itemName;

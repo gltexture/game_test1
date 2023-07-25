@@ -1,9 +1,6 @@
 package ru.BouH.engine.render.scene.components;
 
 import org.joml.Vector3d;
-import org.joml.Vector3f;
-import org.lwjgl.glfw.GLFW;
-import ru.BouH.engine.game.init.Game;
 
 public class Camera {
     private final Vector3d camPosition;

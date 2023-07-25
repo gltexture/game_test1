@@ -15,11 +15,10 @@ public class PhysX {
         this.worldThread = new Thread(() -> {
             try {
                 Game.getGame().getLogManager().debug("Starting phys!");
-                this.addLocalPlayer();
                 this.getWorld().addEntity(this.getWorld().getTerrain());
                 long i = System.currentTimeMillis();
                 long l = 0L;
-                while(!Game.getGame().shouldBeClosed) {
+                while (!Game.getGame().shouldBeClosed) {
                     long j = System.currentTimeMillis();
                     long k = j - i;
                     if (k >= 3000L && k % 1000 == 0) {
@@ -32,7 +31,7 @@ public class PhysX {
                     i = j;
                     while (l > 20L) {
                         l -= 20L;
-                        this.world.onWorldUpdate();
+                        Game.getGame().getProxy().tickWorlds();
                     }
                     Thread.sleep(Math.max(1L, 20L - l));
                 }
@@ -44,7 +43,7 @@ public class PhysX {
     }
 
     protected void startThread() {
-        this.worldThread.setName("phys");
+        this.worldThread.setName("physx");
         this.worldThread.start();
     }
 

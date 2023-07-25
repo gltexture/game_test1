@@ -5,7 +5,6 @@ import ru.BouH.engine.physx.components.CollisionBox3D;
 import ru.BouH.engine.physx.components.MaterialType;
 import ru.BouH.engine.physx.world.World;
 import ru.BouH.engine.physx.world.WorldItem;
-import ru.BouH.engine.proxy.lights.Light;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -15,12 +14,11 @@ public abstract class PhysEntity extends WorldItem {
     private final Vector3d position;
     private final Vector3d prevPosition;
     private final Vector3d rotation;
-    private CollisionBox3D collisionBox3D;
     private final Vector3d moveVector;
+    private final Set<PhysEntity> collideList = new HashSet<>();
+    private CollisionBox3D collisionBox3D;
     private double scale;
     private MaterialType materialType;
-    private Light light;
-    private Set<PhysEntity> collideList = new HashSet<>();
     private boolean isDead;
 
     public PhysEntity(final World world) {
@@ -41,10 +39,6 @@ public abstract class PhysEntity extends WorldItem {
     public void onSpawn() {
     }
 
-    public void setCollisionBox3D(CollisionBox3D collisionBox3D) {
-        this.collisionBox3D = collisionBox3D;
-    }
-
     public void updateEntity() {
         this.moveVector.set(this.getPosition().x - this.getPrevPosition().x, this.getPosition().y - this.getPrevPosition().y, this.getPosition().z - this.getPrevPosition().z);
         this.moveVector.mul(-1);
@@ -59,11 +53,6 @@ public abstract class PhysEntity extends WorldItem {
                 this.collideList.add(physEntity);
             }
         }
-    }
-
-    public void setScale(double scale) {
-        this.scale = scale;
-        this.getCollisionBox3D().setScale(scale);
     }
 
     public void setDead() {
@@ -84,12 +73,9 @@ public abstract class PhysEntity extends WorldItem {
         return this.scale;
     }
 
-    public void setLight(Light light) {
-        this.light = light;
-    }
-
-    public Light getLight() {
-        return light;
+    public void setScale(double scale) {
+        this.scale = scale;
+        this.getCollisionBox3D().setScale(scale);
     }
 
     public boolean canBeDestroyed() {
@@ -118,16 +104,20 @@ public abstract class PhysEntity extends WorldItem {
         return this.getCollisionBox3D().checkCollision(collisionBox3D1);
     }
 
-    public void setMaterialType(MaterialType materialType) {
-        this.materialType = materialType;
-    }
-
     public MaterialType getMaterialType() {
         return this.materialType;
     }
 
+    public void setMaterialType(MaterialType materialType) {
+        this.materialType = materialType;
+    }
+
     public CollisionBox3D getCollisionBox3D() {
         return this.collisionBox3D;
+    }
+
+    public void setCollisionBox3D(CollisionBox3D collisionBox3D) {
+        this.collisionBox3D = collisionBox3D;
     }
 
     public Vector3d getPosition() {

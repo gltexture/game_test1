@@ -13,6 +13,7 @@ import java.nio.ByteBuffer;
 public class Texture {
     private PNGDecoder pngDecoder;
     private int textureId;
+
     private Texture(InputStream inputStream) {
         try {
             this.pngDecoder = new PNGDecoder(inputStream);

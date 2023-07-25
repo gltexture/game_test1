@@ -1,7 +1,6 @@
 package ru.BouH.engine.render.scene.components;
 
 import org.joml.Vector3d;
-import org.joml.Vector3f;
 
 public class Model3DInfo {
     private final Model3D model3D;
@@ -16,6 +15,10 @@ public class Model3DInfo {
         this.scale = 1.0f;
     }
 
+    public void setPosition(Vector3d vector3d) {
+        this.getPosition().set(vector3d);
+    }
+
     public void setPosition(double x, double y, double z) {
         this.getPosition().x = x;
         this.getPosition().y = y;
@@ -26,10 +29,6 @@ public class Model3DInfo {
         this.getRotation().x = x;
         this.getRotation().y = y;
         this.getRotation().z = z;
-    }
-
-    public void setScale(double scale) {
-        this.scale = scale;
     }
 
     public Vector3d getRotation() {
@@ -44,7 +43,11 @@ public class Model3DInfo {
         return this.scale;
     }
 
-    public Model3D getMesh() {
+    public void setScale(double scale) {
+        this.scale = scale;
+    }
+
+    public Model3D getModel3D() {
         return this.model3D;
     }
 }

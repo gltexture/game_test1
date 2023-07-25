@@ -1,26 +1,31 @@
 package ru.BouH.engine.render.screen;
 
-import org.lwjgl.glfw.*;
+import org.lwjgl.glfw.Callbacks;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
-import ru.BouH.engine.game.init.controller.Controller;
 import ru.BouH.engine.game.init.Game;
+import ru.BouH.engine.game.init.controller.Controller;
 import ru.BouH.engine.proxy.init.EntitiesInit;
 import ru.BouH.engine.proxy.init.KeysInit;
-import ru.BouH.engine.render.scene.world.RenderWorld;
+import ru.BouH.engine.render.scene.renderers.main_render.base.Scene;
+import ru.BouH.engine.render.scene.world.SceneWorld;
 import ru.BouH.engine.render.screen.window.Window;
 
 import java.nio.IntBuffer;
 
 public class Screen {
-    private RenderWorld renderWorld;
+    public static int FPS;
+    private SceneWorld sceneWorld;
+    private Scene scene;
     private Controller controller;
     private Window window;
-    public static int FPS;
 
     public void init() {
         Game game = Game.getGame();
@@ -29,18 +34,20 @@ public class Screen {
             game.getLogManager().log("Game screen built successful");
             GL.createCapabilities();
             EntitiesInit.init();
-            this.renderWorld = new RenderWorld(game.getPhysX().getWorld());
+            this.sceneWorld = new SceneWorld(game.getPhysX().getWorld());
+            this.scene = new Scene(this.sceneWorld);
+            this.scene.init();
             this.setWindowCallbacks();
             this.controller = new Controller(this.getWindow());
             KeysInit.init(this.getWindow());
         } else {
-            game.getLogManager().error("Screen build error!");
+            game.getLogManager().error("Scene build error!");
         }
-        game.getLogManager().log("Stopping game...");
     }
 
     public void startScreen() {
         this.updateScreen();
+        Game.getGame().getLogManager().log("Stopping game...");
         GLFW.glfwDestroyWindow(this.getWindow().getDescriptor());
         GLFW.glfwTerminate();
     }
@@ -66,7 +73,7 @@ public class Screen {
         GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
         GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE);
         GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT, GL20.GL_TRUE);
-        this.window = new Window(new Window.WindowProperties(800, 600, "Test"));
+        this.window = new Window(new Window.WindowProperties(800, 600, "Build " + Game.build));
         if (this.getWindow().getDescriptor() == MemoryUtil.NULL) {
             Game.getGame().getLogManager().error("Failed to create the GLFW window");
             return false;
@@ -90,17 +97,17 @@ public class Screen {
         return true;
     }
 
-    public RenderWorld getRenderWorld() {
-        return this.renderWorld;
+    public SceneWorld getRenderWorld() {
+        return this.sceneWorld;
     }
 
     private void updateScreen() {
         GL11.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         Game.getGame().getLogManager().debug("...........................................");
         Game.getGame().getLogManager().debug("Begin render section");
-        this.getRenderWorld().getGuiRender().onStartRender();
-        this.getRenderWorld().getSkyRender().onStartRender();
-        this.getRenderWorld().getSceneRender().onStartRender();
+        this.getScene().preRender();
+        int fps = 0;
+        double lastFPS = GLFW.glfwGetTime();
         final float tps = 1.0f / 50.0f;
         double lastTime = 0;
         while (!Game.getGame().shouldBeClosed) {
@@ -109,23 +116,29 @@ public class Screen {
             GL30.glEnable(GL30.GL_CULL_FACE);
             GL30.glCullFace(GL30.GL_BACK);
             this.getRenderWorld().getWorld().getLocalPlayer().performController(this.getController());
-            this.getRenderWorld().onWorldUpdate();
+            this.getRenderWorld().onWorldRenderUpdate();
             double currentTime = GLFW.glfwGetTime();
             double deltaTime = currentTime - lastTime;
             lastTime = currentTime;
             double progress = deltaTime / tps;
-            this.getRenderWorld().getSkyRender().onRender(progress);
-            this.getRenderWorld().getSceneRender().onRender(progress);
-            this.getRenderWorld().getGuiRender().onRender(progress);
+            fps += 1;
+            if (currentTime - lastFPS >= 1.0f) {
+                Screen.FPS = fps;
+                fps = 0;
+                lastFPS = currentTime;
+            }
+            this.getScene().renderScene(progress);
             this.getController().input(this.getWindow());
             GLFW.glfwSwapBuffers(this.getWindow().getDescriptor());
             GLFW.glfwPollEvents();
         }
-        this.getRenderWorld().getSceneRender().onStopRender();
-        this.getRenderWorld().getSkyRender().onStopRender();
-        this.getRenderWorld().getGuiRender().onStopRender();
+        this.getScene().postRender();
         Game.getGame().getLogManager().debug("Stop render section");
         Game.getGame().getLogManager().debug("...........................................");
+    }
+
+    public Scene getScene() {
+        return this.scene;
     }
 
     public Controller getController() {

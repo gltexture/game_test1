@@ -16,6 +16,7 @@ public class KeysInit {
     public static KeyBinding keyPlaceLamp;
     public static KeyBinding keyPlaceBlock;
     public static KeyBinding keyFly;
+    public static KeyBinding keyPlaceBlock2;
 
     public static void init(Window window) {
         Proxy proxy = Game.getGame().getProxy();
@@ -27,6 +28,7 @@ public class KeysInit {
         KeysInit.keyDown = new KeyBinding(GLFW.GLFW_KEY_LEFT_SHIFT);
         KeysInit.keyPlaceLamp = new KeyBinding(GLFW.GLFW_KEY_L);
         KeysInit.keyPlaceBlock = new KeyBinding(GLFW.GLFW_KEY_B);
+        KeysInit.keyPlaceBlock2 = new KeyBinding(GLFW.GLFW_KEY_Z);
         KeysInit.keyFly = new KeyBinding(GLFW.GLFW_KEY_F);
 
         proxy.addKeyBinding(KeysInit.keyLeft);
@@ -38,5 +40,6 @@ public class KeysInit {
         proxy.addKeyBinding(KeysInit.keyPlaceLamp);
         proxy.addKeyBinding(KeysInit.keyPlaceBlock);
         proxy.addKeyBinding(KeysInit.keyFly);
+        proxy.addKeyBinding(KeysInit.keyPlaceBlock2);
     }
 }

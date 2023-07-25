@@ -1,5 +1,6 @@
 package ru.BouH.engine.render.screen.window;
 
+import org.joml.Vector2d;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -31,6 +32,15 @@ public class Window {
         }
     }
 
+    public Vector2d getWindowDimensions() {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer width = stack.mallocInt(1);
+            IntBuffer height = stack.mallocInt(1);
+            GLFW.glfwGetWindowSize(this.window, width, height);
+            return new Vector2d(width.get(0), height.get(0));
+        }
+    }
+
     public WindowProperties getWindowProperties() {
         return this.windowProperties;
     }
@@ -54,20 +64,20 @@ public class Window {
             return this.width;
         }
 
-        public int getHeight() {
-            return this.height;
-        }
-
-        public String getTitle() {
-            return this.title;
-        }
-
         public void setWidth(int width) {
             this.width = width;
         }
 
+        public int getHeight() {
+            return this.height;
+        }
+
         public void setHeight(int height) {
             this.height = height;
+        }
+
+        public String getTitle() {
+            return this.title;
         }
 
         public void setTitle(String title) {

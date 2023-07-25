@@ -1,8 +1,8 @@
 package ru.BouH.engine.render.scene.components;
 
-import org.joml.*;
-
-import java.lang.Math;
+import org.joml.Matrix4d;
+import org.joml.Vector2d;
+import org.joml.Vector3d;
 
 public class Transform {
     private final Matrix4d projectionMatrix;

@@ -1,21 +1,17 @@
 package ru.BouH.engine.proxy.init;
-
-import org.joml.Vector4d;
-import ru.BouH.engine.game.init.Game;
-import ru.BouH.engine.physx.components.MaterialType;
-import ru.BouH.engine.physx.entities.PhysEntity;
-import ru.BouH.engine.render.scene.components.Texture;
-import ru.BouH.engine.render.scene.render.entities.EntityRenderer;
-import ru.BouH.engine.render.scene.render.models.entity.EntityForm;
+import ru.BouH.engine.render.scene.renderers.RenderEntity;
+import ru.BouH.engine.render.scene.renderers.items.models.entity.EntityModel;
 
 public class EntitiesInit {
-    public static Texture textureCube;
-    public static EntityForm entityCube;
-    public static EntityForm entityLamp;
+    public static EntityModel.EntityForm entityCube;
+    public static EntityModel.EntityForm entityCube2;
+    public static EntityModel.EntityForm entityCube3;
+    public static EntityModel.EntityForm entityLamp;
 
     public static void init() {
-        EntitiesInit.textureCube = Texture.createTexture("props/cube.png");
-        EntitiesInit.entityCube = new EntityForm("prop/cube.obj", MaterialType.Grass, EntitiesInit.textureCube);
-        EntitiesInit.entityLamp = new EntityForm("prop/sphere.obj", MaterialType.Rock, new Vector4d(1.0f, 1.0f, 1.0f, 1.0f));
+        EntitiesInit.entityCube = new EntityModel.EntityForm(new RenderEntity(), "prop/cube.obj").setTexture("props/cube.png");
+        EntitiesInit.entityCube2 = new EntityModel.EntityForm(new RenderEntity(), "prop/cube.obj").setGradient();
+        EntitiesInit.entityCube3 = new EntityModel.EntityForm(new RenderEntity(), "prop/cube.obj").setTexture("props/cube3.png");
+        EntitiesInit.entityLamp = new EntityModel.EntityForm(new RenderEntity(), "prop/sphere.obj");
     }
 }

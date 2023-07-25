@@ -2,7 +2,6 @@ package ru.BouH.engine.game.logger;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.glfw.GLFW;
 import ru.BouH.engine.game.init.Game;
 
 import javax.swing.*;
