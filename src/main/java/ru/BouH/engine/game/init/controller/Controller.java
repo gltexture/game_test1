@@ -7,7 +7,9 @@ import ru.BouH.engine.game.init.Game;
 import ru.BouH.engine.proxy.init.KeysInit;
 import ru.BouH.engine.render.screen.window.Window;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class Controller {
@@ -15,7 +17,7 @@ public class Controller {
     private final Vector2d currPos;
     private final Vector2d displayVec;
     private final Vector3d camInput;
-    private final Set<KeyBinding> keyBindings;
+    private final List<KeyBinding> keyBindings;
     private boolean inWindow;
     private boolean leftButtonPressed;
     private boolean rightButtonPressed;
@@ -25,7 +27,7 @@ public class Controller {
         this.currPos = new Vector2d(0.0d, 0.0d);
         this.camInput = new Vector3d(0.0f, 0.0f, 0.0f);
         this.displayVec = new Vector2d();
-        this.keyBindings = new HashSet<>();
+        this.keyBindings = new ArrayList<>();
         this.mouseInit(window.getDescriptor());
         Game.getGame().getLogManager().log("Controller init");
     }
@@ -85,6 +87,10 @@ public class Controller {
         if (KeysInit.keyUp.isPressed()) {
             this.camInput.y = 1.0d;
         }
+    }
+
+    public List<KeyBinding> getKeyBindings() {
+        return this.keyBindings;
     }
 
     public Vector3d getCamInput() {

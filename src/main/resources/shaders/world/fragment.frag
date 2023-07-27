@@ -19,10 +19,12 @@ vec4 setup_colors(vec2 texture_c) {
         return vec4(colors, 1.0f);
     } else if (use_texture == 2) {
         float f1 = tick;
-        vec2 uv = gl_FragCoord.xy;
-        float r = sin(f1 + cos(uv.x * uv.y)) * cos(length(texture_c) - sin(exp(texture_c.y)));
-        float g = cos(f1 - sin(uv.x * uv.y)) * sin(length(texture_c) + cos(exp(texture_c.x)));
-        float b = sin(f1 * sin(cos(r * g))) / cos(texture_c.x + uv.x * uv.y) / sin(exp(r) * tan(g));
+        vec2 uv = texture_c.xy;
+        float n = sin(cos(uv.x) * cos(uv.y)) * cos(length(uv + f1));
+        float t = n;
+        float r = fract(cos(t) * 22.5);
+        float g = fract(cos(t + r) * 12.5);
+        float b = fract(cos(r + g) * 10.25);
         return vec4(r, g, b, 1);
     } else {
         vec4 pink = vec4(1, 0, 1, 1);

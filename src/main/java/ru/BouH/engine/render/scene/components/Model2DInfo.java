@@ -15,6 +15,10 @@ public class Model2DInfo {
         this.scale = 1.0f;
     }
 
+    public int getVAO() {
+        return this.getModel2D().getVao();
+    }
+
     public void setPosition(double x, double y) {
         this.getPosition().x = x;
         this.getPosition().y = y;

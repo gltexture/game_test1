@@ -1,6 +1,7 @@
 package ru.BouH.engine.game.init.controller;
 
 import org.lwjgl.glfw.GLFW;
+import ru.BouH.engine.game.init.Game;
 import ru.BouH.engine.render.screen.window.Window;
 
 public class KeyBinding {
@@ -10,8 +11,10 @@ public class KeyBinding {
     private boolean isClicked;
     private boolean wasUnPressed;
     private boolean isReleased;
+    private final String description;
 
-    public KeyBinding(int keyCode) {
+    public KeyBinding(String description, int keyCode) {
+        this.description = description;
         this.keyCode = keyCode;
         this.isReleased = true;
     }
@@ -37,6 +40,26 @@ public class KeyBinding {
             this.wasUnPressed = false;
         }
         this.isReleased = !this.isPressed;
+    }
+
+    public int getKeyCode() {
+        return this.keyCode;
+    }
+
+    public String getKeyName() {
+        String s = GLFW.glfwGetKeyName(this.getKeyCode(), GLFW.glfwGetKeyScancode(this.getKeyCode()));
+        if (s == null) {
+            return "<null>";
+        }
+        return s.toUpperCase();
+    }
+
+    public static boolean isKeyPressed(int keyCode) {
+        return GLFW.glfwGetKey(Game.getGame().getScreen().getWindow().getDescriptor(), keyCode) == GLFW.GLFW_PRESS;
+    }
+
+    public String getDescription() {
+        return this.description;
     }
 
     public boolean isWasUnPressed() {

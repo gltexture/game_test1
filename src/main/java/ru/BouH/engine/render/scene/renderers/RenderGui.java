@@ -11,7 +11,7 @@ public class RenderGui implements IRenderFabric {
         GuiTextItem guiTextItem = (GuiTextItem) iRenderItem;
         guiTextItem.getFontTexture().getTexture().performTexture();
         GL30.glDisable(GL30.GL_DEPTH_TEST);
-        GL30.glBindVertexArray(guiTextItem.getModel2DInfo().getModel2D().getVao());
+        GL30.glBindVertexArray(guiTextItem.getModel2DInfo().getVAO());
         GL30.glEnableVertexAttribArray(0);
         GL30.glEnableVertexAttribArray(1);
         GL30.glDrawElements(GL30.GL_TRIANGLES, guiTextItem.getModel2DInfo().getModel2D().getVertexCount(), GL30.GL_UNSIGNED_INT, 0);
