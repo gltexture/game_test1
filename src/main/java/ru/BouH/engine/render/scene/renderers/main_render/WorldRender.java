@@ -43,7 +43,8 @@ public class WorldRender extends SceneRenderBase {
     private void renderHitBox(double partialTicks, SceneRenderBase sceneRenderBase, EntityItem entityItem) {
         CollisionBoxForm collisionBoxForm = entityItem.getCollisionBoxForm();
         if (entityItem.getEntity() instanceof EntityPlayerSP) {
-            collisionBoxForm.getMeshInfo().getPosition().set(this.getSceneWorld().getCamera().getCamPosition());
+            Vector3d vector3d = new Vector3d(this.getSceneWorld().getCamera().getCamPosition().x, this.getSceneWorld().getCamera().getCamPosition().y - 0.82d, this.getSceneWorld().getCamera().getCamPosition().z);
+            collisionBoxForm.getMeshInfo().getPosition().set(vector3d);
         } else {
             collisionBoxForm.getMeshInfo().getPosition().lerp(entityItem.getEntity().getPosition(), partialTicks);
         }

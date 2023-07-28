@@ -21,7 +21,7 @@ public class EntityPlayerSP extends PhysMoving {
 
     public EntityPlayerSP(World world) {
         super(world, "local_player");
-        this.setCollisionBox3D(new CollisionBox3D(this, 0.25f, 1.5f));
+        this.setCollisionBox3D(new CollisionBox3D(this, 0.25f, 1.25f));
         this.eyeHeight = 0.82d;
         this.flying = false;
     }

@@ -113,7 +113,7 @@ public class CollisionBoxForm {
         if (this.getMeshInfo() != null) {
             this.getMeshInfo().getModel3D().cleanMesh();
         }
-        this.collisionBox3D = collisionBox3D;
+        this.collisionBox3D = collisionBox3D.copy();
         this.genBoxModel(collisionBox3D);
         this.getMeshInfo().setPosition(translate);
     }

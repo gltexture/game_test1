@@ -12,20 +12,52 @@ uniform int use_texture;
 uniform vec3 camera_pos;
 uniform vec2 dimensions;
 
+vec2 mn(vec2 z) {
+    return vec2(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y);
+}
+
+float f(vec2 z) {
+    float f1 = tick * 0.5f;
+    float zoom = (0.75 + (sin(f1) + 0.2f) * 0.75f) * 10.;
+    vec2 c = 4. * z - vec2(0.5, 0.);
+    c /= zoom * zoom * zoom * zoom;
+    c -= vec2(0.65, 0.45);
+    vec2 s = vec2(0, 0);
+    int id = 0;
+    const int m = 128;
+    for (int i = 0; i < m; i++) {
+        s = mn(s) + c;
+        if (length(s) > 4.) {
+            return float(id) / float(m);
+        }
+        id += 1;
+    }
+    return 0.0;
+}
+
 vec4 setup_colors(vec2 texture_c) {
     if (use_texture == 0) {
         return texture(texture_sampler, texture_c);
     } else if (use_texture == 1) {
         return vec4(colors, 1.0f);
     } else if (use_texture == 2) {
-        float f1 = tick;
-        vec2 uv = texture_c.xy;
-        float n = sin(cos(uv.x) * cos(uv.y)) * cos(length(uv + f1));
-        float t = n;
-        float r = fract(cos(t) * 22.5);
-        float g = fract(cos(t + r) * 12.5);
-        float b = fract(cos(r + g) * 10.25);
-        return vec4(r, g, b, 1);
+        vec2 uv = (2. * texture_c.xy - 0.5);
+        vec3 color = vec3(0);
+        float res = f(uv);
+        float f1 = tick * 0.1f;
+
+        float r = fract(cos(res + f1) * 12.25);
+        float g = fract(sin(r + res + f1) * 4.125);
+        float b = fract(cos(r + g + f1) * 2.5);
+
+        color += vec3(r, g, b);
+        color = pow(color, vec3(0.75));
+
+        if (res <= 0) {
+            color = vec3(0.);
+        }
+
+        return vec4(color, 1);
     } else {
         vec4 pink = vec4(1, 0, 1, 1);
         vec4 black = vec4(0, 0, 0, 1);

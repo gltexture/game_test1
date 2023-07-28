@@ -1,6 +1,7 @@
 package ru.BouH.engine.render.scene.renderers.items.entity;
 
 import ru.BouH.engine.physx.entities.PhysEntity;
+import ru.BouH.engine.physx.entities.living.player.EntityPlayerSP;
 import ru.BouH.engine.render.scene.renderers.IRenderFabric;
 import ru.BouH.engine.render.scene.renderers.items.IRenderItem;
 import ru.BouH.engine.render.scene.renderers.items.models.box.CollisionBoxForm;
@@ -37,9 +38,6 @@ public class EntityItem implements IRenderItem {
     public void onUpdate() {
         if (this.entityModel != null && !this.hasRender) {
             this.hasRender = true;
-        }
-        if (!this.getCollisionBoxForm().getCollisionBox3D().equals(this.getEntity().getCollisionBox3D())) {
-            this.getCollisionBoxForm().setCollisionBox3D(this.getEntity().getPosition(), this.getEntity().getCollisionBox3D());
         }
     }
 

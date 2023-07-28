@@ -46,6 +46,10 @@ public class CollisionBox3D implements ICollision {
         this.lengthY = maxY - minY;
     }
 
+    public boolean check(CollisionBox3D collisionBox3D) {
+        return this.lengthX == collisionBox3D.lengthX && this.lengthY == collisionBox3D.lengthY && this.lengthZ == collisionBox3D.lengthZ;
+    }
+
     public void moveBox(double x, double y, double z) {
         this.setBox(this.getMinX() + x, this.getMinY() + y, this.getMinZ() + z, this.getMaxX() + x, this.getMaxY() + y, this.getMaxZ() + z);
     }

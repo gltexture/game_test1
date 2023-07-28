@@ -27,6 +27,8 @@ public class Screen {
     private Scene scene;
     private Controller controller;
     private Window window;
+    public static final int defaultW = 800;
+    public static final int defaultH = 600;
 
     public void init() {
         Game game = Game.getGame();
@@ -74,7 +76,7 @@ public class Screen {
         GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
         GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE);
         GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT, GL20.GL_TRUE);
-        this.window = new Window(new Window.WindowProperties(800, 600, "Build " + Game.build));
+        this.window = new Window(new Window.WindowProperties(Screen.defaultW, Screen.defaultH, "Build " + Game.build));
         if (this.getWindow().getDescriptor() == MemoryUtil.NULL) {
             Game.getGame().getLogManager().error("Failed to create the GLFW window");
             return false;

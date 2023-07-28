@@ -26,9 +26,9 @@ public class KeysInit {
         KeysInit.keyBackward = new KeyBinding("Backward", GLFW.GLFW_KEY_S);
         KeysInit.keyUp = new KeyBinding("Up", GLFW.GLFW_KEY_SPACE);
         KeysInit.keyDown = new KeyBinding("Down", GLFW.GLFW_KEY_LEFT_SHIFT);
-        KeysInit.keyPlaceLamp = new KeyBinding("Place lamp", GLFW.GLFW_KEY_L);
-        KeysInit.keyPlaceBlock = new KeyBinding("Place block", GLFW.GLFW_KEY_B);
-        KeysInit.keyPlaceBlock2 = new KeyBinding("Place block 2", GLFW.GLFW_KEY_Z);
+        KeysInit.keyPlaceLamp = new KeyBinding("Place lamp", GLFW.GLFW_KEY_1);
+        KeysInit.keyPlaceBlock = new KeyBinding("Place block", GLFW.GLFW_KEY_2);
+        KeysInit.keyPlaceBlock2 = new KeyBinding("Place block 2", GLFW.GLFW_KEY_3);
         KeysInit.keyFly = new KeyBinding("Noclip(Временно перекомпиляция шейдера)", GLFW.GLFW_KEY_F);
 
         proxy.addKeyBinding(KeysInit.keyLeft);

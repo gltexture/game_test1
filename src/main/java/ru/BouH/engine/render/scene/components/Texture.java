@@ -13,6 +13,7 @@ import java.nio.ByteBuffer;
 public class Texture {
     private PNGDecoder pngDecoder;
     private int textureId;
+    private String path;
 
     private Texture(InputStream inputStream) {
         try {
@@ -27,6 +28,10 @@ public class Texture {
         }
     }
 
+    public boolean isValid() {
+        return this.pngDecoder != null;
+    }
+
     public static Texture createTexture(String textureName) {
         Texture texture = null;
         try {
@@ -36,12 +41,19 @@ public class Texture {
                 throw new IOException("Error loading texture " + textureName);
             } else {
                 texture = new Texture(inputStream);
-                Game.getGame().getLogManager().log("Texture " + textureName + " loaded");
+                texture.path = textureName;
             }
         } catch (IOException e) {
             Game.getGame().getLogManager().bigWarn(e.toString());
         }
+        if (texture != null && texture.isValid()) {
+            Game.getGame().getLogManager().log("Texture " + textureName + " loaded");
+        }
         return texture;
+    }
+
+    public String getPath() {
+        return this.path;
     }
 
     public static Texture createTexture(InputStream inputStream) {

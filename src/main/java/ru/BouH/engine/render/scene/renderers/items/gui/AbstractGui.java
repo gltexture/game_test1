@@ -1,6 +1,7 @@
 package ru.BouH.engine.render.scene.renderers.items.gui;
 
 import ru.BouH.engine.render.scene.components.Model2DInfo;
+import ru.BouH.engine.render.scene.components.Texture;
 import ru.BouH.engine.render.scene.renderers.items.IRenderItem;
 
 public abstract class AbstractGui implements IRenderItem {
@@ -20,6 +21,8 @@ public abstract class AbstractGui implements IRenderItem {
     public void setModel2DInfo(Model2DInfo model2DInfo) {
         this.model2DInfo = model2DInfo;
     }
+
+    public abstract void performGuiTexture();
 
     public int getzLevel() {
         return this.zLevel;

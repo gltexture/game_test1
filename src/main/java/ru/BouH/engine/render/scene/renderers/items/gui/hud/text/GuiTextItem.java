@@ -28,7 +28,7 @@ public class GuiTextItem extends AbstractGui {
     }
 
     public GuiTextItem(String text, FontTexture fontTexture, int x, int y, int zLevel) {
-        super(text, zLevel);
+        super("gui_text: " + text, zLevel);
         this.fontTexture = fontTexture;
         this.setText(text);
         this.getModel2DInfo().setPosition(x, y);
@@ -126,5 +126,10 @@ public class GuiTextItem extends AbstractGui {
     @Override
     public IRenderFabric renderFabric() {
         return GuiTextItem.renderGui;
+    }
+
+    @Override
+    public void performGuiTexture() {
+        this.getFontTexture().getTexture().performTexture();
     }
 }
