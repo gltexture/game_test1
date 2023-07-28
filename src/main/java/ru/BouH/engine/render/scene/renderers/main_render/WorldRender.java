@@ -30,7 +30,7 @@ public class WorldRender extends SceneRenderBase {
     public void onRender(double partialTicks) {
         this.performUniform("tick", this.getSceneWorld().tick);
         this.performUniform("dimensions", Game.getGame().getScreen().getWindow().getWindowDimensions());
-        this.performUniform("projection_matrix", this.sceneWorld.getRenderManager().getTransform().getProjectionMatrix(RenderManager.FOV, Game.getGame().getScreen().getWindow().getWidth(), Game.getGame().getScreen().getWindow().getHeight(), RenderManager.Z_NEAR, RenderManager.Z_FAR));
+        this.performUniform("projection_matrix", RenderManager.instance.getTransform().getProjectionMatrix(RenderManager.FOV, Game.getGame().getScreen().getWindow().getWidth(), Game.getGame().getScreen().getWindow().getHeight(), RenderManager.Z_NEAR, RenderManager.Z_FAR));
         for (EntityItem entityItem : this.sceneWorld.getEntityList()) {
             this.renderHitBox(partialTicks, this, entityItem);
             if (entityItem.isHasRender()) {
@@ -47,8 +47,8 @@ public class WorldRender extends SceneRenderBase {
         } else {
             collisionBoxForm.getMeshInfo().getPosition().lerp(entityItem.getEntity().getPosition(), partialTicks);
         }
-        sceneRenderBase.performUniform("model_view_matrix", sceneRenderBase.getSceneWorld().getRenderManager().getTransform().getModelViewMatrix(collisionBoxForm.getMeshInfo(), sceneRenderBase.getSceneWorld().getRenderManager().getTransform().getViewMatrix(sceneRenderBase.getSceneWorld().getCamera())));
-        GL30.glBindVertexArray(collisionBoxForm.getMeshInfo().getModel3D().getVao());
+        sceneRenderBase.performUniform("model_view_matrix", RenderManager.instance.getTransform().getModelViewMatrix(collisionBoxForm.getMeshInfo(), RenderManager.instance.getTransform().getViewMatrix(sceneRenderBase.getSceneWorld().getCamera())));
+        GL30.glBindVertexArray(collisionBoxForm.getMeshInfo().getVAO());
         GL30.glEnableVertexAttribArray(0);
         GL30.glEnable(GL30.GL_DEPTH_TEST);
         sceneRenderBase.performUniform("use_texture", EntityModel.EntityTexture.TextureType.RGB.getI());

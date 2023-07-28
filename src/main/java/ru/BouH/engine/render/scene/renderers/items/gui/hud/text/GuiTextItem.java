@@ -5,6 +5,7 @@ import ru.BouH.engine.render.scene.components.Model2DInfo;
 import ru.BouH.engine.render.scene.renderers.IRenderFabric;
 import ru.BouH.engine.render.scene.renderers.RenderGui;
 import ru.BouH.engine.render.scene.renderers.items.gui.AbstractGui;
+import ru.BouH.engine.render.scene.renderers.items.gui.GUI;
 import ru.BouH.engine.render.scene.renderers.items.gui.hud.font.FontCode;
 import ru.BouH.engine.render.scene.renderers.items.gui.hud.font.FontTexture;
 
@@ -14,19 +15,27 @@ import java.util.List;
 
 public class GuiTextItem extends AbstractGui {
     private static final RenderGui renderGui = new RenderGui();
-    private static final FontTexture standardFont = new FontTexture(new Font("Arial", Font.PLAIN, 24), FontCode.Window);
     private final FontTexture fontTexture;
     private String text;
     private float width;
 
-    public GuiTextItem(String text, FontTexture fontTexture, int zLevel) {
-        super("gui_text", zLevel);
-        this.fontTexture = fontTexture;
-        this.setText(text);
+    public GuiTextItem(String text, int x, int y) {
+        this(text, GUI.standardFont, x, y, 0);
     }
 
-    public GuiTextItem(String text, int zLevel) {
-        this(text, GuiTextItem.standardFont, zLevel);
+    public GuiTextItem(String text, FontTexture fontTexture, int x, int y) {
+        this(text, fontTexture, x, y, 0);
+    }
+
+    public GuiTextItem(String text, FontTexture fontTexture, int x, int y, int zLevel) {
+        super(text, zLevel);
+        this.fontTexture = fontTexture;
+        this.setText(text);
+        this.getModel2DInfo().setPosition(x, y);
+    }
+
+    public GuiTextItem(String text, int x, int y, int zLevel) {
+        this(text, GUI.standardFont, x, y, zLevel);
     }
 
     public String getText() {

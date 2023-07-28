@@ -11,7 +11,6 @@ import ru.BouH.engine.render.RenderManager;
 import java.util.*;
 
 public class SceneWorld {
-    private final RenderManager renderManager;
     private final Camera camera;
     private final List<EntityItem> entityList = new ArrayList<>();
     private final World world;
@@ -21,7 +20,6 @@ public class SceneWorld {
     public SceneWorld(World world) {
         this.world = world;
         this.terrainItem = new TerrainItem(this.getWorld().getTerrain());
-        this.renderManager = new RenderManager();
         this.camera = new Camera();
     }
 
@@ -65,10 +63,6 @@ public class SceneWorld {
 
     public TerrainItem getTerrainItem() {
         return this.terrainItem;
-    }
-
-    public RenderManager getRenderManager() {
-        return this.renderManager;
     }
 
     public Camera getCamera() {

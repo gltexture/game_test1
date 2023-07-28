@@ -25,14 +25,14 @@ public class SkyRender extends SceneRenderBase {
 
     public void onRender(double partialTicks) {
         if (this.getSkyBox() != null) {
-            this.performUniform("projection_matrix", this.sceneWorld.getRenderManager().getTransform().getProjectionMatrix(RenderManager.FOV, Game.getGame().getScreen().getWindow().getWidth(), Game.getGame().getScreen().getWindow().getHeight(), RenderManager.Z_NEAR, RenderManager.Z_FAR));
-            Matrix4d matrix4d = this.sceneWorld.getRenderManager().getTransform().getModelViewMatrix(this.getSkyBox().getModel3DInfo(), this.sceneWorld.getRenderManager().getTransform().getViewMatrix(this.sceneWorld.getCamera()));
+            this.performUniform("projection_matrix", RenderManager.instance.getTransform().getProjectionMatrix(RenderManager.FOV, Game.getGame().getScreen().getWidth(), Game.getGame().getScreen().getHeight(), RenderManager.Z_NEAR, RenderManager.Z_FAR));
+            Matrix4d matrix4d = RenderManager.instance.getTransform().getModelViewMatrix(this.getSkyBox().getModel3DInfo(), RenderManager.instance.getTransform().getViewMatrix(this.sceneWorld.getCamera()));
             matrix4d.m30(0);
             matrix4d.m31(0);
             matrix4d.m32(0);
             this.performUniform("model_view_matrix", matrix4d);
             this.performUniform("ambient", new Vector3d(1, 1, 1));
-            GL30.glBindVertexArray(this.getSkyBox().getModel3DInfo().getModel3D().getVao());
+            GL30.glBindVertexArray(this.getSkyBox().getModel3DInfo().getVAO());
             GL30.glEnableVertexAttribArray(0);
             GL30.glEnableVertexAttribArray(1);
             GL30.glEnableVertexAttribArray(2);

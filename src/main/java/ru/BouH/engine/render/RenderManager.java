@@ -3,6 +3,7 @@ package ru.BouH.engine.render;
 import ru.BouH.engine.render.scene.components.Transform;
 
 public class RenderManager {
+    public static RenderManager instance = new RenderManager();
     public static final float FOV = (float) Math.toRadians(60.0f);
     public static final float Z_NEAR = 0.01f;
     public static final float Z_FAR = 1000.0f;

@@ -1,5 +1,6 @@
 package ru.BouH.engine.render.screen;
 
+import org.joml.Vector2d;
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -135,6 +136,18 @@ public class Screen {
         this.getScene().postRender();
         Game.getGame().getLogManager().debug("Stop render section");
         Game.getGame().getLogManager().debug("...........................................");
+    }
+
+    public int getWidth() {
+        return this.getWindow().getWidth();
+    }
+
+    public int getHeight() {
+        return this.getWindow().getHeight();
+    }
+
+    public Vector2d getDimensions() {
+        return this.getWindow().getWindowDimensions();
     }
 
     public Scene getScene() {

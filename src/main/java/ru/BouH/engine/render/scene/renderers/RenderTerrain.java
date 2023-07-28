@@ -1,6 +1,7 @@
 package ru.BouH.engine.render.scene.renderers;
 
 import org.lwjgl.opengl.GL30;
+import ru.BouH.engine.render.RenderManager;
 import ru.BouH.engine.render.scene.renderers.IRenderFabric;
 import ru.BouH.engine.render.scene.renderers.items.IRenderItem;
 import ru.BouH.engine.render.scene.renderers.items.models.entity.EntityModel;
@@ -11,8 +12,8 @@ public class RenderTerrain implements IRenderFabric {
 
     public void onRender(double partialTicks, SceneRenderBase sceneRenderBase, IRenderItem iRenderItem) {
         TerrainItem terrainItem = (TerrainItem) iRenderItem;
-        sceneRenderBase.performUniform("model_view_matrix", sceneRenderBase.getSceneWorld().getRenderManager().getTransform().getModelViewMatrix(terrainItem.getMesh(), sceneRenderBase.getSceneWorld().getRenderManager().getTransform().getViewMatrix(sceneRenderBase.getSceneWorld().getCamera())));
-        GL30.glBindVertexArray(terrainItem.getMesh().getModel3D().getVao());
+        sceneRenderBase.performUniform("model_view_matrix", RenderManager.instance.getTransform().getModelViewMatrix(terrainItem.getMesh(), RenderManager.instance.getTransform().getViewMatrix(sceneRenderBase.getSceneWorld().getCamera())));
+        GL30.glBindVertexArray(terrainItem.getMesh().getVAO());
         GL30.glEnableVertexAttribArray(0);
         GL30.glEnableVertexAttribArray(1);
         GL30.glEnableVertexAttribArray(2);

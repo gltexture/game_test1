@@ -15,6 +15,10 @@ public class Model3DInfo {
         this.scale = 1.0f;
     }
 
+    public int getVAO() {
+        return this.getModel3D().getVao();
+    }
+
     public void setPosition(Vector3d vector3d) {
         this.getPosition().set(vector3d);
     }
