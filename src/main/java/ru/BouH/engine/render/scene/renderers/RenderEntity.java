@@ -9,6 +9,7 @@ import ru.BouH.engine.render.scene.renderers.items.IRenderItem;
 import ru.BouH.engine.render.scene.renderers.items.entity.EntityItem;
 import ru.BouH.engine.render.scene.renderers.items.models.box.CollisionBoxForm;
 import ru.BouH.engine.render.scene.renderers.items.models.entity.EntityModel;
+import ru.BouH.engine.render.scene.renderers.main_render.base.Scene;
 import ru.BouH.engine.render.scene.renderers.main_render.base.SceneRenderBase;
 
 public class RenderEntity implements IRenderFabric {

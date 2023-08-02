@@ -1,6 +1,7 @@
 package ru.BouH.engine.render.scene.renderers.main_render.base;
 
 import ru.BouH.engine.game.init.Game;
+import ru.BouH.engine.render.scene.programs.UniformBufferProgram;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 
 public abstract class SceneRenderBase {
@@ -43,8 +44,24 @@ public abstract class SceneRenderBase {
         this.getShaderManager().performUniform(uniform, o);
     }
 
+    public void performUniformBuffer(String uniform, float[] data) {
+        if (!this.getShaderManager().checkUniformBuffer(uniform)) {
+            Game.getGame().getLogManager().bigWarn("Uniform-Buffer \"" + uniform + "\" " + "is not registered in scene \"" + this.renderGroup.name() + "\"!");
+            return;
+        }
+        this.getShaderManager().performUniformBuffer(uniform, data);
+    }
+
     protected void addUniform(String u) {
         this.getShaderManager().addUniform(u);
+    }
+
+    protected void addUniformBuffer(String u, int size) {
+        this.getShaderManager().addUniformBuffer(u, size);
+    }
+
+    public UniformBufferProgram getUniformBufferProgram() {
+        return this.getShaderManager().getUniformBufferProgram();
     }
 
     public ShaderManager getShaderManager() {

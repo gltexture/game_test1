@@ -6,11 +6,17 @@ import ru.BouH.engine.physx.world.World;
 public class PhysX {
     private final World world;
     public Thread worldThread;
+    public static final int TICKS_PER_SECOND = 50;
 
     public PhysX() {
         this.world = new World();
     }
 
+    private static long getTicksForUpdate() {
+        return 1000L / PhysX.TICKS_PER_SECOND;
+    }
+
+    @SuppressWarnings("all")
     public void init() {
         this.worldThread = new Thread(() -> {
             try {
@@ -29,11 +35,11 @@ public class PhysX {
                     }
                     l += k;
                     i = j;
-                    while (l > 20L) {
-                        l -= 20L;
+                    while (l > this.getTicksForUpdate()) {
+                        l -= this.getTicksForUpdate();
                         Game.getGame().getProxy().tickWorlds();
                     }
-                    Thread.sleep(Math.max(1L, 20L - l));
+                    Thread.sleep(Math.max(1L, this.getTicksForUpdate() - l));
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);

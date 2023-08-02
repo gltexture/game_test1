@@ -1,9 +1,15 @@
-#version 330
+#version 430
 
 layout (location=0) in vec3 position;
 layout (location=1) in vec2 texture;
 layout (location=2) in vec3 vertex_normal;
 
+layout (std140, binding = 0) uniform Lights {
+    float value1;
+    float value2;
+};
+
+out float ambientLight;
 out vec2 out_texture;
 out vec3 mv_vertex_normal;
 out vec3 mv_vert_pos;
@@ -18,4 +24,5 @@ void main()
     out_texture = texture;
     mv_vertex_normal = normalize(model_view_matrix * vec4(vertex_normal, 0.0f)).xyz;
     mv_vert_pos = mv_pos.xyz;
+    ambientLight = value1;
 }

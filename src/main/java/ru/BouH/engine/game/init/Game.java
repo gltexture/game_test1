@@ -8,7 +8,7 @@ import ru.BouH.engine.render.screen.Screen;
 
 public class Game {
     public static final boolean DEBUG = true;
-    public static final String build = "27.07.2023";
+    public static final String build = "03.08.2023";
     private static Game startScreen;
     private final GameLogging logManager;
     private final Screen screen;

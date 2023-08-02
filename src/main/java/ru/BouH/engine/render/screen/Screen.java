@@ -13,6 +13,8 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import ru.BouH.engine.game.init.Game;
 import ru.BouH.engine.game.init.controller.Controller;
+import ru.BouH.engine.math.MathHelper;
+import ru.BouH.engine.physx.PhysX;
 import ru.BouH.engine.proxy.init.EntitiesInit;
 import ru.BouH.engine.proxy.init.KeysInit;
 import ru.BouH.engine.render.scene.renderers.main_render.base.Scene;
@@ -27,6 +29,7 @@ public class Screen {
     private Scene scene;
     private Controller controller;
     private Window window;
+    private ScreenTimer screenTimer;
     public static final int defaultW = 800;
     public static final int defaultH = 600;
 
@@ -38,6 +41,7 @@ public class Screen {
             GL.createCapabilities();
             EntitiesInit.init();
             this.sceneWorld = new SceneWorld(game.getPhysX().getWorld());
+            this.screenTimer = new ScreenTimer(this.sceneWorld);
             this.scene = new Scene(this.sceneWorld);
             this.scene.init();
             this.setWindowCallbacks();
@@ -111,15 +115,16 @@ public class Screen {
         this.getScene().preRender();
         int fps = 0;
         double lastFPS = GLFW.glfwGetTime();
-        final float tps = 1.0f / 50.0f;
+        final float tps = 1.0f / PhysX.TICKS_PER_SECOND;
         double lastTime = 0;
+        this.screenTimer.startThread();
+        GLFW.glfwSetTime(0.0d);
         while (!Game.getGame().shouldBeClosed) {
             Game.getGame().shouldBeClosed = GLFW.glfwWindowShouldClose(this.getWindow().getDescriptor());
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
             GL30.glEnable(GL30.GL_CULL_FACE);
             GL30.glCullFace(GL30.GL_BACK);
             this.getRenderWorld().getWorld().getLocalPlayer().performController(this.getController());
-            this.getRenderWorld().onWorldRenderUpdate();
             double currentTime = GLFW.glfwGetTime();
             double deltaTime = currentTime - lastTime;
             lastTime = currentTime;
@@ -130,13 +135,13 @@ public class Screen {
                 fps = 0;
                 lastFPS = currentTime;
             }
-            this.getScene().renderScene(progress);
+            this.getScene().renderScene(MathHelper.clamp(progress, 0.0f, 1.0f));
             this.getController().input(this.getWindow());
             GLFW.glfwSwapBuffers(this.getWindow().getDescriptor());
             GLFW.glfwPollEvents();
         }
         this.getScene().postRender();
-        Game.getGame().getLogManager().debug("Stop render section");
+        Game.getGame().getLogManager().debug("End render section");
         Game.getGame().getLogManager().debug("...........................................");
     }
 

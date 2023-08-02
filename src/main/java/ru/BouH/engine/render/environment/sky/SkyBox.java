@@ -1,4 +1,4 @@
-package ru.BouH.engine.render.scene.world.environment.sky;
+package ru.BouH.engine.render.environment.sky;
 
 import ru.BouH.engine.render.scene.components.Model3DInfo;
 import ru.BouH.engine.render.scene.components.Texture;
@@ -10,7 +10,7 @@ public class SkyBox {
 
     public SkyBox(String textureName) {
         this.model3DInfo = new Model3DInfo(Utils.loadMesh("sky/skyCube.obj"));
-        this.texture = Texture.createTexture("environment/skybox/" + textureName);
+        this.texture = Texture.createTexture(textureName);
     }
 
     public Model3DInfo getModel3DInfo() {

@@ -2,20 +2,26 @@ package ru.BouH.engine.render.scene.renderers.main_render.base;
 
 import ru.BouH.engine.game.init.Game;
 import ru.BouH.engine.render.scene.programs.ShaderProgram;
+import ru.BouH.engine.render.scene.programs.UniformBufferProgram;
 import ru.BouH.engine.render.scene.programs.UniformProgram;
 import ru.BouH.engine.render.utils.Utils;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class ShaderManager {
     private final Set<String> uniformsSet;
+    private final Map<String, Integer> uniformBuffersSet;
     private final RenderGroup renderGroup;
     private ShaderProgram shaderProgram;
     private UniformProgram uniformProgram;
+    private UniformBufferProgram uniformBufferProgram;
 
     public ShaderManager(RenderGroup renderGroup) {
         this.uniformsSet = new HashSet<>();
+        this.uniformBuffersSet = new HashMap<>();
         this.renderGroup = renderGroup;
     }
 
@@ -23,8 +29,16 @@ public class ShaderManager {
         return this.uniformsSet.contains(u);
     }
 
+    public boolean checkUniformBuffer(String u) {
+        return this.uniformBuffersSet.containsKey(u);
+    }
+
     public void addUniform(String s) {
         this.uniformsSet.add(s);
+    }
+
+    public void addUniformBuffer(String s, int sizeBytes) {
+        this.uniformBuffersSet.put(s, sizeBytes);
     }
 
     public void startProgram() {
@@ -53,10 +67,18 @@ public class ShaderManager {
         return this.uniformProgram;
     }
 
+    public UniformBufferProgram getUniformBufferProgram() {
+        return this.uniformBufferProgram;
+    }
+
     public void performUniform(String uniform, Object o) {
-        if (!this.uniformProgram.setUniform(uniform, o)) {
+        if (!this.getUniformProgram().setUniform(uniform, o)) {
             Game.getGame().getLogManager().warn("Wrong arguments! U: " + uniform);
         }
+    }
+
+    public void performUniformBuffer(String uniform, float[] data) {
+        this.getUniformBufferProgram().setUniformBufferData(uniform, data);
     }
 
     private void initShaders(ShaderProgram shaderProgram) {
@@ -73,7 +95,17 @@ public class ShaderManager {
             Game.getGame().getLogManager().warn("Warning! No Uniforms found in: " + this.renderGroup.getPath() + " (Group)");
         }
         for (String s : this.uniformsSet) {
-            this.uniformProgram.createUniform(s);
+            this.getUniformProgram().createUniform(s);
+        }
+        if (!this.uniformBuffersSet.isEmpty()) {
+            this.initUniformBuffers(new UniformBufferProgram());
+        }
+    }
+
+    private void initUniformBuffers(UniformBufferProgram uniformBufferProgram) {
+        this.uniformBufferProgram = uniformBufferProgram;
+        for (Map.Entry<String, Integer> s : this.uniformBuffersSet.entrySet()) {
+            this.getUniformBufferProgram().createUniformBuffer(s.getKey(), s.getValue());
         }
     }
 }

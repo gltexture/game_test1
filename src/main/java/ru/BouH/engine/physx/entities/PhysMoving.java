@@ -41,7 +41,7 @@ public class PhysMoving extends PhysEntity {
         double y = posPrev.y;
         double z = posPrev.z;
         double d1 = 0.05d;
-        for (PhysEntity physEntity : this.getWorld().getEntitySet()) {
+        for (PhysEntity physEntity : this.getWorld().getEntityList()) {
             while (x != posCurr.x && y != posCurr.y && z != posCurr.z) {
                 CollisionBox3D collisionBox3D1 = collisionBox3D.copy();
                 if (posCurr.x > x) {
@@ -71,7 +71,7 @@ public class PhysMoving extends PhysEntity {
 
     protected void detectCollisions() {
         this.getCollideList().clear();
-        for (PhysEntity physEntity : this.getWorld().getEntitySet()) {
+        for (PhysEntity physEntity : this.getWorld().getEntityList()) {
             CollisionBox3D collisionBox3DX = this.getCollisionBox3D().copy();
             CollisionBox3D collisionBox3DY = this.getCollisionBox3D().copy();
             CollisionBox3D collisionBox3DZ = this.getCollisionBox3D().copy();

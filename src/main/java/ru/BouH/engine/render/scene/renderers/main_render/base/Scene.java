@@ -2,6 +2,7 @@ package ru.BouH.engine.render.scene.renderers.main_render.base;
 
 import org.joml.Vector3d;
 import ru.BouH.engine.game.init.Game;
+import ru.BouH.engine.math.MathHelper;
 import ru.BouH.engine.physx.entities.living.player.EntityPlayerSP;
 import ru.BouH.engine.render.RenderManager;
 import ru.BouH.engine.render.scene.components.Camera;

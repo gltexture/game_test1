@@ -48,7 +48,7 @@ public abstract class PhysEntity extends WorldItem {
 
     protected void detectCollisions() {
         this.collideList.clear();
-        for (PhysEntity physEntity : this.getWorld().getEntitySet()) {
+        for (PhysEntity physEntity : this.getWorld().getEntityList()) {
             if (physEntity != this && this.checkCollision(physEntity)) {
                 this.collideList.add(physEntity);
             }

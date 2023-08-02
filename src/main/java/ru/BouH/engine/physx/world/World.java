@@ -1,18 +1,17 @@
 package ru.BouH.engine.physx.world;
 
-import io.netty.util.internal.ConcurrentSet;
 import ru.BouH.engine.game.init.Game;
 import ru.BouH.engine.physx.entities.PhysEntity;
 import ru.BouH.engine.physx.entities.living.player.EntityPlayerSP;
 import ru.BouH.engine.physx.world.surface.Terrain;
 
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 public class World {
     private final Terrain terrain;
-    @SuppressWarnings("deprecation")
-    private final Set<PhysEntity> physEntityInfoSet = new ConcurrentSet<>();
+    private final List<PhysEntity> entityList = new ArrayList<>();
+    private final Deque<PhysEntity> entityDeque = new ArrayDeque<>();
+
     private EntityPlayerSP localPlayer;
 
     public World() {
@@ -26,15 +25,20 @@ public class World {
     }
 
     public void onWorldUpdate() {
-        Iterator<PhysEntity> iterator = this.getEntitySet().iterator();
+        Iterator<PhysEntity> iterator = this.getEntityList().iterator();
         while (iterator.hasNext()) {
             PhysEntity physEntity = iterator.next();
             if (physEntity.isDead()) {
                 iterator.remove();
                 Game.getGame().getLogManager().log("Removed entity in world - [" + physEntity.getItemName() + " - <id/" + physEntity.getItemId() + ">]");
-            } else {
-                physEntity.updateEntity();
+                continue;
             }
+            physEntity.updateEntity();
+        }
+        while (!this.entityDeque.isEmpty()) {
+            PhysEntity physEntity = this.entityDeque.pollFirst();
+            this.entityList.add(physEntity);
+            Game.getGame().getLogManager().log("Added new entity in world - [" + physEntity.getItemName() + " - <id/" + physEntity.getItemId() + ">]");
         }
     }
 
@@ -42,8 +46,8 @@ public class World {
         return this.localPlayer;
     }
 
-    public Set<PhysEntity> getEntitySet() {
-        return this.physEntityInfoSet;
+    public List<PhysEntity> getEntityList() {
+        return this.entityList;
     }
 
     public Terrain getTerrain() {
@@ -51,9 +55,8 @@ public class World {
     }
 
     public void addEntity(PhysEntity physEntity) {
-        Game.getGame().getLogManager().log("Added new entity in world - [" + physEntity.getItemName() + " - <id/" + physEntity.getItemId() + ">]");
+        this.entityDeque.add(physEntity);
         physEntity.onSpawn();
-        this.physEntityInfoSet.add(physEntity);
     }
 
     public void removeEntity(PhysEntity physEntity) {

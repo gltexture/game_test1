@@ -83,9 +83,6 @@ public class EntityPlayerSP extends PhysMoving {
             Game.getGame().getScreen().getScene().getEntityRender().bindProgram();
             //this.flying = !this.flying;
         }
-        //if (GLFW.glfwGetKey(controller.getWindow().getDescriptor(), GLFW.GLFW_KEY_X) == GLFW.GLFW_PRESS) {
-        //Game.getGame().getProxy().clearEntities();
-        //}
     }
 
     protected void movingStop() {

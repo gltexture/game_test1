@@ -3,11 +3,14 @@ package ru.BouH.engine.render.scene.renderers.main_render;
 import org.joml.Vector3d;
 import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.game.init.Game;
+import ru.BouH.engine.math.MathHelper;
 import ru.BouH.engine.physx.entities.living.player.EntityPlayerSP;
+import ru.BouH.engine.render.scene.renderers.UniformBufferUtils;
 import ru.BouH.engine.render.scene.renderers.items.entity.EntityItem;
 import ru.BouH.engine.render.scene.renderers.items.models.box.CollisionBoxForm;
 import ru.BouH.engine.render.scene.renderers.items.models.entity.EntityModel;
 import ru.BouH.engine.render.scene.renderers.main_render.base.RenderGroup;
+import ru.BouH.engine.render.scene.renderers.main_render.base.Scene;
 import ru.BouH.engine.render.scene.renderers.main_render.base.SceneRenderBase;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 import ru.BouH.engine.render.RenderManager;
@@ -25,9 +28,12 @@ public class WorldRender extends SceneRenderBase {
         this.addUniform("texture_sampler");
         this.addUniform("colors");
         this.addUniform("use_texture");
+
+        this.addUniformBuffer("Lights", 150);
     }
 
     public void onRender(double partialTicks) {
+        UniformBufferUtils.updateLightBuffers(this);
         this.performUniform("tick", this.getSceneWorld().tick);
         this.performUniform("dimensions", Game.getGame().getScreen().getWindow().getWindowDimensions());
         this.performUniform("projection_matrix", RenderManager.instance.getTransform().getProjectionMatrix(RenderManager.FOV, Game.getGame().getScreen().getWindow().getWidth(), Game.getGame().getScreen().getWindow().getHeight(), RenderManager.Z_NEAR, RenderManager.Z_FAR));

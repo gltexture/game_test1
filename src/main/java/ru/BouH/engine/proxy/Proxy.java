@@ -1,5 +1,6 @@
 package ru.BouH.engine.proxy;
 
+import ru.BouH.engine.game.init.controller.Controller;
 import ru.BouH.engine.game.init.controller.KeyBinding;
 import ru.BouH.engine.physx.PhysX;
 import ru.BouH.engine.physx.entities.PhysEntity;
@@ -26,6 +27,10 @@ public class Proxy {
         this.addEntityInWorlds(entityPlayerSP, null);
     }
 
+    public void performController(Controller controller) {
+        this.physX.getWorld().getLocalPlayer().performController(controller);
+    }
+
     public void tickWorlds() {
         this.physX.getWorld().onWorldUpdate();
         this.screen.getRenderWorld().tickWorld();
@@ -40,6 +45,6 @@ public class Proxy {
     }
 
     public void clearEntities() {
-        this.physX.getWorld().getEntitySet().forEach(PhysEntity::setDead);
+        this.physX.getWorld().getEntityList().forEach(PhysEntity::setDead);
     }
 }

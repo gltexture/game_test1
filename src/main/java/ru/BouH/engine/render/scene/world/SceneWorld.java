@@ -2,17 +2,20 @@ package ru.BouH.engine.render.scene.world;
 
 import ru.BouH.engine.physx.entities.PhysEntity;
 import ru.BouH.engine.physx.world.World;
+import ru.BouH.engine.render.environment.Environment;
 import ru.BouH.engine.render.scene.components.Camera;
 import ru.BouH.engine.render.scene.renderers.items.entity.EntityItem;
 import ru.BouH.engine.render.scene.renderers.items.models.entity.EntityModel;
 import ru.BouH.engine.render.scene.renderers.items.terrain.TerrainItem;
-import ru.BouH.engine.render.RenderManager;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public class SceneWorld {
     private final Camera camera;
     private final List<EntityItem> entityList = new ArrayList<>();
+    private final Environment environment;
     private final World world;
     private final TerrainItem terrainItem;
     public float tick;
@@ -20,6 +23,7 @@ public class SceneWorld {
     public SceneWorld(World world) {
         this.world = world;
         this.terrainItem = new TerrainItem(this.getWorld().getTerrain());
+        this.environment = new Environment();
         this.camera = new Camera();
     }
 
@@ -46,6 +50,7 @@ public class SceneWorld {
 
     public void tickWorld() {
         this.tick += 0.01f;
+        this.getEnvironment().getSky().setSunAngle(this.tick * 10.0f);
     }
 
     public void onWorldRenderUpdate() {
@@ -55,10 +60,14 @@ public class SceneWorld {
             PhysEntity physEntity = entityItem.getEntity();
             if (physEntity.isDead()) {
                 iterator.remove();
-            } else {
-                entityItem.onUpdate();
+                continue;
             }
+            entityItem.onUpdate();
         }
+    }
+
+    public Environment getEnvironment() {
+        return this.environment;
     }
 
     public TerrainItem getTerrainItem() {

@@ -16,7 +16,7 @@ public class PhysEntityLamp extends PhysEntity {
         super.updateEntity();
         this.getPosition().set(new Vector3d(0, this.getPosition().y + 0.05f, 0));
         if (this.getPosition().y > 50) {
-            this.setDead();
+           // this.setDead();
         }
         this.getCollisionBox3D().setBox(this, 1, 1);
     }

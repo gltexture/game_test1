@@ -10,7 +10,6 @@ import ru.BouH.engine.physx.entities.living.player.EntityPlayerSP;
 import ru.BouH.engine.render.RenderManager;
 import ru.BouH.engine.render.scene.components.Model2DInfo;
 import ru.BouH.engine.render.scene.components.Texture;
-import ru.BouH.engine.render.scene.renderers.items.IRenderItem;
 import ru.BouH.engine.render.scene.renderers.items.gui.hud.font.FontCode;
 import ru.BouH.engine.render.scene.renderers.items.gui.hud.font.FontTexture;
 import ru.BouH.engine.render.scene.renderers.items.gui.hud.pictures.GuiPictureItem;
@@ -30,7 +29,7 @@ public class GUI {
         double height = Game.getGame().getScreen().getHeight();
         EntityPlayerSP entityPlayerSP = Game.getGame().getPhysX().getWorld().getLocalPlayer();
         GUI.renderText(partialTicks, 0, 0, "FPS: " + Screen.FPS, 0x00ff00);
-        GUI.renderText(partialTicks, 0, 20, "entities: " + Game.getGame().getPhysX().getWorld().getEntitySet().size(), 0xffffff);
+        GUI.renderText(partialTicks, 0, 20, "entities: " + Game.getGame().getPhysX().getWorld().getEntityList().size(), 0xffffff);
         GUI.renderText(partialTicks, 0, 40, String.format("%s %s %s", (int) entityPlayerSP.getPosition().x, (int) entityPlayerSP.getPosition().y, (int) entityPlayerSP.getPosition().z), 0xffffff);
         int i1 = 60;
         if (!KeyBinding.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL)) {

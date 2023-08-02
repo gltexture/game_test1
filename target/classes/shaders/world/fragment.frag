@@ -1,8 +1,9 @@
-#version 330
+#version 430
 
 in vec2 out_texture;
 in vec3 mv_vertex_normal;
 in vec3 mv_vert_pos;
+in float ambientLight;
 out vec4 frag_color;
 
 uniform float tick;
@@ -11,6 +12,15 @@ uniform sampler2D texture_sampler;
 uniform int use_texture;
 uniform vec3 camera_pos;
 uniform vec2 dimensions;
+
+vec2 mn(vec2);
+float f(vec2);
+vec4 setup_colors(vec2);
+
+void main()
+{
+    frag_color = setup_colors(out_texture) * ambientLight;
+}
 
 vec2 mn(vec2 z) {
     return vec2(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y);
@@ -70,9 +80,4 @@ vec4 setup_colors(vec2 texture_c) {
             return black;
         }
     }
-}
-
-void main()
-{
-    frag_color = setup_colors(out_texture);
 }
