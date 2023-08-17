@@ -2,7 +2,7 @@ package ru.BouH.engine.render.scene.programs;
 
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL43;
-import ru.BouH.engine.game.init.Game;
+import ru.BouH.engine.game.Game;
 import ru.BouH.engine.math.IntPair;
 
 import java.util.HashMap;
@@ -36,21 +36,10 @@ public class UniformBufferProgram {
         this.uniforms.put(uniformName, new IntPair(uniformLocation, binding));
     }
 
-    public void setUniformBufferData(String uniformBufferData, double[] values) {
-        GL43.glBindBuffer(GL43.GL_UNIFORM_BUFFER, this.uboBlock);
-        GL43.glBufferSubData(GL43.GL_UNIFORM_BUFFER, 0, values);
-        GL43.glUniformBlockBinding(GL43.GL_UNIFORM_BUFFER, this.uniforms.get(uniformBufferData).getA1(), this.uniforms.get(uniformBufferData).getA2());
-        GL43.glBindBuffer(GL43.GL_UNIFORM_BUFFER, 0);
-    }
-
     public void setUniformBufferData(String uniformBufferData, float[] values) {
         GL43.glBindBuffer(GL43.GL_UNIFORM_BUFFER, this.uboBlock);
         GL43.glBufferSubData(GL43.GL_UNIFORM_BUFFER, 0, values);
         GL43.glUniformBlockBinding(GL43.GL_UNIFORM_BUFFER, this.uniforms.get(uniformBufferData).getA1(), this.uniforms.get(uniformBufferData).getA2());
         GL43.glBindBuffer(GL43.GL_UNIFORM_BUFFER, 0);
-    }
-
-    public int getUboBlock() {
-        return this.uboBlock;
     }
 }

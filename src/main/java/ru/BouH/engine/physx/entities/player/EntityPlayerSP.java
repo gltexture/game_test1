@@ -1,0 +1,123 @@
+package ru.BouH.engine.physx.entities.player;
+
+import com.bulletphysics.dynamics.RigidBody;
+import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
+import org.joml.Vector2d;
+import org.joml.Vector3d;
+import ru.BouH.engine.game.controller.IController;
+import ru.BouH.engine.math.BPVector3f;
+import ru.BouH.engine.physx.collision.objects.AbstractCollision;
+import ru.BouH.engine.physx.collision.objects.OBB;
+import ru.BouH.engine.physx.entities.IRemoteController;
+import ru.BouH.engine.physx.entities.PhysEntity;
+import ru.BouH.engine.physx.world.World;
+import ru.BouH.engine.proxy.IWorld;
+
+public class EntityPlayerSP extends PhysEntity implements IRemoteController {
+    private final Vector3d cameraRotation;
+    private IController controller;
+    private Vector3d inputMotion;
+    private final double eyeHeight;
+
+    public EntityPlayerSP(World world, Vector3d pos, Vector3d rot, String name) {
+        super(world, pos, rot, name);
+        this.inputMotion = new Vector3d(0.0d);
+        this.cameraRotation = new Vector3d();
+        this.eyeHeight = 0.82d;
+        this.setSpeed(3.0f);
+    }
+
+    public EntityPlayerSP(World world, Vector3d pos, String name) {
+        this(world, pos, new Vector3d(0.0d), name);
+    }
+
+    public EntityPlayerSP(World world, Vector3d pos) {
+        this(world, pos, new Vector3d(0.0d), "phys_playerSP");
+    }
+
+    public EntityPlayerSP(World world, Vector3d pos, Vector3d rot) {
+        this(world, pos, rot, "phys_playerSP");
+    }
+
+    @Override
+    protected AbstractCollision constructCollision(double scale) {
+        return new OBB(this.getScale(), new Vector3d(0.75d, 1.5d, 0.75d), 1.0f, this.defaultMotionState, new BPVector3f(0.0f, 0.0f, 0.0f));
+    }
+
+    public void onUpdate(IWorld iWorld) {
+        super.onUpdate(iWorld);
+        if (this.isValidController()) {
+            Vector3d vector3d = this.calcControllerMotion();
+            if (vector3d.y > 0) {
+                this.jump();
+            }
+            this.setMotionVector(vector3d.mul(new Vector3d(1, 0, 1)));
+        }
+    }
+
+    protected RigidBody createRigidBody(RigidBodyConstructionInfo rigidBodyConstructionInfo) {
+        RigidBody rigidBody = super.createRigidBody(rigidBodyConstructionInfo);
+        return rigidBody;
+    }
+
+    private Vector3d calcControllerMotion() {
+        double[] motion = new double[3];
+        double[] input = new double[3];
+        input[0] = this.inputMotion.x;
+        input[1] = this.inputMotion.y;
+        input[2] = this.inputMotion.z;
+        if (input[2] != 0) {
+            motion[0] += Math.sin(Math.toRadians(this.getRotation().y)) * -1.0f * input[2];
+            motion[2] += Math.cos(Math.toRadians(this.getRotation().y)) * input[2];
+        }
+        if (input[0] != 0) {
+            motion[0] += Math.sin(Math.toRadians(this.getRotation().y - 90)) * -1.0f * input[0];
+            motion[2] += Math.cos(Math.toRadians(this.getRotation().y - 90)) * input[0];
+        }
+        if (input[1] != 0) {
+            motion[1] += input[1];
+        }
+        return new Vector3d(motion[0], motion[1], motion[2]);
+    }
+
+    public Vector3d getCameraRotation() {
+        return this.cameraRotation;
+    }
+
+    public boolean canBeDestroyed() {
+        return false;
+    }
+
+    public double getEyeHeight() {
+        return this.getPosition().y + this.eyeHeight;
+    }
+
+    public void setController(IController iController) {
+        this.controller = iController;
+    }
+
+    public Vector3d getRotation() {
+        return this.isValidController() ? this.getCameraRotation() : super.getRotation();
+    }
+
+    @Override
+    public IController currentController() {
+        return this.controller;
+    }
+
+    @Override
+    public void performController(Vector2d rotationInput, Vector3d xyzInput) {
+        this.getCameraRotation().add(new Vector3d(rotationInput, 0.0d));
+        this.inputMotion = new Vector3d(xyzInput);
+        this.clampCameraRotation();
+    }
+
+    private void clampCameraRotation() {
+        if (this.getRotation().x > 90) {
+            this.getCameraRotation().set(new Vector3d(90, this.getRotation().y, this.getRotation().z));
+        }
+        if (this.getRotation().x < -90) {
+            this.getCameraRotation().set(new Vector3d(-90, this.getRotation().y, this.getRotation().z));
+        }
+    }
+}

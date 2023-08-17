@@ -13,12 +13,12 @@ public final class IntPair {
         return this.a1;
     }
 
-    public int getA2() {
-        return this.a2;
-    }
-
     public void setA1(int a1) {
         this.a1 = a1;
+    }
+
+    public int getA2() {
+        return this.a2;
     }
 
     public void setA2(int a2) {

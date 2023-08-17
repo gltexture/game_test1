@@ -5,6 +5,7 @@ out vec4 frag_color;
 
 uniform vec4 colour;
 uniform sampler2D texture_sampler;
+uniform int use_texture;
 
 void main()
 {

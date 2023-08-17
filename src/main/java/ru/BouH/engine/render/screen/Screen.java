@@ -11,50 +11,53 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
-import ru.BouH.engine.game.init.Game;
-import ru.BouH.engine.game.init.controller.Controller;
+import ru.BouH.engine.game.Game;
+import ru.BouH.engine.game.controller.ControllerDispatcher;
+import ru.BouH.engine.game.g_static.profiler.SectionManager;
 import ru.BouH.engine.math.MathHelper;
 import ru.BouH.engine.physx.PhysX;
-import ru.BouH.engine.proxy.init.EntitiesInit;
-import ru.BouH.engine.proxy.init.KeysInit;
-import ru.BouH.engine.render.scene.renderers.main_render.base.Scene;
+import ru.BouH.engine.game.g_static.render.ItemRenderList;
+import ru.BouH.engine.physx.entities.player.EntityPlayerSP;
+import ru.BouH.engine.render.scene.Scene;
 import ru.BouH.engine.render.scene.world.SceneWorld;
+import ru.BouH.engine.render.scene.world.camera.ICamera;
 import ru.BouH.engine.render.screen.window.Window;
 
 import java.nio.IntBuffer;
 
 public class Screen {
     public static int FPS;
-    private SceneWorld sceneWorld;
+    private ControllerDispatcher controllerDispatcher;
     private Scene scene;
-    private Controller controller;
     private Window window;
-    private ScreenTimer screenTimer;
-    public static final int defaultW = 800;
-    public static final int defaultH = 600;
+    public boolean isInFocus;
+    public static final int defaultW = 1200;
+    public static final int defaultH = 720;
 
     public void init() {
         Game game = Game.getGame();
+        this.isInFocus = true;
         game.getLogManager().log("Starting screen!");
         if (this.tryToBuildScreen()) {
-            game.getLogManager().log("Game screen built successful");
             GL.createCapabilities();
-            EntitiesInit.init();
-            this.sceneWorld = new SceneWorld(game.getPhysX().getWorld());
-            this.screenTimer = new ScreenTimer(this.sceneWorld);
-            this.scene = new Scene(this.sceneWorld);
+            ItemRenderList.init();
+            this.scene = new Scene(new SceneWorld(game.getPhysX().getWorld()));
             this.scene.init();
             this.setWindowCallbacks();
-            this.controller = new Controller(this.getWindow());
-            KeysInit.init(this.getWindow());
+            this.createControllerDispatcher(this.getWindow());
+            game.getLogManager().log("Screen built successful");
         } else {
-            game.getLogManager().error("Scene build error!");
+            game.getLogManager().error("Screen build error!");
         }
+    }
+
+    private void createControllerDispatcher(Window window) {
+        this.controllerDispatcher = new ControllerDispatcher(window);
     }
 
     public void startScreen() {
         this.updateScreen();
-        Game.getGame().getLogManager().log("Stopping game...");
+        Game.getGame().getLogManager().log("Stopping screen...");
         GLFW.glfwDestroyWindow(this.getWindow().getDescriptor());
         GLFW.glfwTerminate();
     }
@@ -71,13 +74,13 @@ public class Screen {
     private boolean tryToBuildScreen() {
         GLFWErrorCallback.createPrint(System.err).set();
         if (!GLFW.glfwInit()) {
-            Game.getGame().getLogManager().error("Error initializing GLFW");
+            Game.getGame().getLogManager().error("Error, while initializing GLFW");
         }
         GLFW.glfwDefaultWindowHints();
         GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
         GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE);
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 2);
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
+        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 3);
+        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 4);
         GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE);
         GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT, GL20.GL_TRUE);
         this.window = new Window(new Window.WindowProperties(Screen.defaultW, Screen.defaultH, "Build " + Game.build));
@@ -105,26 +108,32 @@ public class Screen {
     }
 
     public SceneWorld getRenderWorld() {
-        return this.sceneWorld;
+        return this.getScene().getRenderWorld();
+    }
+
+    public ICamera getCamera() {
+        return this.getScene().getCurrentCamera();
     }
 
     private void updateScreen() {
         GL11.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        Game.getGame().getLogManager().debug("...........................................");
-        Game.getGame().getLogManager().debug("Begin render section");
+        Game.getGame().getProfiler().startSection(SectionManager.startSystem);
+        Game.getGame().getProxy().onSystemStarted();
+        Game.getGame().getProfiler().endSection(SectionManager.startSystem);
+        Game.getGame().getProfiler().startSection(SectionManager.renderE);
+        this.getRenderWorld().onWorldStart();
         this.getScene().preRender();
+        this.controllerDispatcher.attachControllerTo(ControllerDispatcher.mouseKeyboardController, Game.getGame().getPlayerSP());
         int fps = 0;
         double lastFPS = GLFW.glfwGetTime();
         final float tps = 1.0f / PhysX.TICKS_PER_SECOND;
         double lastTime = 0;
-        this.screenTimer.startThread();
         GLFW.glfwSetTime(0.0d);
         while (!Game.getGame().shouldBeClosed) {
             Game.getGame().shouldBeClosed = GLFW.glfwWindowShouldClose(this.getWindow().getDescriptor());
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
             GL30.glEnable(GL30.GL_CULL_FACE);
             GL30.glCullFace(GL30.GL_BACK);
-            this.getRenderWorld().getWorld().getLocalPlayer().performController(this.getController());
             double currentTime = GLFW.glfwGetTime();
             double deltaTime = currentTime - lastTime;
             lastTime = currentTime;
@@ -135,14 +144,24 @@ public class Screen {
                 fps = 0;
                 lastFPS = currentTime;
             }
-            this.getScene().renderScene(MathHelper.clamp(progress, 0.0f, 1.0f));
-            this.getController().input(this.getWindow());
+            this.getRenderWorld().onWorldUpdate();
+            if (this.getScene().getCurrentCamera() != null) {
+                this.getScene().renderScene(MathHelper.clamp(progress, 0.0f, 1.0f));
+            }
+            if (this.getControllerDispatcher() != null) {
+                this.getControllerDispatcher().updateController(this.isInFocus, this.getWindow());
+            }
+            GLFW.glfwSetInputMode(this.getWindow().getDescriptor(), GLFW.GLFW_CURSOR, !this.isInFocus ? GLFW.GLFW_CURSOR_NORMAL : GLFW.GLFW_CURSOR_HIDDEN);
             GLFW.glfwSwapBuffers(this.getWindow().getDescriptor());
             GLFW.glfwPollEvents();
         }
         this.getScene().postRender();
-        Game.getGame().getLogManager().debug("End render section");
-        Game.getGame().getLogManager().debug("...........................................");
+        this.getRenderWorld().onWorldEnd();
+        Game.getGame().getProfiler().endSection(SectionManager.renderE);
+    }
+
+    public ControllerDispatcher getControllerDispatcher() {
+        return this.controllerDispatcher;
     }
 
     public int getWidth() {
@@ -159,10 +178,6 @@ public class Screen {
 
     public Scene getScene() {
         return this.scene;
-    }
-
-    public Controller getController() {
-        return this.controller;
     }
 
     public Window getWindow() {

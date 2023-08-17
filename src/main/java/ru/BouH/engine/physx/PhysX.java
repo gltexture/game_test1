@@ -1,60 +1,78 @@
 package ru.BouH.engine.physx;
 
-import ru.BouH.engine.game.init.Game;
+import ru.BouH.engine.game.Game;
+import ru.BouH.engine.game.exception.GameException;
+import ru.BouH.engine.game.g_static.profiler.SectionManager;
 import ru.BouH.engine.physx.world.World;
 
 public class PhysX {
+    public static final int TICKS_PER_SECOND = 50;
     private final World world;
     public Thread worldThread;
-    public static final int TICKS_PER_SECOND = 50;
 
     public PhysX() {
         this.world = new World();
     }
 
-    private static long getTicksForUpdate() {
+    public static long getTicksForUpdate() {
         return 1000L / PhysX.TICKS_PER_SECOND;
     }
 
-    @SuppressWarnings("all")
     public void init() {
+        this.startPhysTimer();
+    }
+
+    @SuppressWarnings("all")
+    private void startPhysTimer() {
         this.worldThread = new Thread(() -> {
             try {
-                Game.getGame().getLogManager().debug("Starting phys!");
-                this.getWorld().addEntity(this.getWorld().getTerrain());
+                Game.getGame().getLogManager().debug("Starting phys-X!");
                 long i = System.currentTimeMillis();
                 long l = 0L;
+                Game.getGame().getProfiler().startSection(SectionManager.physX);
+                this.getWorld().onWorldStart();
                 while (!Game.getGame().shouldBeClosed) {
                     long j = System.currentTimeMillis();
                     long k = j - i;
                     if (k >= 3000L && k % 1000 == 0) {
-                        Game.getGame().getLogManager().debug("PhysX lags!");
+                        Game.getGame().getLogManager().debug("Phys-X lags!");
                     }
                     if (k < 0) {
-                        Game.getGame().getLogManager().error("PhysX time error!");
+                        throw new GameException("Phys-X time error!");
                     }
                     l += k;
                     i = j;
-                    while (l > this.getTicksForUpdate()) {
-                        l -= this.getTicksForUpdate();
+                    while (l > PhysX.getTicksForUpdate()) {
+                        l -= PhysX.getTicksForUpdate();
                         Game.getGame().getProxy().tickWorlds();
                     }
-                    Thread.sleep(Math.max(1L, this.getTicksForUpdate() - l));
+                    Thread.sleep(Math.max(1L, PhysX.getTicksForUpdate() - l));
                 }
-            } catch (InterruptedException e) {
+                this.getWorld().onWorldEnd();
+                Game.getGame().getProfiler().endSection(SectionManager.physX);
+                Game.getGame().getLogManager().debug("Stopping phys-X!");
+            } catch (InterruptedException | GameException e) {
                 throw new RuntimeException(e);
             }
         });
         this.startThread();
     }
 
-    protected void startThread() {
-        this.worldThread.setName("physx");
+    public void stopPhysX() {
+        this.worldThread.interrupt();
+    }
+
+    public void resumePhysX() {
         this.worldThread.start();
     }
 
-    private void addLocalPlayer() {
-        this.getWorld().addEntity(this.getWorld().getLocalPlayer());
+    public boolean isRunning() {
+        return this.worldThread.isAlive() && !this.worldThread.isInterrupted();
+    }
+
+    protected void startThread() {
+        this.worldThread.setName("phys-X");
+        this.worldThread.start();
     }
 
     public World getWorld() {

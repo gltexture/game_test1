@@ -1,138 +1,178 @@
 package ru.BouH.engine.physx.entities;
 
+import com.bulletphysics.collision.broadphase.BroadphasePair;
+import com.bulletphysics.collision.broadphase.BroadphaseProxy;
+import com.bulletphysics.collision.dispatch.CollisionWorld;
+import com.bulletphysics.collision.dispatch.GhostObject;
+import com.bulletphysics.collision.shapes.BoxShape;
+import com.bulletphysics.collision.shapes.CollisionShape;
+import com.bulletphysics.collision.shapes.ConvexShape;
+import com.bulletphysics.dynamics.RigidBody;
+import com.bulletphysics.linearmath.Transform;
 import org.joml.Vector3d;
-import ru.BouH.engine.physx.components.CollisionBox3D;
-import ru.BouH.engine.physx.components.MaterialType;
+import ru.BouH.engine.math.BPVector3f;
+import ru.BouH.engine.physx.entities.player.EntityPlayerSP;
 import ru.BouH.engine.physx.world.World;
-import ru.BouH.engine.physx.world.WorldItem;
+import ru.BouH.engine.physx.world.object.CollidableWorldItem;
+import ru.BouH.engine.physx.world.object.IDynamic;
+import ru.BouH.engine.proxy.IWorld;
 
-import java.util.HashSet;
-import java.util.Set;
+import javax.vecmath.Matrix3f;
 
-public abstract class PhysEntity extends WorldItem {
-    public final World world;
-    private final Vector3d position;
-    private final Vector3d prevPosition;
-    private final Vector3d rotation;
-    private final Vector3d moveVector;
-    private final Set<PhysEntity> collideList = new HashSet<>();
-    private CollisionBox3D collisionBox3D;
-    private double scale;
-    private MaterialType materialType;
-    private boolean isDead;
+public abstract class PhysEntity extends CollidableWorldItem implements IDynamic  {
+    public static final float DEFAULT_SPEED = 1.0f;
+    public static final float DEFAULT_FRICTIONAL_FORCE = 9.8f;
+    private float speed;
+    private final Vector3d motionVector;
+    private float frictionalForce;
+    protected boolean canJump;
 
-    public PhysEntity(final World world) {
-        this(world, "entity");
+    public PhysEntity(World world, Vector3d pos, Vector3d rot, String name) {
+        super(world, pos, rot, name);
+        this.motionVector = new Vector3d(0.0d);
+        this.speed = PhysEntity.DEFAULT_SPEED;
+        this.frictionalForce = PhysEntity.DEFAULT_FRICTIONAL_FORCE;
     }
 
-    public PhysEntity(final World world, String name) {
-        super(name);
-        this.world = world;
-        this.position = new Vector3d(0.0f, 0.0f, 0.0f);
-        this.prevPosition = new Vector3d(0.0f, 0.0f, 0.0f);
-        this.rotation = new Vector3d(0.0f, 0.0f, 0.0f);
-        this.moveVector = new Vector3d(0.0f, 0.0f, 0.0f);
-        this.materialType = MaterialType.Rock;
-        this.scale = 1.0d;
+    public PhysEntity(World world, Vector3d pos, Vector3d rot) {
+        this(world, pos, rot, "phys_entity");
     }
 
-    public void onSpawn() {
+    public PhysEntity(World world, Vector3d pos, String name) {
+        this(world, pos, new Vector3d(0.0d), name);
     }
 
-    public void updateEntity() {
-        this.moveVector.set(this.getPosition().x - this.getPrevPosition().x, this.getPosition().y - this.getPrevPosition().y, this.getPosition().z - this.getPrevPosition().z);
-        this.moveVector.mul(-1);
+    public PhysEntity(World world, Vector3d pos) {
+        this(world, pos, new Vector3d(0.0d));
+    }
+
+    public PhysEntity(World world) {
+        this(world, new Vector3d(0.0d));
+    }
+
+    @Override
+    public void onUpdate(IWorld iWorld) {
         this.getPrevPosition().set(this.getPosition());
-        this.detectCollisions();
-    }
-
-    protected void detectCollisions() {
-        this.collideList.clear();
-        for (PhysEntity physEntity : this.getWorld().getEntityList()) {
-            if (physEntity != this && this.checkCollision(physEntity)) {
-                this.collideList.add(physEntity);
+        if (this.getRigidBody() != null) {
+            if (this.isMotionIsActive()) {
+                this.addVelocity(this.getSpeedVector());
+            }
+            this.applyFrictionalForce(this.getRigidBody());
+            if (this.isOnGround()) {
+                if (this.getVelocity().y <= 0.1f) {
+                    this.canJump = true;
+                }
+            }
+            if (this.getPosition().y <= -100) {
+                this.setPosition(new Vector3d(0, 5, 0));
+                this.setVelocity(new Vector3d(0.0d));
             }
         }
+        this.motionVector.set(0.0d);
     }
 
-    public void setDead() {
-        if (this.canBeDestroyed()) {
-            this.isDead = true;
-        }
-    }
-
-    public Vector3d getMoveVector() {
-        return this.moveVector;
-    }
-
-    public boolean isDead() {
-        return this.isDead;
-    }
-
-    public double getScale() {
-        return this.scale;
-    }
-
-    public void setScale(double scale) {
-        this.scale = scale;
-        this.getCollisionBox3D().setScale(scale);
-    }
-
-    public boolean canBeDestroyed() {
-        return true;
-    }
-
-    public boolean isCollided() {
-        return !this.collideList.isEmpty();
-    }
-
-    public Set<PhysEntity> getCollideList() {
-        return this.collideList;
-    }
-
-    public boolean checkCollision(PhysEntity physEntity) {
-        if (this.getCollisionBox3D() == null || physEntity.getCollisionBox3D() == null) {
+    public boolean isOnGround() {
+        if (this.getRigidBody() == null) {
             return false;
         }
-        return this.getCollisionBox3D().checkCollision(physEntity.getCollisionBox3D());
+        BPVector3f v1 = new BPVector3f();
+        BPVector3f v2 = new BPVector3f();
+        this.getRigidBody().getAabb(v1, v2);
+
+        Transform transform_m = new Transform();
+        this.getRigidBody().getWorldTransform(transform_m);
+        Matrix3f bs = transform_m.basis;
+
+        final float f1 = Math.min(v2.y - v1.y, 0.05f);
+        Transform transform1 = new Transform();
+        transform1.origin.set((float) this.getPosition().x, v1.y + f1, (float) this.getPosition().z);
+        transform1.basis.set(bs);
+
+        Transform transform2 = new Transform();
+        transform2.origin.set((float) this.getPosition().x, v1.y, (float) this.getPosition().z);
+        transform2.basis.set(bs);
+
+        ConvexShape convexShape = new BoxShape(new BPVector3f((v2.x - v1.x) * 0.5f, f1, (v2.z - v1.z) * 0.5f));
+        CollisionWorld.ConvexResultCallback closestConvexResultCallback = new CollisionWorld.ClosestConvexResultCallback(transform1.origin, transform2.origin);
+        this.getWorld().getPhysXBulletManager().collisionWorld().convexSweepTest(convexShape, transform1, transform2, closestConvexResultCallback);
+
+        return closestConvexResultCallback.hasHit();
     }
 
-    public boolean checkCollision(CollisionBox3D collisionBox3D1) {
-        if (this.getCollisionBox3D() == null || collisionBox3D1 == null) {
-            return false;
+    public void jump() {
+        if (this.canJump) {
+            this.addVelocity(new Vector3d(0.0d, 5.0d, 0.0d));
+            this.canJump = false;
         }
-        return this.getCollisionBox3D().checkCollision(collisionBox3D1);
     }
 
-    public MaterialType getMaterialType() {
-        return this.materialType;
+    public boolean isMotionIsActive() {
+        double x = this.getMotionVector().x;
+        double y = this.getMotionVector().y;
+        double z = this.getMotionVector().z;
+        return x + y + z != 0;
     }
 
-    public void setMaterialType(MaterialType materialType) {
-        this.materialType = materialType;
+    public void setFrictionalForce(float frictionalForce) {
+        this.frictionalForce = frictionalForce;
     }
 
-    public CollisionBox3D getCollisionBox3D() {
-        return this.collisionBox3D;
+    public float getFrictionalForce() {
+        return this.isOnGround() ? this.frictionalForce : this.frictionalForce * 0.25f;
     }
 
-    public void setCollisionBox3D(CollisionBox3D collisionBox3D) {
-        this.collisionBox3D = collisionBox3D;
+    protected void applyFrictionalForce(RigidBody rigidBody) {
+        BPVector3f vector3f = new BPVector3f(this.getVelocity().mul(new Vector3d(1, 0, 1)));
+        vector3f.scale(-this.getFrictionalForce());
+        rigidBody.applyCentralForce(vector3f);
     }
 
-    public Vector3d getPosition() {
-        return this.position;
+    public Vector3d getVelocity() {
+        BPVector3f vector3f = new BPVector3f();
+        this.getRigidBody().getLinearVelocity(vector3f);
+        return new Vector3d(vector3f.x, vector3f.y, vector3f.z);
     }
 
-    public Vector3d getPrevPosition() {
-        return this.prevPosition;
+    public void addVelocity(Vector3d vector3d) {
+        Vector3d vel = this.getVelocity();
+        vel.add(vector3d);
+        this.getRigidBody().setLinearVelocity(new BPVector3f(vel));
+        this.updateCollisionObjectState(this.getRigidBody());
     }
 
-    public Vector3d getRotation() {
-        return this.rotation;
+    public void setVelocity(Vector3d vector3d) {
+        this.getRigidBody().setLinearVelocity(new BPVector3f(vector3d));
+        this.updateCollisionObjectState(this.getRigidBody());
     }
 
-    public World getWorld() {
-        return this.world;
+    public Vector3d getMotionVector() {
+        return new Vector3d(this.motionVector);
+    }
+
+    public Vector3d getLookVector() {
+        Vector3d vector3d = new Vector3d(this.getRotation());
+        if (vector3d.length() > 0) {
+            vector3d.normalize();
+        }
+        return vector3d;
+    }
+
+    public void setMotionVector(Vector3d vector3d) {
+        this.motionVector.set(vector3d);
+        if (this.motionVector.length() > 0) {
+            this.motionVector.normalize();
+        }
+    }
+
+    public float getSpeed() {
+        return this.isOnGround() ? this.speed : this.speed * 0.1f;
+    }
+
+    public void setSpeed(float speed) {
+        this.speed = speed;
+    }
+
+    public Vector3d getSpeedVector() {
+        return this.getMotionVector().mul(this.getSpeed());
     }
 }

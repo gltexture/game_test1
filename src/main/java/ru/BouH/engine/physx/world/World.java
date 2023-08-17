@@ -1,65 +1,95 @@
 package ru.BouH.engine.physx.world;
 
-import ru.BouH.engine.game.init.Game;
+import com.bulletphysics.dynamics.RigidBody;
+import ru.BouH.engine.game.Game;
+import ru.BouH.engine.game.exception.GameException;
+import ru.BouH.engine.game.g_static.profiler.SectionManager;
+import ru.BouH.engine.physx.collision.JBulletPhysics;
 import ru.BouH.engine.physx.entities.PhysEntity;
-import ru.BouH.engine.physx.entities.living.player.EntityPlayerSP;
-import ru.BouH.engine.physx.world.surface.Terrain;
+import ru.BouH.engine.physx.world.object.IDynamic;
+import ru.BouH.engine.physx.world.object.WorldItem;
+import ru.BouH.engine.proxy.IWorld;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
-public class World {
-    private final Terrain terrain;
-    private final List<PhysEntity> entityList = new ArrayList<>();
-    private final Deque<PhysEntity> entityDeque = new ArrayDeque<>();
-
-    private EntityPlayerSP localPlayer;
+public final class World implements IWorld {
+    private final BulletManager bulletManager;
+    private List<WorldItem> allWorldItems;
 
     public World() {
-        this.terrain = new Terrain(this, -2, 300);
-        this.onWorldStart();
+        this.allWorldItems = new ArrayList<>();
+        this.bulletManager = new BulletManager();
     }
 
-    protected void onWorldStart() {
-        this.localPlayer = new EntityPlayerSP(this);
-        this.localPlayer.getPosition().set(0, 2, 0);
+    public BulletManager getPhysXBulletManager() {
+        return this.bulletManager;
     }
 
-    public void onWorldUpdate() {
-        Iterator<PhysEntity> iterator = this.getEntityList().iterator();
-        while (iterator.hasNext()) {
-            PhysEntity physEntity = iterator.next();
-            if (physEntity.isDead()) {
-                iterator.remove();
-                Game.getGame().getLogManager().log("Removed entity in world - [" + physEntity.getItemName() + " - <id/" + physEntity.getItemId() + ">]");
-                continue;
-            }
-            physEntity.updateEntity();
-        }
-        while (!this.entityDeque.isEmpty()) {
-            PhysEntity physEntity = this.entityDeque.pollFirst();
-            this.entityList.add(physEntity);
-            Game.getGame().getLogManager().log("Added new entity in world - [" + physEntity.getItemName() + " - <id/" + physEntity.getItemId() + ">]");
-        }
+    public void onWorldStart() {
+        Game.getGame().getProfiler().startSection(SectionManager.physWorld);
+        Game.getGame().getLogManager().log("Creating local player");
+        Game.getGame().getProxy().createLocalPlayer();
+        Game.getGame().getLogManager().log("Local player created!");
+        this.getPhysXBulletManager().startBulletThread();
     }
 
-    public EntityPlayerSP getLocalPlayer() {
-        return this.localPlayer;
+    public void onWorldEnd() {
+        Game.getGame().getProfiler().endSection(SectionManager.physWorld);
+        this.clearAllItems();
     }
 
-    public List<PhysEntity> getEntityList() {
-        return this.entityList;
-    }
-
-    public Terrain getTerrain() {
-        return this.terrain;
-    }
-
-    public void addEntity(PhysEntity physEntity) {
-        this.entityDeque.add(physEntity);
-        physEntity.onSpawn();
+    public void addItem(WorldItem worldItem) {
+        this.addItemInWorld(worldItem);
     }
 
     public void removeEntity(PhysEntity physEntity) {
         physEntity.setDead();
+    }
+
+    public void clearAllItems() {
+        this.getAllWorldItems().forEach(WorldItem::setDead);
+    }
+
+    public void onWorldUpdate() {
+        List<WorldItem> copy = new ArrayList<>(this.getAllWorldItems());
+        for (WorldItem worldItem : copy) {
+            if (worldItem instanceof IDynamic) {
+                ((IDynamic) worldItem).onUpdate(this);
+            }
+            if (worldItem.isDead()) {
+                if (worldItem instanceof JBulletPhysics) {
+                    JBulletPhysics JBulletPhysics = (JBulletPhysics) worldItem;
+                    RigidBody rigidBody = JBulletPhysics.getRigidBody();
+                    if (rigidBody != null) {
+                        this.getPhysXBulletManager().removeRigidBodyFromWorld(rigidBody);
+                    }
+                }
+                worldItem.onDestroy(this);
+                this.getAllWorldItems().remove(worldItem);
+            }
+            worldItem.ticksExisted += 1;
+        }
+    }
+
+    private void addItemInWorld(WorldItem worldItem) throws GameException {
+        if (worldItem == null) {
+            throw new GameException("Tried to pass NULL item in world");
+        }
+        worldItem.onSpawn(this);
+        this.getAllWorldItems().add(worldItem);
+    }
+
+    public int countItems() {
+        return this.getAllWorldItems().size();
+    }
+
+    public List<JBulletPhysics> getAllWorldСollidableItems() {
+        return this.getAllWorldItems().stream().filter(e -> e instanceof JBulletPhysics).map(e -> (JBulletPhysics) e).collect(Collectors.toList());
+    }
+
+    public List<WorldItem> getAllWorldItems() {
+        return this.allWorldItems;
     }
 }

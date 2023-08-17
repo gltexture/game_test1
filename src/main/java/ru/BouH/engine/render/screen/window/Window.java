@@ -1,6 +1,7 @@
 package ru.BouH.engine.render.screen.window;
 
 import org.joml.Vector2d;
+import org.joml.Vector4d;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -14,6 +15,42 @@ public class Window {
     public Window(WindowProperties windowProperties) {
         this.window = GLFW.glfwCreateWindow(windowProperties.getWidth(), windowProperties.getHeight(), windowProperties.getTitle(), MemoryUtil.NULL, MemoryUtil.NULL);
         this.windowProperties = windowProperties;
+    }
+
+    public int getPosX() {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer x = stack.mallocInt(1);
+            GLFW.glfwGetWindowPos(this.window, x, null);
+            return x.get(0);
+        }
+    }
+
+    public int getPosY() {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer y = stack.mallocInt(1);
+            GLFW.glfwGetWindowPos(this.window, null, y);
+            return y.get(0);
+        }
+    }
+
+    public Vector4d getWindowFrameSize() {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer l = stack.mallocInt(1);
+            IntBuffer t = stack.mallocInt(1);
+            IntBuffer r = stack.mallocInt(1);
+            IntBuffer b = stack.mallocInt(1);
+            GLFW.glfwGetWindowFrameSize(this.window, l, t, r, b);
+            return new Vector4d(l.get(0), t.get(0), r.get(0), b.get(0));
+        }
+    }
+
+    public Vector2d getWindowPos() {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer x = stack.mallocInt(1);
+            IntBuffer y = stack.mallocInt(1);
+            GLFW.glfwGetWindowSize(this.window, x, y);
+            return new Vector2d(x.get(0), y.get(0));
+        }
     }
 
     public int getWidth() {

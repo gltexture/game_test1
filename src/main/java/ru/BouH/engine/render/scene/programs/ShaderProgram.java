@@ -1,7 +1,7 @@
 package ru.BouH.engine.render.scene.programs;
 
 import org.lwjgl.opengl.GL20;
-import ru.BouH.engine.game.init.Game;
+import ru.BouH.engine.game.Game;
 
 public class ShaderProgram {
     private final int programId;

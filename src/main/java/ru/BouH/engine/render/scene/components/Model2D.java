@@ -1,80 +1,42 @@
 package ru.BouH.engine.render.scene.components;
 
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.system.MemoryUtil;
+import org.joml.Vector2d;
 
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
+public class Model2D extends ObjectModel {
+    private final Vector2d position;
+    private final Vector2d rotation;
+    private double scale;
 
-public class Model2D {
-    private final int vao;
-    private final int idxVbo;
-    private final int posVbo;
-    private final int textureVbo;
-    private final int vertexCount;
-
-    public Model2D(float[] pos, int[] inc, float[] textPos) {
-        IntBuffer incBuffer = MemoryUtil.memAllocInt(inc.length);
-        FloatBuffer vrtBuffer = MemoryUtil.memAllocFloat(pos.length);
-        FloatBuffer txtPosBuffer = MemoryUtil.memAllocFloat(textPos.length);
-        this.vertexCount = inc.length;
-        this.vao = GL30.glGenVertexArrays();
-
-        vrtBuffer.put(pos).flip();
-        incBuffer.put(inc).flip();
-        txtPosBuffer.put(textPos).flip();
-
-        this.idxVbo = GL30.glGenBuffers();
-        this.posVbo = GL30.glGenBuffers();
-        this.textureVbo = GL30.glGenBuffers();
-
-        GL30.glBindVertexArray(this.vao);
-
-        GL30.glBindBuffer(GL30.GL_ELEMENT_ARRAY_BUFFER, this.idxVbo);
-        GL30.glBufferData(GL30.GL_ELEMENT_ARRAY_BUFFER, incBuffer, GL30.GL_STATIC_DRAW);
-        MemoryUtil.memFree(incBuffer);
-
-        GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, this.posVbo);
-        GL30.glBufferData(GL30.GL_ARRAY_BUFFER, vrtBuffer, GL30.GL_STATIC_DRAW);
-        GL30.glVertexAttribPointer(0, 3, GL30.GL_FLOAT, false, 0, 0);
-        MemoryUtil.memFree(vrtBuffer);
-
-        GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, this.textureVbo);
-        GL30.glBufferData(GL30.GL_ARRAY_BUFFER, txtPosBuffer, GL30.GL_STATIC_DRAW);
-        GL30.glVertexAttribPointer(1, 2, GL30.GL_FLOAT, false, 0, 0);
-        MemoryUtil.memFree(txtPosBuffer);
-
-        GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, 0);
-        GL30.glBindVertexArray(0);
+    public Model2D(MeshModel meshModel) {
+        super(meshModel);
+        this.position = new Vector2d(0.0d);
+        this.rotation = new Vector2d(0.0d);
+        this.scale = 1.0f;
     }
 
-    public int getVao() {
-        return this.vao;
+    public void setPosition(double x, double y) {
+        this.getPosition().x = x;
+        this.getPosition().y = y;
     }
 
-    public int getIdxVbo() {
-        return this.idxVbo;
+    public void setRotation(double x, double y) {
+        this.getRotation().x = x;
+        this.getRotation().y = y;
     }
 
-    public int getPosVbo() {
-        return this.posVbo;
+    public Vector2d getRotation() {
+        return this.rotation;
     }
 
-    public int getTextureVbo() {
-        return this.textureVbo;
+    public Vector2d getPosition() {
+        return this.position;
     }
 
-    public int getVertexCount() {
-        return this.vertexCount;
+    public double getScale() {
+        return this.scale;
     }
 
-    public void cleanMesh() {
-        GL30.glDisableVertexAttribArray(0);
-        GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, 0);
-        GL30.glDeleteBuffers(this.getIdxVbo());
-        GL30.glDeleteBuffers(this.getPosVbo());
-        GL30.glDeleteBuffers(this.getTextureVbo());
-        GL30.glBindVertexArray(0);
-        GL30.glDeleteVertexArrays(this.getVao());
+    public void setScale(double scale) {
+        this.scale = scale;
     }
 }

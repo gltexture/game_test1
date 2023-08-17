@@ -1,12 +1,9 @@
 package ru.BouH.engine.render.scene.programs;
 
-import org.joml.Matrix4d;
-import org.joml.Vector2d;
-import org.joml.Vector3d;
-import org.joml.Vector4d;
+import org.joml.*;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryStack;
-import ru.BouH.engine.game.init.Game;
+import ru.BouH.engine.game.Game;
 
 import java.nio.FloatBuffer;
 import java.util.HashMap;
@@ -48,6 +45,12 @@ public class UniformProgram {
         } else if (value instanceof Float) {
             this.setUniform(uniformName, (float) value);
             return true;
+        } else if (value instanceof Vector4f) {
+            this.setUniform(uniformName, (Vector4f) value);
+            return true;
+        } else if (value instanceof Vector3f) {
+            this.setUniform(uniformName, (Vector3f) value);
+            return true;
         }
         return false;
     }
@@ -70,6 +73,14 @@ public class UniformProgram {
 
     public void setUniform(String uniformName, Vector3d value) {
         GL20.glUniform3f(this.uniforms.get(uniformName), (float) value.x, (float) value.y, (float) value.z);
+    }
+
+    public void setUniform(String uniformName, Vector4f value) {
+        GL20.glUniform4f(this.uniforms.get(uniformName), value.x, value.y, value.z, value.w);
+    }
+
+    public void setUniform(String uniformName, Vector3f value) {
+        GL20.glUniform3f(this.uniforms.get(uniformName), value.x, value.y, value.z);
     }
 
     public void setUniform(String uniformName, int value) {
