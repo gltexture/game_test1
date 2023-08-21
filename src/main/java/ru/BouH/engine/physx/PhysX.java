@@ -9,6 +9,7 @@ public class PhysX {
     public static final int TICKS_PER_SECOND = 50;
     private final World world;
     public Thread worldThread;
+    public static int TPS;
 
     public PhysX() {
         this.world = new World();
@@ -45,6 +46,7 @@ public class PhysX {
                     while (l > PhysX.getTicksForUpdate()) {
                         l -= PhysX.getTicksForUpdate();
                         Game.getGame().getProxy().tickWorlds();
+                        PhysX.TPS += 1;
                     }
                     Thread.sleep(Math.max(1L, PhysX.getTicksForUpdate() - l));
                 }

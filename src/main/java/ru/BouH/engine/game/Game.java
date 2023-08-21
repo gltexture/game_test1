@@ -47,21 +47,20 @@ public class Game {
             Game.getGame().getPhysX().init();
             Game.getGame().getScreen().startScreen();
         } finally {
-            Game.getGame().destroyGame();
+            Game.getGame().getProfiler().endSection(SectionManager.game);
+            Game.getGame().getProfiler().stopAllSections();
+            Game.getGame().displayProfilerResult(Game.getGame().getProfiler());
         }
     }
 
     public void destroyGame() {
         Game.getGame().shouldBeClosed = true;
-        Game.getGame().getProfiler().endSection(SectionManager.game);
-        Game.getGame().getProfiler().stopAllSections();
-        Game.getGame().displayProfilerResult(Game.getGame().getProfiler());
     }
 
     public void displayProfilerResult(Profiler profiler) {
-        Game.getGame().getLogManager().debug("");
-        Game.getGame().getLogManager().debug("=====================================");
-        Game.getGame().getLogManager().debug("");
+        Game.getGame().getLogManager().debug("=======================================");
+        Game.getGame().getLogManager().debug("[ PROFILER OUTPUT ]");
+        Game.getGame().getLogManager().debug("======================================");
         for (Section section : profiler.allSections()) {
             Game.getGame().getLogManager().debug(section.toString());
         }

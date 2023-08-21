@@ -1,11 +1,9 @@
 package ru.BouH.engine.render.scene.world.camera;
 
-import com.bulletphysics.collision.dispatch.CollisionDispatcher;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
-import ru.BouH.engine.game.controller.ControllerDispatcher;
-import ru.BouH.engine.physx.entities.IRemoteController;
+import ru.BouH.engine.physx.entities.player.EntityPlayerSP;
 import ru.BouH.engine.physx.world.object.WorldItem;
 
 public class AttachedCamera extends Camera {
@@ -15,7 +13,8 @@ public class AttachedCamera extends Camera {
 
     public AttachedCamera(@NotNull WorldItem worldItem, boolean interpolatePos, boolean interpolateRot) {
         super(worldItem.getPosition(), worldItem.getRotation());
-        this.attachCameraToItem(worldItem);
+        Game.getGame().getLogManager().log("Created attached camera to: " + worldItem.getItemName());
+        this.worldItem = worldItem;
         this.setInterpolationParams(interpolatePos, interpolateRot);
     }
 
@@ -38,6 +37,19 @@ public class AttachedCamera extends Camera {
             this.setCameraPos(flag1 ? this.getCamPosition().lerp(pos, partialTicks) : pos);
             this.setCameraRot(flag2 ? this.getCamRotation().lerp(rot, partialTicks) : rot);
         }
+    }
+
+    public Vector3d getCamPosition() {
+        return super.getCamPosition().add(this.cameraOffset());
+    }
+
+    private Vector3d cameraOffset() {
+        Vector3d vector3d = new Vector3d(0.0d);
+        if (this.getWorldItem() != null && this.getWorldItem() instanceof EntityPlayerSP) {
+            EntityPlayerSP entityPlayerSP = (EntityPlayerSP) this.getWorldItem();
+            //vector3d.add(0, entityPlayerSP.getEyeHeight(), 0);
+        }
+        return vector3d;
     }
 
     public void setInterpolationParams(boolean interpolatePos, boolean interpolateRot) {

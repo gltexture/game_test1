@@ -21,7 +21,7 @@ import ru.BouH.engine.render.screen.Screen;
 import java.awt.*;
 
 public class GUI {
-    public static final FontTexture standardFont = new FontTexture(new Font("Arial", Font.PLAIN, 24), FontCode.Window);
+    public static final FontTexture standardFont = new FontTexture(new Font("Cambria", Font.PLAIN, 18), FontCode.Window);
     private static final SceneRenderBase sceneRenderBase = Game.getGame().getScreen().getScene().getGuiRender();
     private static final PNGTexture pic1 = PNGTexture.createTexture("gui/pictures/meme2.png");
 
@@ -29,7 +29,7 @@ public class GUI {
         double width = Game.getGame().getScreen().getWidth();
         double height = Game.getGame().getScreen().getHeight();
         EntityPlayerSP entityPlayerSP = Game.getGame().getPlayerSP();
-        GUI.renderText(partialTicks, 0, 0, "FPS: " + Screen.FPS, 0x00ff00);
+        GUI.renderText(partialTicks, 0, 0, "FPS: " + Screen.FPS + " | TPS1: " + Screen.PHYS1_TPS + " | TPS2: " + Screen.PHYS2_TPS, 0xffffff);
         GUI.renderText(partialTicks, 0, 20, "entities: " + Game.getGame().getPhysX().getWorld().countItems(), 0xffffff);
         GUI.renderText(partialTicks, 0, 40, String.format("%s %s %s", (int) entityPlayerSP.getPosition().x, (int) entityPlayerSP.getPosition().y, (int) entityPlayerSP.getPosition().z), 0xffffff);
         int i1 = 60;
@@ -37,7 +37,7 @@ public class GUI {
             GUI.renderText(partialTicks, 0, i1, "Управление LCTRL", 0xffffff);
         } else {
             for (Binding keyBinding : Binding.getBindingList()) {
-                GUI.renderText(partialTicks, 0, i1, keyBinding.toString(), 0x00ffff);
+                GUI.renderText(partialTicks, 0, i1, keyBinding.toString(), 0xffffff);
                 i1 += 20;
             }
         }

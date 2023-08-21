@@ -3,6 +3,8 @@ package ru.BouH.engine.render.scene.objects.items;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
+import ru.BouH.engine.math.BPVector3f;
+import ru.BouH.engine.physx.brush.WorldBrush;
 import ru.BouH.engine.physx.collision.JBulletPhysics;
 import ru.BouH.engine.physx.collision.objects.AbstractCollision;
 import ru.BouH.engine.physx.collision.objects.ConvexShape;
@@ -11,6 +13,7 @@ import ru.BouH.engine.physx.world.object.IDynamic;
 import ru.BouH.engine.physx.world.object.IWorldObject;
 import ru.BouH.engine.physx.world.object.WorldItem;
 import ru.BouH.engine.proxy.IWorld;
+import ru.BouH.engine.render.frustum.RenderABB;
 import ru.BouH.engine.render.scene.components.Model3D;
 import ru.BouH.engine.render.scene.fabric.RenderFabric;
 import ru.BouH.engine.render.scene.objects.IRenderObject;
@@ -21,6 +24,7 @@ import ru.BouH.engine.render.scene.primitive_forms.IForm;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 
 public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynamic {
+    private final RenderABB renderABB;
     private final SceneWorld sceneWorld;
     private final WorldItem worldItem;
     private final RenderData renderData;
@@ -29,6 +33,7 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
     private boolean isDead;
 
     public PhysXObject(@NotNull SceneWorld sceneWorld, @NotNull WorldItem worldItem, @NotNull RenderData renderData) {
+        this.renderABB = new RenderABB();
         this.worldItem = worldItem;
         this.sceneWorld = sceneWorld;
         this.renderData = renderData;
@@ -79,6 +84,24 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
         }
     }
 
+    protected Vector3d calcABBSize(WorldItem worldItem) {
+        if (worldItem == null) {
+            return null;
+        }
+        if (this.getWorldItem() instanceof JBulletPhysics && ((JBulletPhysics) this.getWorldItem()).getRigidBody() != null) {
+            JBulletPhysics jBulletPhysics = (JBulletPhysics) this.getWorldItem();
+            BPVector3f v1 = new BPVector3f();
+            BPVector3f v2 = new BPVector3f();
+            jBulletPhysics.getRigidBody().getAabb(v1, v2);
+            return new Vector3d(1);
+        }
+        return new Vector3d(worldItem.getScale() + 1.0d);
+    }
+
+    public RenderABB getRenderABB() {
+        return this.getWorldItem() instanceof WorldBrush ? null : this.renderABB;
+    }
+
     public IForm getCollisionForm() {
         return this.collisionForm;
     }
@@ -89,6 +112,12 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
 
     @Override
     public void onUpdate(IWorld iWorld) {
+        if (this.getRenderABB() != null) {
+            Vector3d size = this.calcABBSize(this.getWorldItem());
+            if (size != null) {
+                this.getRenderABB().setAbbForm(this.getRenderPosition(), this.calcABBSize(this.getWorldItem()));
+            }
+        }
         if (this.getWorldItem() instanceof JBulletPhysics && !this.hasCollisionForm()) {
             this.genCollisionBox((JBulletPhysics) this.getWorldItem());
         }

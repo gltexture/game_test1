@@ -14,10 +14,11 @@ import org.lwjgl.system.MemoryUtil;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.controller.ControllerDispatcher;
 import ru.BouH.engine.game.g_static.profiler.SectionManager;
+import ru.BouH.engine.physx.world.BulletManager;
+import ru.BouH.engine.render.imGui.IGWindow;
 import ru.BouH.engine.math.MathHelper;
 import ru.BouH.engine.physx.PhysX;
 import ru.BouH.engine.game.g_static.render.ItemRenderList;
-import ru.BouH.engine.physx.entities.player.EntityPlayerSP;
 import ru.BouH.engine.render.scene.Scene;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 import ru.BouH.engine.render.scene.world.camera.ICamera;
@@ -27,12 +28,15 @@ import java.nio.IntBuffer;
 
 public class Screen {
     public static int FPS;
+    public static int PHYS1_TPS;
+    public static int PHYS2_TPS;
     private ControllerDispatcher controllerDispatcher;
     private Scene scene;
     private Window window;
     public boolean isInFocus;
-    public static final int defaultW = 1200;
+    public static final int defaultW = 1280;
     public static final int defaultH = 720;
+    private IGWindow igWindow;
 
     public void init() {
         Game game = Game.getGame();
@@ -45,6 +49,7 @@ public class Screen {
             this.scene.init();
             this.setWindowCallbacks();
             this.createControllerDispatcher(this.getWindow());
+            this.igWindow = new IGWindow(this.getWindow());
             game.getLogManager().log("Screen built successful");
         } else {
             game.getLogManager().error("Screen build error!");
@@ -134,12 +139,17 @@ public class Screen {
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
             GL30.glEnable(GL30.GL_CULL_FACE);
             GL30.glCullFace(GL30.GL_BACK);
+            this.igWindow.renderIMG();
             double currentTime = GLFW.glfwGetTime();
             double deltaTime = currentTime - lastTime;
             lastTime = currentTime;
             double progress = deltaTime / tps;
             fps += 1;
             if (currentTime - lastFPS >= 1.0f) {
+                Screen.PHYS1_TPS = PhysX.TPS;
+                Screen.PHYS2_TPS = BulletManager.TPS;
+                PhysX.TPS = 0;
+                BulletManager.TPS = 0;
                 Screen.FPS = fps;
                 fps = 0;
                 lastFPS = currentTime;

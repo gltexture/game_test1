@@ -14,7 +14,7 @@ public abstract class WorldItem implements IWorldObject {
     private final Vector3d prevPosition;
     private final String itemName;
     private final int itemId;
-    public long ticksExisted;
+    private int spawnTick;
     private boolean isDead;
     private double scale;
 
@@ -38,6 +38,7 @@ public abstract class WorldItem implements IWorldObject {
     }
 
     public void onSpawn(IWorld iWorld) {
+        this.spawnTick = ((World) iWorld).getTicks();
         Game.getGame().getLogManager().log("Add entity in world - [ " + this + " ]");
     }
 
@@ -59,6 +60,10 @@ public abstract class WorldItem implements IWorldObject {
 
     public Vector3d getPrevPosition() {
         return new Vector3d(this.prevPosition);
+    }
+
+    public int getTicksExisted() {
+        return this.getWorld().getTicks() - this.spawnTick;
     }
 
     public Vector3d getPosition() {
@@ -85,6 +90,7 @@ public abstract class WorldItem implements IWorldObject {
     public void setDead() {
         if (this.canBeDestroyed()) {
             this.isDead = true;
+            this.getWorld().removeItem(this);
         }
     }
 

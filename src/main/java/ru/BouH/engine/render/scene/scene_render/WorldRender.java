@@ -3,7 +3,9 @@ package ru.BouH.engine.render.scene.scene_render;
 import org.joml.Vector3d;
 import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.game.Game;
+import ru.BouH.engine.physx.collision.JBulletPhysics;
 import ru.BouH.engine.physx.entities.player.EntityPlayerSP;
+import ru.BouH.engine.physx.world.object.WorldItem;
 import ru.BouH.engine.render.scene.RenderGroup;
 import ru.BouH.engine.render.scene.SceneRenderBase;
 import ru.BouH.engine.render.scene.objects.items.PhysXObject;
@@ -37,7 +39,7 @@ public class WorldRender extends SceneRenderBase {
         this.performUniform("dimensions", Game.getGame().getScreen().getWindow().getWindowDimensions());
         this.getUtils().performProjectionMatrix();
         this.renderDebugSunDirection(this);
-        for (PhysXObject entityItem : this.sceneWorld.getEntityList()) {
+        for (PhysXObject entityItem : this.sceneWorld.getFilteredEntityList()) {
             this.renderHitBox(partialTicks, this, entityItem);
             if (entityItem.isHasRender()) {
                 entityItem.renderFabric().onRender(partialTicks, this, entityItem);
@@ -62,17 +64,24 @@ public class WorldRender extends SceneRenderBase {
     private void renderHitBox(double partialTicks, SceneRenderBase sceneRenderBase, PhysXObject physXObject) {
         this.getUtils().disableLight();
         IForm form = physXObject.getCollisionForm();
+        WorldItem worldItem = physXObject.getWorldItem();
+        if (worldItem instanceof JBulletPhysics) {
+            JBulletPhysics bulletPhysics = (JBulletPhysics) worldItem;
+            if (bulletPhysics.hasCollision()) {
+
+            }
+        }
         if (form != null && form.hasMesh()) {
-            if (physXObject.getWorldItem() instanceof EntityPlayerSP) {
-                Vector3d vector3d = new Vector3d(this.getCamera().getCamPosition().x, this.getCamera().getCamPosition().y, this.getCamera().getCamPosition().z);
+            if (Game.getGame().getScreen().getScene().isCameraAttachedToItem(physXObject.getWorldItem()) && physXObject.getWorldItem() instanceof EntityPlayerSP) {
                 EntityPlayerSP entityPlayerSP = (EntityPlayerSP) physXObject.getWorldItem();
+                Vector3d vector3d = new Vector3d(this.getCamera().getCamPosition().x, this.getCamera().getCamPosition().y, this.getCamera().getCamPosition().z);
                 Vector3d v = entityPlayerSP.getRigidBodyRot(entityPlayerSP.getRigidBody());
                 Vector3d vector3d2 = new Vector3d(v.x, v.y, v.z);
                 form.getMeshInfo().getPosition().set(vector3d);
                 form.getMeshInfo().getRotation().set(vector3d2);
             } else {
-                form.getMeshInfo().getPosition().lerp(physXObject.getRenderPosition(), partialTicks);
-                form.getMeshInfo().getRotation().lerp(physXObject.getRenderRotation(), partialTicks);
+                form.getMeshInfo().getPosition().set(physXObject.getRenderPosition());
+                form.getMeshInfo().getRotation().set(physXObject.getRenderRotation());
             }
             sceneRenderBase.getUtils().performModelViewMatrix3d(this.getSceneWorld(), form.getMeshInfo());
             GL30.glBindVertexArray(form.getMeshInfo().getVao());

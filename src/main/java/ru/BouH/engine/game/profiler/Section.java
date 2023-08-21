@@ -65,7 +65,7 @@ public class Section {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(this.getName()).append("=[").append(this.getStatus().toString()).append("]");
         if (this.getParent() != null) {
-            stringBuilder.append(" => ").append(this.getParent());
+            stringBuilder.append(" <== ").append(this.getParent());
         }
         return stringBuilder.toString();
     }

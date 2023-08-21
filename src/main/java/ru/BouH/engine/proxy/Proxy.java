@@ -53,7 +53,7 @@ public class Proxy {
     }
 
     public void removeEntityFromWorlds(PhysEntity physEntity) {
-        this.physX.getWorld().removeEntity(physEntity);
+        this.physX.getWorld().removeItem(physEntity);
     }
 
     public void clearEntities() {

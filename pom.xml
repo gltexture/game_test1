@@ -45,6 +45,21 @@
 
     <dependencies>
         <dependency>
+            <groupId>io.imgui.java</groupId>
+            <artifactId>binding</artifactId>
+            <version>1.76-0.9</version>
+        </dependency>
+        <dependency>
+            <groupId>io.imgui.java</groupId>
+            <artifactId>lwjgl3</artifactId>
+            <version>1.76-0.9</version>
+        </dependency>
+        <dependency>
+            <groupId>io.imgui.java</groupId>
+            <artifactId>natives-windows</artifactId>
+            <version>1.76-0.9</version>
+        </dependency>
+        <dependency>
             <groupId>javax.vecmath</groupId>
             <artifactId>vecmath</artifactId>
             <version>1.5.2</version>
@@ -188,4 +203,11 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lwjgl.natives>natives-windows</lwjgl.natives>
     </properties>
+    <repositories>
+        <repository>
+            <id>central</id>
+            <name>bintray-plugins</name>
+            <url>https://jcenter.bintray.com</url>
+        </repository>
+    </repositories>
 </project>

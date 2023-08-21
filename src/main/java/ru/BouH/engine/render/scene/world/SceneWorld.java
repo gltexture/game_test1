@@ -7,11 +7,13 @@ import ru.BouH.engine.physx.world.World;
 import ru.BouH.engine.physx.world.object.WorldItem;
 import ru.BouH.engine.proxy.IWorld;
 import ru.BouH.engine.render.environment.Environment;
+import ru.BouH.engine.render.frustum.FrustumCulling;
 import ru.BouH.engine.render.scene.components.IMesh;
 import ru.BouH.engine.render.scene.objects.data.RenderData;
 import ru.BouH.engine.render.scene.objects.items.PhysXObject;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public final class SceneWorld implements IWorld {
     public static Set<IMesh> toCleanSet = new HashSet<>();
@@ -23,6 +25,12 @@ public final class SceneWorld implements IWorld {
     public SceneWorld(World world) {
         this.world = world;
         this.environment = new Environment(this);
+    }
+
+    public List<PhysXObject> getFilteredEntityList() {
+        FrustumCulling frustumCulling = Game.getGame().getScreen().getScene().getFrustumCulling();
+        List<PhysXObject> physXObjects = new ArrayList<>(this.getEntityList());
+        return physXObjects.stream().filter(e -> frustumCulling.isInFrustum(e.getRenderABB())).collect(Collectors.toList());
     }
 
     public List<PhysXObject> getEntityList() {

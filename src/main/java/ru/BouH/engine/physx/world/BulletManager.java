@@ -1,28 +1,38 @@
 package ru.BouH.engine.physx.world;
 
+import com.bulletphysics.ContactProcessedCallback;
 import com.bulletphysics.collision.broadphase.DbvtBroadphase;
+import com.bulletphysics.collision.broadphase.Dispatcher;
 import com.bulletphysics.collision.dispatch.*;
+import com.bulletphysics.collision.narrowphase.PersistentManifold;
 import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
 import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.dynamics.constraintsolver.ConstraintSolver;
 import com.bulletphysics.dynamics.constraintsolver.SequentialImpulseConstraintSolver;
+import org.jetbrains.annotations.NotNull;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.exception.GameException;
 import ru.BouH.engine.game.g_static.profiler.SectionManager;
 import ru.BouH.engine.physx.PhysX;
+import ru.BouH.engine.physx.collision.JBulletPhysics;
+import ru.BouH.engine.physx.world.object.WorldItem;
 
 import javax.vecmath.Vector3f;
 
 public class BulletManager {
+    private boolean shouldBeDestroyed;
     public static final Object lock = new Object();
+    private final World world;
     private final DbvtBroadphase broadcaster;
     private final CollisionConfiguration collisionConfiguration;
     private final CollisionDispatcher collisionDispatcher;
     private final DiscreteDynamicsWorld discreteDynamicsWorld;
     private final ConstraintSolver constraintSolve;
+    public static int TPS;
     private Thread bulletThread;
 
-    public BulletManager() {
+    public BulletManager(World world) {
+        this.world = world;
         this.broadcaster = new DbvtBroadphase();
         this.collisionConfiguration = new DefaultCollisionConfiguration();
         this.collisionDispatcher = new CollisionDispatcher(collisionConfiguration);
@@ -41,7 +51,7 @@ public class BulletManager {
                 long i = System.currentTimeMillis();
                 long l = 0L;
                 Game.getGame().getProfiler().startSection(SectionManager.bulletPhysWorld);
-                while (!Game.getGame().shouldBeClosed) {
+                while (!Game.getGame().shouldBeClosed && !this.shouldBeDestroyed) {
                     long j = System.currentTimeMillis();
                     long k = j - i;
                     l += k;
@@ -49,8 +59,12 @@ public class BulletManager {
                     while (l > PhysX.getTicksForUpdate()) {
                         l -= PhysX.getTicksForUpdate();
                         synchronized (BulletManager.lock) {
-                            discreteDynamicsWorld1.stepSimulation(1f / PhysX.TICKS_PER_SECOND, 10);
+                            discreteDynamicsWorld1.stepSimulation(1f / PhysX.TICKS_PER_SECOND, 12);
+                            for (JBulletPhysics worldItem : this.world.getAllJBItems()) {
+                                worldItem.onJBUpdate();
+                            }
                         }
+                        BulletManager.TPS += 1;
                     }
                     Thread.sleep(Math.max(1L, PhysX.getTicksForUpdate() - l));
                 }
@@ -62,6 +76,12 @@ public class BulletManager {
         this.startThread();
     }
 
+    public void cleanResources() {
+        Game.getGame().getLogManager().log("Cleaning physics world resources...");
+        this.shouldBeDestroyed = true;
+        this.getDiscreteDynamicsWorld().destroy();
+    }
+
     public synchronized final CollisionWorld collisionWorld() {
         return this.getDiscreteDynamicsWorld().getCollisionWorld();
     }
@@ -71,31 +91,31 @@ public class BulletManager {
         this.bulletThread.start();
     }
 
-    public void addRigidBodyInWorld(RigidBody rigidBody) {
+    public void addRigidBodyInWorld(@NotNull RigidBody rigidBody) {
         synchronized (BulletManager.lock) {
             this.getDiscreteDynamicsWorld().addRigidBody(rigidBody);
         }
     }
 
-    public void addCollisionObjectInWorld(CollisionObject collisionObject) {
+    public void addCollisionObjectInWorld(@NotNull CollisionObject collisionObject) {
         synchronized (BulletManager.lock) {
             this.getDiscreteDynamicsWorld().addCollisionObject(collisionObject);
         }
     }
 
-    public void removeRigidBodyFromWorld(RigidBody rigidBody) {
+    public void removeRigidBodyFromWorld(@NotNull RigidBody rigidBody) {
         synchronized (BulletManager.lock) {
             this.getDiscreteDynamicsWorld().removeRigidBody(rigidBody);
         }
     }
 
-    public void removeCollisionObjectFromWorld(CollisionObject collisionObject) {
+    public void removeCollisionObjectFromWorld(@NotNull CollisionObject collisionObject) {
         synchronized (BulletManager.lock) {
             this.getDiscreteDynamicsWorld().removeCollisionObject(collisionObject);
         }
     }
 
-    public void updateRigidBodyAabb(RigidBody rigidBody) {
+    public void updateRigidBodyAabb(@NotNull RigidBody rigidBody) {
         synchronized (BulletManager.lock) {
             this.getDiscreteDynamicsWorld().updateSingleAabb(rigidBody);
         }

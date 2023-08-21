@@ -4,12 +4,16 @@ import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
+import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.controller.IController;
+import ru.BouH.engine.game.g_static.binding.BindingList;
+import ru.BouH.engine.game.g_static.render.ItemRenderList;
 import ru.BouH.engine.math.BPVector3f;
 import ru.BouH.engine.physx.collision.objects.AbstractCollision;
 import ru.BouH.engine.physx.collision.objects.OBB;
 import ru.BouH.engine.physx.entities.IRemoteController;
 import ru.BouH.engine.physx.entities.PhysEntity;
+import ru.BouH.engine.physx.entities.prop.PhysEntityCube;
 import ru.BouH.engine.physx.world.World;
 import ru.BouH.engine.proxy.IWorld;
 
@@ -41,23 +45,33 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
 
     @Override
     protected AbstractCollision constructCollision(double scale) {
-        return new OBB(this.getScale(), new Vector3d(0.75d, 1.5d, 0.75d), 1.0f, this.defaultMotionState, new BPVector3f(0.0f, 0.0f, 0.0f));
+        return new OBB(this.getScale(), new Vector3d(0.75d, 1.5d, 0.75d), 5.0f, this.defaultMotionState, new BPVector3f(0.0f, 0.0f, 0.0f));
+    }
+
+    public void onJBUpdate() {
+        super.onJBUpdate();
+        if (this.isValidController()) {
+            Vector3d vector3d = this.calcControllerMotion();
+            if (vector3d.y > 0) {
+                this.jump();
+            }
+        }
     }
 
     public void onUpdate(IWorld iWorld) {
         super.onUpdate(iWorld);
         if (this.isValidController()) {
             Vector3d vector3d = this.calcControllerMotion();
-            if (vector3d.y > 0) {
-                this.jump();
-            }
-            this.setMotionVector(vector3d.mul(new Vector3d(1, 0, 1)));
+            this.setVelocityVector(this.getMotionVector(vector3d));
         }
     }
 
-    protected RigidBody createRigidBody(RigidBodyConstructionInfo rigidBodyConstructionInfo) {
-        RigidBody rigidBody = super.createRigidBody(rigidBodyConstructionInfo);
-        return rigidBody;
+    protected Vector3d getMotionVector(Vector3d vector3d) {
+        Vector3d vector3d1 = vector3d.mul(new Vector3d(1, 0, 1));
+        if (vector3d1.length() > 0) {
+            vector3d1.normalize();
+        }
+        return vector3d1;
     }
 
     private Vector3d calcControllerMotion() {
@@ -89,7 +103,7 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
     }
 
     public double getEyeHeight() {
-        return this.getPosition().y + this.eyeHeight;
+        return this.eyeHeight;
     }
 
     public void setController(IController iController) {
@@ -107,6 +121,12 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
 
     @Override
     public void performController(Vector2d rotationInput, Vector3d xyzInput) {
+        if (BindingList.instance.keyBlock1.isClicked()) {
+            PhysEntityCube entityPropInfo = new PhysEntityCube(this.getWorld(), new Vector3d(1.0d), this.getPosition().add(this.getLookVector().mul(3.0f)));
+            entityPropInfo.setScale(0.5d);
+            Game.getGame().getProxy().addItemInWorlds(entityPropInfo, ItemRenderList.entityCube);
+            entityPropInfo.setObjectVelocity(this.getLookVector().mul(20.0f));
+        }
         this.getCameraRotation().add(new Vector3d(rotationInput, 0.0d));
         this.inputMotion = new Vector3d(xyzInput);
         this.clampCameraRotation();

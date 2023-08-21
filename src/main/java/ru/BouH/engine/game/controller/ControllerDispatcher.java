@@ -43,6 +43,14 @@ public class ControllerDispatcher {
         this.currentControlledItem = remoteController;
     }
 
+    public void detachController(IController controller) {
+        if (this.getCurrentControlledItem() != null) {
+            Game.getGame().getLogManager().log("Detached Controller From: " + ((WorldItem) this.getCurrentControlledItem()).getItemName());
+            this.getCurrentControlledItem().setController(null);
+            this.currentControlledItem = null;
+        }
+    }
+
     public static Vector3d getOptionedXYZVec(IController iController) {
         Vector3d v = iController.getXYZInput();
         return new Vector3d(v.x == 0 ? 0 : v.x > 0 ? 1 : -1, v.y == 0 ? 0 : v.y > 0 ? 1 : -1, v.z == 0 ? 0 : v.z > 0 ? 1 : -1);

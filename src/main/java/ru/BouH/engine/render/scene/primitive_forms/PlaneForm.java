@@ -45,12 +45,43 @@ public class PlaneForm implements IForm {
         textureCoordinates.add(1.0f);
         textureCoordinates.add(1.0f);
 
+        positions.add((float) v4.x);
+        positions.add((float) v4.y);
+        positions.add((float) v4.z);
+        textureCoordinates.add(0.0f);
+        textureCoordinates.add(0.0f);
+
+        positions.add((float) v3.x);
+        positions.add((float) v3.y);
+        positions.add((float) v3.z);
+        textureCoordinates.add(1.0f);
+        textureCoordinates.add(0.0f);
+
+        positions.add((float) v2.x);
+        positions.add((float) v2.y);
+        positions.add((float) v2.z);
+        textureCoordinates.add(0.0f);
+        textureCoordinates.add(1.0f);
+
+        positions.add((float) v1.x);
+        positions.add((float) v1.y);
+        positions.add((float) v1.z);
+        textureCoordinates.add(1.0f);
+        textureCoordinates.add(1.0f);
+
         indices.add(1);
         indices.add(2);
         indices.add(3);
         indices.add(2);
         indices.add(1);
         indices.add(0);
+
+        indices.add(4);
+        indices.add(5);
+        indices.add(6);
+        indices.add(7);
+        indices.add(6);
+        indices.add(5);
 
         Vector3f vAB = this.getPosition(positions, 1).sub(this.getPosition(positions, 0));
         Vector3f vAD = this.getPosition(positions, 3).sub(this.getPosition(positions, 0));
@@ -59,6 +90,11 @@ public class PlaneForm implements IForm {
             normals.add(vN.x);
             normals.add(vN.y);
             normals.add(vN.z);
+        }
+        for (int i = 0; i < 4; i++) {
+            normals.add(-vN.x);
+            normals.add(-vN.y);
+            normals.add(-vN.z);
         }
 
         float[] f1 = new float[positions.size()];

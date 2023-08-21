@@ -57,6 +57,9 @@ public abstract class CollidableWorldItem extends WorldItem implements JBulletPh
         this.getRigidBody().updateInertiaTensor();
     }
 
+    public void onJBUpdate() {
+    }
+
     protected void rotateCollisionObject(CollisionObject collisionObject, Vector3d angles) {
         Transform transform = new Transform();
         Quat4f quat4f = new Quat4f();
@@ -81,9 +84,9 @@ public abstract class CollidableWorldItem extends WorldItem implements JBulletPh
 
     public Vector3d getRigidBodyRot(RigidBody rigidBody) {
         Transform transform = new Transform();
-        rigidBody.getMotionState().getWorldTransform(transform);
+        rigidBody.getWorldTransform(transform);
         Quat4f r = new Quat4f();
-        rigidBody.getOrientation(r);
+        MathHelper.getRotation(transform.basis, r);
         return MathHelper.toDegrees(r);
     }
 
@@ -100,6 +103,7 @@ public abstract class CollidableWorldItem extends WorldItem implements JBulletPh
                 Vector3d trans = this.getPosition();
                 Vector3d rotate = this.getRotation();
                 this.rigidBody = this.createRigidBody(constructionInfo);
+                this.onRigidBodyCreated(this.getRigidBody());
                 this.getWorld().getPhysXBulletManager().addRigidBodyInWorld(this.getRigidBody());
                 this.translateCollisionObject(this.rigidBody, trans);
                 this.rotateCollisionObject(this.rigidBody, rotate);
@@ -112,6 +116,9 @@ public abstract class CollidableWorldItem extends WorldItem implements JBulletPh
                this.getRigidBody().setCollisionShape(abstractCollision.getCollisionShape());
             }
         }
+    }
+
+    protected void onRigidBodyCreated(RigidBody rigidBody) {
     }
 
     public void setScale(double scale) {

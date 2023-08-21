@@ -1,13 +1,18 @@
 package ru.BouH.engine.render.scene;
 
+import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
+import ru.BouH.engine.game.controller.IController;
 import ru.BouH.engine.physx.world.object.WorldItem;
 import ru.BouH.engine.proxy.LocalPlayer;
+import ru.BouH.engine.render.RenderManager;
+import ru.BouH.engine.render.frustum.FrustumCulling;
 import ru.BouH.engine.render.scene.scene_render.GuiRender;
 import ru.BouH.engine.render.scene.scene_render.SkyRender;
 import ru.BouH.engine.render.scene.scene_render.WorldRender;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 import ru.BouH.engine.render.scene.world.camera.AttachedCamera;
+import ru.BouH.engine.render.scene.world.camera.FreeCamera;
 import ru.BouH.engine.render.scene.world.camera.ICamera;
 
 import java.util.ArrayList;
@@ -20,10 +25,12 @@ public class Scene {
     private final SkyRender skyRender;
     private final GuiRender guiRender;
     private final WorldRender worldRender;
+    private final FrustumCulling frustumCulling;
     private ICamera currentCamera;
 
     public Scene(SceneWorld sceneWorld) {
         this.sceneWorld = sceneWorld;
+        this.frustumCulling = new FrustumCulling();
         this.sceneRenderBases = new ArrayList<>();
         this.skyRender = new SkyRender(sceneWorld);
         this.worldRender = new WorldRender(sceneWorld);
@@ -77,7 +84,15 @@ public class Scene {
         Game.getGame().getLogManager().log("Scene rendering started");
     }
 
-    protected void attachCameraToLocalPlayer(LocalPlayer localPlayer) {
+    public void enableFreeCamera(IController controller, Vector3d pos, Vector3d rot) {
+        this.setRenderCamera(new FreeCamera(controller, pos, rot));
+    }
+
+    public void enableAttachedCamera(WorldItem worldItem) {
+        this.setRenderCamera(new AttachedCamera(worldItem));
+    }
+
+    public void attachCameraToLocalPlayer(LocalPlayer localPlayer) {
         if (localPlayer != null && localPlayer.getEntityPlayerSP() != null) {
             this.setRenderCamera(new AttachedCamera(localPlayer.getEntityPlayerSP()));
         }
@@ -88,6 +103,9 @@ public class Scene {
     }
 
     public void renderScene(double partialTicks) {
+        if (this.getCurrentCamera() != null) {
+            this.getFrustumCulling().refreshFrustumCullingState(RenderManager.instance.getProjectionMatrix(), RenderManager.instance.getViewMatrix(this.getCurrentCamera()));
+        }
         for (SceneRenderBase sceneRenderBase : this.sceneRenderBases) {
             sceneRenderBase.bindProgram();
             sceneRenderBase.onRender(partialTicks);
@@ -96,6 +114,10 @@ public class Scene {
         if (this.getCurrentCamera() != null) {
             this.getCurrentCamera().updateCamera(partialTicks);
         }
+    }
+
+    public FrustumCulling getFrustumCulling() {
+        return this.frustumCulling;
     }
 
     public void postRender() {
