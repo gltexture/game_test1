@@ -67,6 +67,10 @@ public class Screen {
         GLFW.glfwTerminate();
     }
 
+    public static void takeScreenshot() {
+        Game.getGame().getScreen().getScene().takeScreenshot();
+    }
+
     private void setWindowCallbacks() {
         Callbacks.glfwFreeCallbacks(this.getWindow().getDescriptor());
         GLFW.glfwSetWindowSizeCallback(this.getWindow().getDescriptor(), (a, b, c) -> GL30.glViewport(0, 0, b, c));
@@ -136,7 +140,7 @@ public class Screen {
         GLFW.glfwSetTime(0.0d);
         while (!Game.getGame().shouldBeClosed) {
             Game.getGame().shouldBeClosed = GLFW.glfwWindowShouldClose(this.getWindow().getDescriptor());
-            GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+            GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
             GL30.glEnable(GL30.GL_CULL_FACE);
             GL30.glCullFace(GL30.GL_BACK);
             this.igWindow.renderIMG();

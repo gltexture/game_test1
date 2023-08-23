@@ -5,7 +5,7 @@ import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.render.scene.RenderGroup;
 import ru.BouH.engine.render.scene.SceneRenderBase;
-import ru.BouH.engine.render.scene.objects.texture.ItemTexture;
+import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 import ru.BouH.engine.render.environment.sky.SkyBox;
 import ru.BouH.engine.render.RenderManager;
@@ -38,7 +38,7 @@ public class SkyRender extends SceneRenderBase {
             GL30.glEnableVertexAttribArray(1);
             GL30.glEnableVertexAttribArray(2);
             GL30.glDisable(GL30.GL_DEPTH_TEST);
-            this.getUtils().setTexture(ItemTexture.createItemTexture(skyBox.getTexture()));
+            this.getUtils().setTexture(WorldItemTexture.createItemTexture(skyBox.getTexture()));
             GL30.glDrawElements(GL30.GL_TRIANGLES, skyBox.getModel3DInfo().getVertexCount(), GL30.GL_UNSIGNED_INT, 0);
             GL30.glDisableVertexAttribArray(0);
             GL30.glDisableVertexAttribArray(1);

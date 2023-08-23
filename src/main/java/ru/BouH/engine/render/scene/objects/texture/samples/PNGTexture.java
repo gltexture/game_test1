@@ -5,7 +5,7 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.render.scene.objects.texture.PictureSample;
-import ru.BouH.engine.render.scene.objects.texture.ItemTexture;
+import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.utils.Utils;
 
 import java.io.IOException;
@@ -92,7 +92,7 @@ public class PNGTexture implements PictureSample {
     }
 
     @Override
-    public ItemTexture.PassUniValue[] toPassShaderValues() {
-        return new ItemTexture.PassUniValue[] {new ItemTexture.PassUniValue("texture_sampler", 0)};
+    public WorldItemTexture.PassUniValue[] toPassShaderValues() {
+        return new WorldItemTexture.PassUniValue[] {new WorldItemTexture.PassUniValue("texture_sampler", 0)};
     }
 }

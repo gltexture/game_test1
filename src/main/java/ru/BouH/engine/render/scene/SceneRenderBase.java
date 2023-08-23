@@ -6,7 +6,7 @@ import ru.BouH.engine.render.RenderManager;
 import ru.BouH.engine.render.scene.components.Model3D;
 import ru.BouH.engine.render.scene.programs.ShaderManager;
 import ru.BouH.engine.render.scene.programs.UniformBufferProgram;
-import ru.BouH.engine.render.scene.objects.texture.ItemTexture;
+import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.scene.objects.texture.PictureSample;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 import ru.BouH.engine.render.scene.world.camera.ICamera;
@@ -31,10 +31,6 @@ public abstract class SceneRenderBase {
         return Game.getGame().getScreen().getCamera();
     }
 
-    public void onStartRender() {
-        this.getShaderManager().startProgram();
-    }
-
     public void bindProgram() {
         this.getShaderManager().bind();
     }
@@ -44,6 +40,10 @@ public abstract class SceneRenderBase {
     }
 
     public abstract void onRender(double partialTicks);
+
+    public void onStartRender() {
+        this.getShaderManager().startProgram();
+    }
 
     public void onStopRender() {
         this.getShaderManager().destroyProgram();
@@ -121,25 +121,25 @@ public abstract class SceneRenderBase {
             SceneRenderBase.this.performUniform("model_view_matrix", matrix4d);
         }
 
-        public void setTexture(ItemTexture itemTexture) {
-            if (itemTexture.getSample() instanceof PictureSample) {
-                this.setPngTexture(itemTexture, (PictureSample) itemTexture.getSample());
+        public void setTexture(WorldItemTexture worldItemTexture) {
+            if (worldItemTexture.getSample() instanceof PictureSample) {
+                this.setPngTexture(worldItemTexture, (PictureSample) worldItemTexture.getSample());
                 return;
             }
-            SceneRenderBase.this.performUniform("use_texture", itemTexture.getRenderID());
-            if (itemTexture.hasValueToPass()) {
-                for (ItemTexture.PassUniValue passUniValue : itemTexture.getValues()) {
+            SceneRenderBase.this.performUniform("use_texture", worldItemTexture.getRenderID());
+            if (worldItemTexture.hasValueToPass()) {
+                for (WorldItemTexture.PassUniValue passUniValue : worldItemTexture.getValues()) {
                     SceneRenderBase.this.performUniform(passUniValue.getName(), passUniValue.getO());
                 }
             }
         }
 
-        public void setPngTexture(ItemTexture itemTexture, PictureSample sample) {
+        public void setPngTexture(WorldItemTexture worldItemTexture, PictureSample sample) {
             if (sample != null && sample.isValid()) {
-                SceneRenderBase.this.performUniform("use_texture", itemTexture.getRenderID());
+                SceneRenderBase.this.performUniform("use_texture", worldItemTexture.getRenderID());
                 sample.performTexture();
             } else {
-                this.setTexture(ItemTexture.standardError);
+                this.setTexture(WorldItemTexture.standardError);
             }
         }
     }

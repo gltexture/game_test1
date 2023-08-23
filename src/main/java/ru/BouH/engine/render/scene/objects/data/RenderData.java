@@ -4,19 +4,19 @@ import org.jetbrains.annotations.NotNull;
 import ru.BouH.engine.physx.world.object.WorldItem;
 import ru.BouH.engine.render.scene.fabric.RenderFabric;
 import ru.BouH.engine.render.scene.objects.items.PhysXObject;
-import ru.BouH.engine.render.scene.objects.texture.ItemTexture;
+import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.scene.objects.texture.Sample;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 import java.lang.reflect.InvocationTargetException;
 
 public class RenderData {
-    private final ItemTexture itemTexture;
+    private final WorldItemTexture worldItemTexture;
     private final RenderFabric renderFabric;
     private final Class<? extends PhysXObject> aClass;
 
-    public RenderData(RenderFabric renderFabric, @NotNull ItemTexture itemTexture, @NotNull Class<? extends PhysXObject> clazz) {
+    public RenderData(RenderFabric renderFabric, @NotNull WorldItemTexture worldItemTexture, @NotNull Class<? extends PhysXObject> clazz) {
         this.renderFabric = renderFabric;
-        this.itemTexture = itemTexture;
+        this.worldItemTexture = worldItemTexture;
         this.aClass = clazz;
     }
 
@@ -33,8 +33,8 @@ public class RenderData {
         return this;
     }
 
-    public ItemTexture getItemTexture() {
-        return this.itemTexture;
+    public WorldItemTexture getItemTexture() {
+        return this.worldItemTexture;
     }
 
     public RenderFabric getRenderFabric() {

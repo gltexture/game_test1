@@ -61,15 +61,16 @@ public final class World implements IWorld {
     }
 
     public void onWorldUpdate() {
+        List<WorldItem> copy1 = new ArrayList<>(this.getAllWorldItems());
         if (this.collectionsWaitingRefresh) {
             this.allDynamicItems.clear();
             this.allJBItems.clear();
-            this.allDynamicItems.addAll(this.getAllWorldItems().stream().filter(World::isItemDynamic).map(e -> (IDynamic) e).collect(Collectors.toList()));
-            this.allJBItems.addAll(this.getAllWorldItems().stream().filter(World::isItemJB).map(e -> (JBulletPhysics) e).collect(Collectors.toList()));
+            this.allDynamicItems.addAll(copy1.stream().filter(World::isItemDynamic).map(e -> (IDynamic) e).collect(Collectors.toList()));
+            this.allJBItems.addAll(copy1.stream().filter(World::isItemJB).map(e -> (JBulletPhysics) e).collect(Collectors.toList()));
             this.collectionsWaitingRefresh = false;
         }
-        List<IDynamic> copy = new ArrayList<>(this.getAllDynamicItems());
-        for (IDynamic iDynamic : copy) {
+        List<IDynamic> copy2 = new ArrayList<>(this.getAllDynamicItems());
+        for (IDynamic iDynamic : copy2) {
             iDynamic.onUpdate(this);
         }
         for (WorldItem worldItem : this.toCleanItems) {

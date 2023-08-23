@@ -12,15 +12,21 @@ import java.util.Set;
 public class ShaderManager {
     private final Set<String> uniformsSet;
     private final Map<String, Integer> uniformBuffersSet;
-    private final RenderGroup renderGroup;
     private ShaderProgram shaderProgram;
     private UniformProgram uniformProgram;
     private UniformBufferProgram uniformBufferProgram;
+    private final String path;
 
     public ShaderManager(RenderGroup renderGroup) {
         this.uniformsSet = new HashSet<>();
         this.uniformBuffersSet = new HashMap<>();
-        this.renderGroup = renderGroup;
+        this.path = renderGroup.getPath();
+    }
+
+    public ShaderManager(String path) {
+        this.uniformsSet = new HashSet<>();
+        this.uniformBuffersSet = new HashMap<>();
+        this.path = path;
     }
 
     public boolean checkUniform(String u) {
@@ -81,16 +87,20 @@ public class ShaderManager {
 
     private void initShaders(ShaderProgram shaderProgram) {
         this.shaderProgram = shaderProgram;
-        this.shaderProgram.createFragmentShader(Utils.loadShader(this.renderGroup.getPath() + "/fragment.frag"));
-        this.shaderProgram.createVertexShader(Utils.loadShader(this.renderGroup.getPath() + "/vertex.vert"));
+        this.shaderProgram.createVertexShader(Utils.loadShader(this.getPath() + "/vertex.vert"));
+        this.shaderProgram.createFragmentShader(Utils.loadShader(this.getPath() + "/fragment.frag"));
         this.shaderProgram.link();
         this.initUniforms(new UniformProgram(this.shaderProgram.getProgramId()));
+    }
+
+    private String getPath() {
+        return this.path;
     }
 
     private void initUniforms(UniformProgram uniformProgram) {
         this.uniformProgram = uniformProgram;
         if (this.uniformsSet.isEmpty()) {
-            Game.getGame().getLogManager().warn("Warning! No Uniforms found in: " + this.renderGroup.getPath() + " (Group)");
+            Game.getGame().getLogManager().warn("Warning! No Uniforms found in: " + this.getPath());
         }
         for (String s : this.uniformsSet) {
             this.getUniformProgram().createUniform(s);

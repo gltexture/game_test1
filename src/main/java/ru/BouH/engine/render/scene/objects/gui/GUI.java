@@ -23,7 +23,7 @@ import java.awt.*;
 public class GUI {
     public static final FontTexture standardFont = new FontTexture(new Font("Cambria", Font.PLAIN, 18), FontCode.Window);
     private static final SceneRenderBase sceneRenderBase = Game.getGame().getScreen().getScene().getGuiRender();
-    private static final PNGTexture pic1 = PNGTexture.createTexture("gui/pictures/meme2.png");
+    public static final PNGTexture pic1 = PNGTexture.createTexture("gui/pictures/meme2.png");
 
     public static void renderGUI(double partialTicks) {
         double width = Game.getGame().getScreen().getWidth();

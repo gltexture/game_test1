@@ -2,7 +2,7 @@ package ru.BouH.engine.render.scene.objects.texture.samples;
 
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-import ru.BouH.engine.render.scene.objects.texture.ItemTexture;
+import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.scene.objects.texture.Sample;
 
 public final class Color3FA implements Sample {
@@ -63,7 +63,7 @@ public final class Color3FA implements Sample {
     }
 
     @Override
-    public ItemTexture.PassUniValue[] toPassShaderValues() {
-        return new ItemTexture.PassUniValue[] {new ItemTexture.PassUniValue("colors", this.getVectorColors4f())};
+    public WorldItemTexture.PassUniValue[] toPassShaderValues() {
+        return new WorldItemTexture.PassUniValue[] {new WorldItemTexture.PassUniValue("colors", this.getVectorColors4f())};
     }
 }

@@ -10,6 +10,7 @@ import ru.BouH.engine.game.controller.components.Key;
 import ru.BouH.engine.render.scene.world.camera.AttachedCamera;
 import ru.BouH.engine.render.scene.world.camera.FreeCamera;
 import ru.BouH.engine.render.scene.world.camera.ICamera;
+import ru.BouH.engine.render.screen.Screen;
 
 public class BindingList {
     public static BindingList instance = new BindingList();
@@ -20,6 +21,11 @@ public class BindingList {
     public Key keyUp = new Key(GLFW.GLFW_KEY_SPACE);
     public Key keyDown = new Key(GLFW.GLFW_KEY_LEFT_SHIFT);
     public Key keyBlock1 = new Key(GLFW.GLFW_KEY_F);
+    public Key keySCS = new FunctionalKey(e -> {
+        if (e == IKeyAction.KeyAction.CLICK) {
+            Screen.takeScreenshot();
+        }
+    }, GLFW.GLFW_KEY_F2);
     public Key keyEsc = new FunctionalKey(e -> {
         if (e == IKeyAction.KeyAction.CLICK) {
             Game.getGame().destroyGame();
@@ -63,6 +69,7 @@ public class BindingList {
         Binding.createBinding(this.keyUp, "Лететь вверх");
         Binding.createBinding(this.keyDown, "Лететь вниз");
         Binding.createBinding(this.keyR, "Режим камеры");
+        Binding.createBinding(this.keySCS, "Скриншот");
         Binding.createBinding(this.keyBlock1, "Славянский выстрел блоком");
     }
 }

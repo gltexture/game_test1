@@ -124,6 +124,28 @@ public class MeshModel implements IMesh {
         GL30.glBindVertexArray(0);
     }
 
+    public MeshModel(float[] pos) {
+        FloatBuffer vrtBuffer = MemoryUtil.memAllocFloat(pos.length);
+        this.vao = GL30.glGenVertexArrays();
+        this.vertexCount = 0;
+        vrtBuffer.put(pos).flip();
+
+        this.idxVbo = GL30.glGenBuffers();
+        this.posVbo = GL30.glGenBuffers();
+        this.textureVbo = -999;
+        this.normalsVbo = -999;
+
+        GL30.glBindVertexArray(this.vao);
+
+        GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, this.posVbo);
+        GL30.glBufferData(GL30.GL_ARRAY_BUFFER, vrtBuffer, GL30.GL_STATIC_DRAW);
+        GL30.glVertexAttribPointer(0, 3, GL30.GL_FLOAT, false, 0, 0);
+        MemoryUtil.memFree(vrtBuffer);
+
+        GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, 0);
+        GL30.glBindVertexArray(0);
+    }
+
     public int getVao() {
         return this.vao;
     }

@@ -9,7 +9,7 @@ import ru.BouH.engine.physx.world.object.WorldItem;
 import ru.BouH.engine.render.scene.RenderGroup;
 import ru.BouH.engine.render.scene.SceneRenderBase;
 import ru.BouH.engine.render.scene.objects.items.PhysXObject;
-import ru.BouH.engine.render.scene.objects.texture.ItemTexture;
+import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.scene.objects.texture.samples.Color3FA;
 import ru.BouH.engine.render.scene.primitive_forms.IForm;
 import ru.BouH.engine.render.scene.primitive_forms.VectorForm;
@@ -54,7 +54,7 @@ public class WorldRender extends SceneRenderBase {
         GL30.glBindVertexArray(vectorForm.getMeshInfo().getVao());
         GL30.glEnableVertexAttribArray(0);
         GL30.glEnable(GL30.GL_DEPTH_TEST);
-        this.getUtils().setTexture(ItemTexture.createItemTexture(new Color3FA(1, 0, 0, 1)));
+        this.getUtils().setTexture(WorldItemTexture.createItemTexture(new Color3FA(1, 0, 0, 1)));
         GL30.glDrawElements(GL30.GL_LINES, vectorForm.getMeshInfo().getVertexCount(), GL30.GL_UNSIGNED_INT, 0);
         GL30.glDisableVertexAttribArray(0);
         GL30.glBindVertexArray(0);
@@ -87,7 +87,7 @@ public class WorldRender extends SceneRenderBase {
             GL30.glBindVertexArray(form.getMeshInfo().getVao());
             GL30.glEnableVertexAttribArray(0);
             GL30.glEnable(GL30.GL_DEPTH_TEST);
-            this.getUtils().setTexture(ItemTexture.createItemTexture(new Color3FA(0, 1, 0, 1)));
+            this.getUtils().setTexture(WorldItemTexture.createItemTexture(new Color3FA(0, 1, 0, 1)));
             GL30.glDrawElements(GL30.GL_LINES, form.getMeshInfo().getVertexCount(), GL30.GL_UNSIGNED_INT, 0);
             GL30.glDisableVertexAttribArray(0);
             GL30.glBindVertexArray(0);

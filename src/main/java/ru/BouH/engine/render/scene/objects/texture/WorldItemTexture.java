@@ -3,16 +3,16 @@ package ru.BouH.engine.render.scene.objects.texture;
 import org.jetbrains.annotations.NotNull;
 import ru.BouH.engine.render.scene.objects.texture.samples.StandardError;
 
-public class ItemTexture {
-    public static final ItemTexture standardError = new ItemTexture(new StandardError());
+public class WorldItemTexture {
+    public static final WorldItemTexture standardError = new WorldItemTexture(new StandardError());
     private Sample sample;
 
-    public ItemTexture(Sample sample) {
-        this.sample = sample == null ? ItemTexture.standardError.getSample() : sample;
+    public WorldItemTexture(Sample sample) {
+        this.sample = sample == null ? WorldItemTexture.standardError.getSample() : sample;
     }
 
-    public static ItemTexture createItemTexture(@NotNull Sample sample) {
-        return new ItemTexture(sample);
+    public static WorldItemTexture createItemTexture(@NotNull Sample sample) {
+        return new WorldItemTexture(sample);
     }
 
     public Sample getSample() {

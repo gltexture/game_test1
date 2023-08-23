@@ -2,7 +2,7 @@ package ru.BouH.engine.render.scene.objects.texture;
 
 public interface Sample {
     int getRenderID();
-    default ItemTexture.PassUniValue[] toPassShaderValues() {
+    default WorldItemTexture.PassUniValue[] toPassShaderValues() {
         return null;
     }
 }
