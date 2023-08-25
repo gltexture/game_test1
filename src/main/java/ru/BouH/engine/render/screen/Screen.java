@@ -45,7 +45,7 @@ public class Screen {
         if (this.tryToBuildScreen()) {
             GL.createCapabilities();
             ItemRenderList.init();
-            this.scene = new Scene(new SceneWorld(game.getPhysX().getWorld()));
+            this.scene = new Scene(this, new SceneWorld(game.getPhysX().getWorld()));
             this.scene.init();
             this.setWindowCallbacks();
             this.createControllerDispatcher(this.getWindow());
@@ -114,6 +114,14 @@ public class Screen {
         GLFW.glfwSwapInterval(1);
         GLFW.glfwShowWindow(this.getWindow().getDescriptor());
         return true;
+    }
+
+    public static boolean isScreenActive() {
+        Window window1 = Game.getGame().getScreen().getWindow();
+        if (window1.getWidth() == 0 || window1.getHeight() == 0) {
+            return false;
+        }
+        return GLFW.glfwGetWindowAttrib(window1.getDescriptor(), GLFW.GLFW_ICONIFIED) == 0;
     }
 
     public SceneWorld getRenderWorld() {

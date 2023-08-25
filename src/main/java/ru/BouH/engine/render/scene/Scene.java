@@ -2,17 +2,23 @@ package ru.BouH.engine.render.scene;
 
 import org.joml.Vector2d;
 import org.joml.Vector3d;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.system.MemoryUtil;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.controller.IController;
+import ru.BouH.engine.math.IntPair;
 import ru.BouH.engine.physx.world.object.WorldItem;
 import ru.BouH.engine.proxy.LocalPlayer;
 import ru.BouH.engine.render.RenderManager;
+import ru.BouH.engine.render.environment.light.LightManager;
+import ru.BouH.engine.render.environment.light.PointLight;
 import ru.BouH.engine.render.frustum.FrustumCulling;
 import ru.BouH.engine.render.scene.components.MeshModel;
 import ru.BouH.engine.render.scene.components.Model2D;
 import ru.BouH.engine.render.scene.programs.FrameBufferObjectProgram;
 import ru.BouH.engine.render.scene.programs.ShaderManager;
+import ru.BouH.engine.render.scene.programs.UniformBufferUtils;
 import ru.BouH.engine.render.scene.scene_render.GuiRender;
 import ru.BouH.engine.render.scene.scene_render.SkyRender;
 import ru.BouH.engine.render.scene.scene_render.WorldRender;
@@ -20,6 +26,7 @@ import ru.BouH.engine.render.scene.world.SceneWorld;
 import ru.BouH.engine.render.scene.world.camera.AttachedCamera;
 import ru.BouH.engine.render.scene.world.camera.FreeCamera;
 import ru.BouH.engine.render.scene.world.camera.ICamera;
+import ru.BouH.engine.render.screen.Screen;
 import ru.BouH.engine.render.screen.window.Window;
 
 import javax.imageio.ImageIO;
@@ -27,6 +34,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -34,6 +42,8 @@ import java.util.List;
 
 public class Scene {
     private final List<SceneRenderBase> sceneRenderBases;
+    private final Screen screen;
+    private final Window window;
     private final SceneWorld sceneWorld;
     private final SkyRender skyRender;
     private final GuiRender guiRender;
@@ -42,8 +52,10 @@ public class Scene {
     private final SceneRenderConveyor sceneRenderConveyor;
     private ICamera currentCamera;
 
-    public Scene(SceneWorld sceneWorld) {
+    public Scene(Screen screen, SceneWorld sceneWorld) {
         this.sceneWorld = sceneWorld;
+        this.screen = screen;
+        this.window = this.getScreen().getWindow();
         this.frustumCulling = new FrustumCulling();
         this.sceneRenderBases = new ArrayList<>();
         this.skyRender = new SkyRender(sceneWorld);
@@ -57,6 +69,10 @@ public class Scene {
         this.sceneRenderBases.add(this.getSkyRender());
         this.sceneRenderBases.add(this.getEntityRender());
         this.sceneRenderBases.add(this.getGuiRender());
+    }
+
+    public static boolean isSceneActive() {
+        return Screen.isScreenActive();
     }
 
     public static void setCamera(ICamera camera) {
@@ -87,16 +103,48 @@ public class Scene {
         return this.sceneWorld;
     }
 
+    public Screen getScreen() {
+        return this.screen;
+    }
+
+    public Window getWindow() {
+        return this.window;
+    }
+
     public void preRender() {
+        this.getRenderWorld().setFrustumCulling(this.getFrustumCulling());
         this.attachCameraToLocalPlayer(Game.getGame().getProxy().getLocalPlayer());
         Game.getGame().getLogManager().log("Starting scene rendering: ");
-        this.getMultiPassRenderConveyor().onStartRender();
+        this.getSceneRender().onStartRender();
         for (SceneRenderBase sceneRenderBase : this.sceneRenderBases) {
             Game.getGame().getLogManager().log("Starting " + sceneRenderBase.getRenderGroup().name() + " scene");
             sceneRenderBase.onStartRender();
             Game.getGame().getLogManager().log("Scene " + sceneRenderBase.getRenderGroup().name() + " successfully started!");
         }
+        Game.getGame().getLogManager().log("Filling light buffer!");
+        this.initLights();
         Game.getGame().getLogManager().log("Scene rendering started");
+    }
+
+    private void initLights() {
+        this.initPointLights(this.getEntityRender(), UniformBufferUtils.UBO_POINT_LIGHTS.getName());
+    }
+
+    private void initPointLights(SceneRenderBase sceneRenderBase, String bufferName) {
+        FloatBuffer value1Buffer = MemoryUtil.memAllocFloat(7 * LightManager.MAX_POINT_LIGHTS);
+        PointLight pointLight = new PointLight();
+        float[] f1 = LightManager.getPointLightArray(pointLight);
+        value1Buffer.put(f1[0]);
+        value1Buffer.put(f1[1]);
+        value1Buffer.put(f1[2]);
+        value1Buffer.put(f1[3]);
+        value1Buffer.put(f1[4]);
+        value1Buffer.put(f1[5]);
+        value1Buffer.put(f1[6]);
+        for (int i = 0; i < LightManager.MAX_POINT_LIGHTS; i++) {
+            sceneRenderBase.performUniformBuffer(bufferName, i * 32, f1);
+        }
+        MemoryUtil.memFree(value1Buffer);
     }
 
     public void enableFreeCamera(IController controller, Vector3d pos, Vector3d rot) {
@@ -118,12 +166,14 @@ public class Scene {
     }
 
     public void renderScene(double partialTicks) {
-        if (this.getCurrentCamera() != null) {
-            this.getFrustumCulling().refreshFrustumCullingState(RenderManager.instance.getProjectionMatrix(), RenderManager.instance.getViewMatrix(this.getCurrentCamera()));
-        }
-        this.getMultiPassRenderConveyor().onRender(partialTicks, this.sortedList(this.getEntityRender(), this.getSkyRender()), this.sortedList(this.getGuiRender()));
-        if (this.getCurrentCamera() != null) {
-            this.getCurrentCamera().updateCamera(partialTicks);
+        if (Scene.isSceneActive()) {
+            if (this.getCurrentCamera() != null) {
+                this.getFrustumCulling().refreshFrustumCullingState(RenderManager.instance.getProjectionMatrix(), RenderManager.instance.getViewMatrix(this.getCurrentCamera()));
+            }
+            this.getSceneRender().onRender(partialTicks, this.sortedList(this.getEntityRender(), this.getSkyRender()), this.sortedList(this.getGuiRender()));
+            if (this.getCurrentCamera() != null) {
+                this.getCurrentCamera().updateCamera(partialTicks);
+            }
         }
     }
 
@@ -133,12 +183,12 @@ public class Scene {
         return sceneRenderBases1;
     }
 
-    public SceneRenderConveyor getMultiPassRenderConveyor() {
+    public SceneRenderConveyor getSceneRender() {
         return this.sceneRenderConveyor;
     }
 
     public void takeScreenshot() {
-        this.getMultiPassRenderConveyor().takeScreenshot();
+        this.getSceneRender().takeScreenshot();
     }
 
     public FrustumCulling getFrustumCulling() {
@@ -147,7 +197,7 @@ public class Scene {
 
     public void postRender() {
         Game.getGame().getLogManager().log("Stopping scene rendering: ");
-        this.getMultiPassRenderConveyor().onStopRender();
+        this.getSceneRender().onStopRender();
         for (SceneRenderBase sceneRenderBase : this.sceneRenderBases) {
             Game.getGame().getLogManager().log("Stopping " + sceneRenderBase.getRenderGroup().name() + " scene");
             sceneRenderBase.onStopRender();
@@ -160,6 +210,7 @@ public class Scene {
         private final FrameBufferObjectProgram postProcessFBO;
         private final ShaderManager shaderManager;
         private boolean wantsTakeScreenshot;
+        public static int CURRENT_POST_RENDER = 0;
 
         public SceneRenderConveyor() {
             Window window = Game.getGame().getScreen().getWindow();
@@ -167,26 +218,36 @@ public class Scene {
             this.shaderManager = new ShaderManager("post_render_1");
             this.getShaderManager().addUniform("projection_model_matrix");
             this.getShaderManager().addUniform("texture_sampler");
+            this.getShaderManager().addUniform("post_mode");
+            this.getShaderManager().addUniformBuffer(UniformBufferUtils.UBO_MISC);
+        }
+
+        public static void setRender(int a) {
+            SceneRenderConveyor.CURRENT_POST_RENDER = a;
+            if (SceneRenderConveyor.CURRENT_POST_RENDER > 3) {
+                SceneRenderConveyor.CURRENT_POST_RENDER = 0;
+            }
         }
 
         public void onRender(double partialTicks, List<SceneRenderBase> mainList, List<SceneRenderBase> additionalList) {
             Vector2d v2 = Game.getGame().getScreen().getDimensions();
             Model2D model2D = this.genFrameBufferSquare((float) v2.x, (float) v2.y);
+
             FrameBufferObjectProgram frameBufferObjectProgram = this.getPostProcessFBO();
             frameBufferObjectProgram.createRenderBuffer(v2);
 
             frameBufferObjectProgram.bindFBO();
             GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
             for (SceneRenderBase sceneRenderBase : mainList) {
-                sceneRenderBase.bindProgram();
                 sceneRenderBase.onRender(partialTicks);
-                sceneRenderBase.unBindProgram();
             }
             frameBufferObjectProgram.unBindFBO();
 
             this.getShaderManager().bind();
             this.getShaderManager().performUniform("projection_model_matrix", RenderManager.instance.getOrthoModelMatrix(model2D));
             this.getShaderManager().performUniform("texture_sampler", 0);
+            this.getShaderManager().performUniform("post_mode", SceneRenderConveyor.CURRENT_POST_RENDER);
+
             GL30.glActiveTexture(GL30.GL_TEXTURE0);
             frameBufferObjectProgram.bindTextureFBO();
             this.renderTexture(model2D);

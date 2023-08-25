@@ -13,6 +13,7 @@ import ru.BouH.engine.physx.world.object.IDynamic;
 import ru.BouH.engine.physx.world.object.IWorldObject;
 import ru.BouH.engine.physx.world.object.WorldItem;
 import ru.BouH.engine.proxy.IWorld;
+import ru.BouH.engine.render.frustum.FrustumCulling;
 import ru.BouH.engine.render.frustum.RenderABB;
 import ru.BouH.engine.render.scene.components.Model3D;
 import ru.BouH.engine.render.scene.fabric.RenderFabric;
@@ -30,6 +31,9 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
     private final RenderData renderData;
     private IForm collisionForm;
     protected Model3D model3D;
+    private boolean blockInterpolation;
+    private boolean isObjectCulled;
+    private boolean isVisible;
     private boolean isDead;
 
     public PhysXObject(@NotNull SceneWorld sceneWorld, @NotNull WorldItem worldItem, @NotNull RenderData renderData) {
@@ -37,6 +41,8 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
         this.worldItem = worldItem;
         this.sceneWorld = sceneWorld;
         this.renderData = renderData;
+        this.isVisible = true;
+        this.isObjectCulled = false;
     }
 
     protected void setModel() {
@@ -110,8 +116,21 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
         return this.getCollisionForm() != null;
     }
 
+    public boolean shouldInterpolatePos() {
+        return this.getRenderProperties().isLerpPosition() && !this.blockInterpolation;
+    }
+
+    public boolean shouldInterpolateRot() {
+        return this.getRenderProperties().isLerpRotation() && !this.blockInterpolation;
+    }
+
+    public RenderData.RenderProperties getRenderProperties() {
+        return this.getRenderData().getRenderProperties();
+    }
+
     @Override
     public void onUpdate(IWorld iWorld) {
+        this.blockInterpolation = !this.isVisible();
         if (this.getRenderABB() != null) {
             Vector3d size = this.calcABBSize(this.getWorldItem());
             if (size != null) {
@@ -124,6 +143,18 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
         if (this.getWorldItem().isDead()) {
             this.setDead();
         }
+    }
+
+    public void checkCulling(FrustumCulling frustumCulling) {
+        this.isObjectCulled = !frustumCulling.isInFrustum(this.getRenderABB());
+    }
+
+    public void setVisible(boolean visible) {
+        this.isVisible = visible;
+    }
+
+    public boolean isVisible() {
+        return !this.isObjectCulled && this.isVisible;
     }
 
     public Vector3d getRenderPosition() {

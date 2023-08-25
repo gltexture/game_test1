@@ -5,9 +5,11 @@ import ru.BouH.engine.game.Game;
 import ru.BouH.engine.physx.entities.IRemoteController;
 import ru.BouH.engine.physx.world.World;
 import ru.BouH.engine.proxy.IWorld;
+import ru.BouH.engine.render.environment.light.ILight;
 
 public abstract class WorldItem implements IWorldObject {
     private static int globalId;
+    private ILight iLight;
     protected final Vector3d position;
     protected final Vector3d rotation;
     private final World world;
@@ -25,6 +27,7 @@ public abstract class WorldItem implements IWorldObject {
         this.prevPosition = pos;
         this.scale = 1.0f;
         this.world = world;
+        this.iLight = null;
         this.itemId = globalId++;
         this.isDead = false;
     }
@@ -96,6 +99,20 @@ public abstract class WorldItem implements IWorldObject {
 
     public boolean isRemoteControlled() {
         return this instanceof IRemoteController && ((IRemoteController) this).isValidController();
+    }
+
+    public boolean hasLight() {
+        return this.getLight() != null && this.getLight().isActive();
+    }
+
+    public void setLight(ILight iLight) {
+        this.iLight = iLight;
+        iLight.doAttachTo(this);
+        this.getWorld().addLight(iLight);
+    }
+
+    public ILight getLight() {
+        return this.iLight;
     }
 
     public boolean isDead() {

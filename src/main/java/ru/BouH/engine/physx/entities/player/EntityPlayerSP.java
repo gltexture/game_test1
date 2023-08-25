@@ -14,8 +14,10 @@ import ru.BouH.engine.physx.collision.objects.OBB;
 import ru.BouH.engine.physx.entities.IRemoteController;
 import ru.BouH.engine.physx.entities.PhysEntity;
 import ru.BouH.engine.physx.entities.prop.PhysEntityCube;
+import ru.BouH.engine.physx.entities.prop.PhysLightCube;
 import ru.BouH.engine.physx.world.World;
 import ru.BouH.engine.proxy.IWorld;
+import ru.BouH.engine.render.environment.light.PointLight;
 
 public class EntityPlayerSP extends PhysEntity implements IRemoteController {
     private final Vector3d cameraRotation;
@@ -125,6 +127,14 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
             PhysEntityCube entityPropInfo = new PhysEntityCube(this.getWorld(), new Vector3d(1.0d), this.getPosition().add(this.getLookVector().mul(3.0f)));
             entityPropInfo.setScale(0.5d);
             Game.getGame().getProxy().addItemInWorlds(entityPropInfo, ItemRenderList.entityCube);
+            entityPropInfo.setObjectVelocity(this.getLookVector().mul(20.0f));
+        }
+        if (BindingList.instance.keyBlock2.isClicked()) {
+            PhysEntityCube entityPropInfo = new PhysLightCube(this.getWorld(), new Vector3d(1.0d), this.getPosition().add(this.getLookVector().mul(3.0f)));
+            entityPropInfo.setScale(0.25d);
+            Game.getGame().getProxy().addItemInWorlds(entityPropInfo, ItemRenderList.entityLamp);
+            entityPropInfo.setLight(new PointLight(new Vector3d(Game.random.nextFloat(), Game.random.nextFloat(), Game.random.nextFloat()), 7.5d));
+            entityPropInfo.getLight().setOffset(new Vector3d(0, 1, 0));
             entityPropInfo.setObjectVelocity(this.getLookVector().mul(20.0f));
         }
         this.getCameraRotation().add(new Vector3d(rotationInput, 0.0d));

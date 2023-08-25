@@ -27,24 +27,31 @@ public class WorldRender extends SceneRenderBase {
         this.addUniform("projection_matrix");
         this.addUniform("model_view_matrix");
         this.addUniform("texture_sampler");
-        this.addUniform("colors");
+        this.addUniform("object_rgb");
         this.addUniform("use_texture");
-        this.addUniform("disable_light");
-        this.addUniformBuffer("Lights", 150);
+        this.addUniform("enable_light");
+        this.addUniform("quads_c1");
+        this.addUniform("quads_c2");
+        this.addUniform("quads_scaling");
+        this.addUniformBuffer(UniformBufferUtils.UBO_SUN);
+        this.addUniformBuffer(UniformBufferUtils.UBO_POINT_LIGHTS);
+        this.addUniformBuffer(UniformBufferUtils.UBO_MISC);
     }
 
     public void onRender(double partialTicks) {
+        this.bindProgram();
         UniformBufferUtils.updateLightBuffers(this);
-        this.performUniform("tick", this.getSceneWorld().tick);
         this.performUniform("dimensions", Game.getGame().getScreen().getWindow().getWindowDimensions());
         this.getUtils().performProjectionMatrix();
         this.renderDebugSunDirection(this);
         for (PhysXObject entityItem : this.sceneWorld.getFilteredEntityList()) {
             this.renderHitBox(partialTicks, this, entityItem);
             if (entityItem.isHasRender()) {
+                this.getUtils().performProperties(entityItem.getRenderData().getRenderProperties());
                 entityItem.renderFabric().onRender(partialTicks, this, entityItem);
             }
         }
+        this.unBindProgram();
     }
 
     private void renderDebugSunDirection(SceneRenderBase sceneRenderBase) {
@@ -101,6 +108,5 @@ public class WorldRender extends SceneRenderBase {
 
     public void onStopRender() {
         super.onStopRender();
-        this.getSceneWorld().removeAllEntities();
     }
 }

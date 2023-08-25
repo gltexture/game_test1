@@ -2,15 +2,12 @@ package ru.BouH.engine.render.scene.programs;
 
 import org.joml.Vector2d;
 import org.joml.Vector2i;
-import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL32;
-import org.lwjgl.system.MemoryStack;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.render.screen.window.Window;
 
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 
 public class FrameBufferObjectProgram {
     private int frameBufferId;

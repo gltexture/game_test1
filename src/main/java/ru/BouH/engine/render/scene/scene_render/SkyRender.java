@@ -3,9 +3,11 @@ package ru.BouH.engine.render.scene.scene_render;
 import org.joml.Matrix4d;
 import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.game.Game;
+import ru.BouH.engine.math.IntPair;
 import ru.BouH.engine.render.scene.RenderGroup;
 import ru.BouH.engine.render.scene.SceneRenderBase;
 import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
+import ru.BouH.engine.render.scene.programs.UniformBufferUtils;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 import ru.BouH.engine.render.environment.sky.SkyBox;
 import ru.BouH.engine.render.RenderManager;
@@ -19,14 +21,14 @@ public class SkyRender extends SceneRenderBase {
         this.addUniform("model_view_matrix");
         this.addUniform("texture_sampler");
         this.addUniform("use_texture");
-
-        this.addUniformBuffer("Lights", 150);
+        this.addUniformBuffer(UniformBufferUtils.UBO_SUN);
         this.sceneWorld = sceneWorld;
     }
 
     public void onRender(double partialTicks) {
         SkyBox skyBox = this.getRenderWorld().getEnvironment().getSky().getSkyBox();
         if (skyBox != null) {
+            this.bindProgram();
             this.getUtils().performProjectionMatrix();
             Matrix4d matrix4d = RenderManager.instance.getModelViewMatrix(Game.getGame().getScreen().getCamera(), skyBox.getModel3DInfo());
             matrix4d.m30(0);
@@ -44,6 +46,7 @@ public class SkyRender extends SceneRenderBase {
             GL30.glDisableVertexAttribArray(1);
             GL30.glDisableVertexAttribArray(2);
             GL30.glBindVertexArray(0);
+            this.unBindProgram();
         }
     }
 

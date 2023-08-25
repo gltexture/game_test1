@@ -8,6 +8,7 @@ import ru.BouH.engine.physx.collision.JBulletPhysics;
 import ru.BouH.engine.physx.world.object.IDynamic;
 import ru.BouH.engine.physx.world.object.WorldItem;
 import ru.BouH.engine.proxy.IWorld;
+import ru.BouH.engine.render.environment.light.ILight;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +49,10 @@ public final class World implements IWorld {
         this.clearAllItems();
     }
 
+    public void addLight(ILight iLight) {
+        Game.getGame().getProxy().addLight(iLight);
+    }
+
     public void addItem(WorldItem worldItem) {
         this.addItemInWorld(worldItem);
     }
@@ -63,10 +68,10 @@ public final class World implements IWorld {
     public void onWorldUpdate() {
         List<WorldItem> copy1 = new ArrayList<>(this.getAllWorldItems());
         if (this.collectionsWaitingRefresh) {
-            this.allDynamicItems.clear();
-            this.allJBItems.clear();
-            this.allDynamicItems.addAll(copy1.stream().filter(World::isItemDynamic).map(e -> (IDynamic) e).collect(Collectors.toList()));
-            this.allJBItems.addAll(copy1.stream().filter(World::isItemJB).map(e -> (JBulletPhysics) e).collect(Collectors.toList()));
+            this.getAllDynamicItems().clear();
+            this.getAllJBItems().clear();
+            this.getAllDynamicItems().addAll(copy1.stream().filter(World::isItemDynamic).map(e -> (IDynamic) e).collect(Collectors.toList()));
+            this.getAllJBItems().addAll(copy1.stream().filter(World::isItemJB).map(e -> (JBulletPhysics) e).collect(Collectors.toList()));
             this.collectionsWaitingRefresh = false;
         }
         List<IDynamic> copy2 = new ArrayList<>(this.getAllDynamicItems());

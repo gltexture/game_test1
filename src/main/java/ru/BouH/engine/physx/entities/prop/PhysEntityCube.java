@@ -37,7 +37,7 @@ public class PhysEntityCube extends PhysEntity {
         CollisionShape collisionShape = rigidBody.getCollisionShape();
         BPVector3f bpVector3f = new BPVector3f(0);
         collisionShape.calculateLocalInertia(this.getPhysicsProperties().getWeight(), bpVector3f);
-        this.getPhysicsProperties().setInertia(new Vector3d(bpVector3f.x, bpVector3f.y, bpVector3f.z));
+        this.getPhysicsProperties().setInertia(new Vector3d(0));
     }
 
     @Override

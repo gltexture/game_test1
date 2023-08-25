@@ -1,15 +1,22 @@
 package ru.BouH.engine.render.scene;
 
 import org.joml.Matrix4d;
+import org.lwjgl.opengl.GL43;
 import ru.BouH.engine.game.Game;
+import ru.BouH.engine.math.IntPair;
 import ru.BouH.engine.render.RenderManager;
 import ru.BouH.engine.render.scene.components.Model3D;
+import ru.BouH.engine.render.scene.objects.data.RenderData;
 import ru.BouH.engine.render.scene.programs.ShaderManager;
 import ru.BouH.engine.render.scene.programs.UniformBufferProgram;
 import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.scene.objects.texture.PictureSample;
+import ru.BouH.engine.render.scene.programs.UniformBufferUtils;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 import ru.BouH.engine.render.scene.world.camera.ICamera;
+
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 
 public abstract class SceneRenderBase {
     private final RenderGroup renderGroup;
@@ -57,24 +64,68 @@ public abstract class SceneRenderBase {
         this.getShaderManager().performUniform(uniform, o);
     }
 
+    public void performUniformBuffer(UniformBufferUtils.UBO_DATA uniform, ByteBuffer buffer) {
+        this.performUniformBuffer(uniform.getName(), 0, buffer);
+    }
+
+    public void performUniformBuffer(UniformBufferUtils.UBO_DATA uniform, FloatBuffer buffer) {
+        this.performUniformBuffer(uniform.getName(), 0, buffer);
+    }
+
+    public void performUniformBuffer(UniformBufferUtils.UBO_DATA uniform, float[] data) {
+        this.performUniformBuffer(uniform.getName(), 0, data);
+    }
+
+    public void performUniformBuffer(String uniform, ByteBuffer buffer) {
+        this.performUniformBuffer(uniform, 0, buffer);
+    }
+
+    public void performUniformBuffer(String uniform, FloatBuffer buffer) {
+        this.performUniformBuffer(uniform, 0, buffer);
+    }
+
     public void performUniformBuffer(String uniform, float[] data) {
+        this.performUniformBuffer(uniform, 0, data);
+    }
+
+    public void performUniformBuffer(String uniform, int offset, ByteBuffer buffer) {
         if (!this.getShaderManager().checkUniformBuffer(uniform)) {
             Game.getGame().getLogManager().bigWarn("Uniform-Buffer \"" + uniform + "\" " + "is not registered in scene \"" + this.renderGroup.name() + "\"!");
             return;
         }
-        this.getShaderManager().performUniformBuffer(uniform, data);
+        this.getShaderManager().performUniformBuffer(uniform, offset, buffer);
+    }
+
+    public void performUniformBuffer(String uniform, int offset, FloatBuffer buffer) {
+        if (!this.getShaderManager().checkUniformBuffer(uniform)) {
+            Game.getGame().getLogManager().bigWarn("Uniform-Buffer \"" + uniform + "\" " + "is not registered in scene \"" + this.renderGroup.name() + "\"!");
+            return;
+        }
+        this.getShaderManager().performUniformBuffer(uniform, offset, buffer);
+    }
+
+    public void performUniformBuffer(String uniform, int offset, float[] data) {
+        if (!this.getShaderManager().checkUniformBuffer(uniform)) {
+            Game.getGame().getLogManager().bigWarn("Uniform-Buffer \"" + uniform + "\" " + "is not registered in scene \"" + this.renderGroup.name() + "\"!");
+            return;
+        }
+        this.getShaderManager().performUniformBuffer(uniform, offset, data);
     }
 
     protected void addUniform(String u) {
         this.getShaderManager().addUniform(u);
     }
 
-    protected void addUniformBuffer(String u, int size) {
-        this.getShaderManager().addUniformBuffer(u, size);
+    protected void addUniformBuffer(UniformBufferUtils.UBO_DATA u) {
+        this.getShaderManager().addUniformBuffer(u);
     }
 
-    public UniformBufferProgram getUniformBufferProgram() {
-        return this.getShaderManager().getUniformBufferProgram();
+    protected void addUniformBuffer(String u, IntPair intPair) {
+        this.getShaderManager().addUniformBuffer(u, intPair);
+    }
+
+    public UniformBufferProgram getUniformBufferProgram(String name) {
+        return this.getShaderManager().getUniformBufferProgram(name);
     }
 
     public ShaderManager getShaderManager() {
@@ -102,11 +153,11 @@ public abstract class SceneRenderBase {
         }
 
         public void disableLight() {
-            SceneRenderBase.this.performUniform("disable_light", 1);
+            SceneRenderBase.this.performUniform("enable_light", 0);
         }
 
         public void enableLight() {
-            SceneRenderBase.this.performUniform("disable_light", 0);
+            SceneRenderBase.this.performUniform("enable_light", 1);
         }
 
         public void performProjectionMatrix() {
@@ -119,6 +170,15 @@ public abstract class SceneRenderBase {
 
         public void performModelViewMatrix3d(Matrix4d matrix4d) {
             SceneRenderBase.this.performUniform("model_view_matrix", matrix4d);
+        }
+
+        public void performProperties(RenderData.RenderProperties renderProperties) {
+            boolean b1 = renderProperties.isLightExposed();
+            if (b1) {
+                this.enableLight();
+            } else {
+                this.disableLight();
+            }
         }
 
         public void setTexture(WorldItemTexture worldItemTexture) {

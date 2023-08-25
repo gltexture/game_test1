@@ -35,10 +35,10 @@ public class GameLogging {
     public void error(String message, Object... objects) {
         StackTraceElement[] trace = Thread.currentThread().getStackTrace();
         StringBuilder stringBuilder = this.getStringBuilder(message, objects, trace);
-        JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
         this.log.fatal(stringBuilder.toString());
         Game.getGame().getProfiler().crashSection(SectionManager.game);
         Game.getGame().getProfiler().stopAllSections();
+        JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
         Game.getGame().shouldBeClosed = true;
     }
 

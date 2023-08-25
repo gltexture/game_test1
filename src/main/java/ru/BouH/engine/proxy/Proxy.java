@@ -7,6 +7,7 @@ import ru.BouH.engine.physx.PhysX;
 import ru.BouH.engine.physx.entities.PhysEntity;
 import ru.BouH.engine.physx.entities.player.EntityPlayerSP;
 import ru.BouH.engine.physx.world.object.WorldItem;
+import ru.BouH.engine.render.environment.light.ILight;
 import ru.BouH.engine.render.scene.objects.data.RenderData;
 import ru.BouH.engine.render.screen.Screen;
 
@@ -33,6 +34,10 @@ public class Proxy {
         }
     }
 
+    public void addLight(ILight light) {
+        this.screen.getRenderWorld().getEnvironment().getLightManager().addLight(light);
+    }
+
     public void onSystemStarted() {
         WorldEvents.addEntities(this.physX.getWorld());
         WorldEvents.addBrushes(this.physX.getWorld());
@@ -41,7 +46,6 @@ public class Proxy {
 
     public void tickWorlds() {
         this.physX.getWorld().onWorldUpdate();
-        this.screen.getRenderWorld().tickWorld();
     }
 
     public LocalPlayer getLocalPlayer() {

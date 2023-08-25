@@ -31,7 +31,7 @@ public class ShaderProgram {
         GL20.glShaderSource(id, shader);
         GL20.glCompileShader(id);
         if (GL20.glGetShaderi(id, GL20.GL_COMPILE_STATUS) == 0) {
-            Game.getGame().getLogManager().error("Compile shader error: " + GL20.glGetShaderInfoLog(id, 1024));
+            Game.getGame().getLogManager().error("Compile shader error: " + GL20.glGetShaderInfoLog(id, 4096));
         }
         GL20.glAttachShader(this.programId, id);
         return id;
@@ -40,7 +40,7 @@ public class ShaderProgram {
     public void link() {
         GL20.glLinkProgram(this.programId);
         if (GL20.glGetProgrami(this.programId, GL20.GL_LINK_STATUS) == 0) {
-            Game.getGame().getLogManager().error("Could not link Shader " + GL20.glGetShaderInfoLog(this.programId, 1024));
+            Game.getGame().getLogManager().error("Could not link Shader " + GL20.glGetShaderInfoLog(this.programId, 4096));
         }
         if (this.vertexShaderId != 0) {
             GL20.glDetachShader(this.programId, this.vertexShaderId);
@@ -50,7 +50,7 @@ public class ShaderProgram {
         }
         GL20.glValidateProgram(this.programId);
         if (GL20.glGetProgrami(this.programId, GL20.GL_VALIDATE_STATUS) == 0) {
-            Game.getGame().getLogManager().warn("Could not validate Shader " + GL20.glGetShaderInfoLog(this.programId, 1024));
+            Game.getGame().getLogManager().warn("Could not validate Shader " + GL20.glGetShaderInfoLog(this.programId, 4096));
         }
     }
 

@@ -5,6 +5,7 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.render.scene.objects.texture.PictureSample;
+import ru.BouH.engine.render.scene.objects.texture.Sample;
 import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.utils.Utils;
 

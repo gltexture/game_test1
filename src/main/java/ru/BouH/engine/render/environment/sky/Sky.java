@@ -5,7 +5,7 @@ import ru.BouH.engine.render.scene.world.SceneWorld;
 public class Sky {
     private final SkyBox skyBox;
 
-    public Sky(SceneWorld sceneWorld, String texturePath) {
+    public Sky(String texturePath) {
         this.skyBox = new SkyBox(texturePath);
     }
 

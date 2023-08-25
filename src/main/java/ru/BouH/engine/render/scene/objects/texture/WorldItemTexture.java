@@ -1,10 +1,11 @@
 package ru.BouH.engine.render.scene.objects.texture;
 
 import org.jetbrains.annotations.NotNull;
-import ru.BouH.engine.render.scene.objects.texture.samples.StandardError;
+import org.joml.Vector3d;
+import ru.BouH.engine.render.scene.objects.texture.samples.DefaultSample;
 
 public class WorldItemTexture {
-    public static final WorldItemTexture standardError = new WorldItemTexture(new StandardError());
+    public static final WorldItemTexture standardError = new WorldItemTexture(new DefaultSample(new Vector3d(0.0f, 0.0f, 0.0f), new Vector3d(1.0f, 0.0f, 1.0f), 32));
     private Sample sample;
 
     public WorldItemTexture(Sample sample) {

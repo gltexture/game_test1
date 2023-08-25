@@ -8,7 +8,7 @@ import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.scene.objects.texture.Sample;
 
 public class RenderModeledData extends RenderData {
-    private final MeshModel meshModel;
+    private MeshModel meshModel;
 
     public RenderModeledData(@NotNull RenderFabric renderFabric, @NotNull WorldItemTexture worldItemTexture, @NotNull Class<? extends PhysXObject> clazz, MeshModel meshModel) {
         super(renderFabric, worldItemTexture, clazz);
@@ -23,7 +23,16 @@ public class RenderModeledData extends RenderData {
         this(renderFabric, WorldItemTexture.standardError, clazz, meshModel);
     }
 
+    public void setMeshModel(MeshModel meshModel) {
+        this.meshModel = meshModel;
+    }
+
     public MeshModel getMeshModel() {
         return this.meshModel;
+    }
+
+    @Override
+    public RenderData copyRenderData() {
+        return new RenderModeledData(this.getRenderFabric(), this.getItemTexture(), this.getPOClass(), this.getMeshModel());
     }
 }

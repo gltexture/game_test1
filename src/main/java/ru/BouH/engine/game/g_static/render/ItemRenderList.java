@@ -1,37 +1,31 @@
 package ru.BouH.engine.game.g_static.render;
 
+import org.joml.Vector3d;
 import ru.BouH.engine.render.scene.fabric.RenderBrushPlane;
 import ru.BouH.engine.render.scene.fabric.RenderEntity;
 import ru.BouH.engine.render.scene.fabric.RenderNull;
-import ru.BouH.engine.render.scene.objects.data.RenderMiscData;
 import ru.BouH.engine.render.scene.objects.data.RenderModeledData;
+import ru.BouH.engine.render.scene.objects.data.StandardRenderData;
 import ru.BouH.engine.render.scene.objects.items.BrushPlanePhysXObject;
 import ru.BouH.engine.render.scene.objects.items.EntityPhysXObject;
-import ru.BouH.engine.render.scene.objects.texture.samples.DevGround;
-import ru.BouH.engine.render.scene.objects.texture.samples.PNGTexture;
-import ru.BouH.engine.render.scene.objects.texture.samples.TestGradientSample;
+import ru.BouH.engine.render.scene.objects.items.PhysXColoredLamp;
+import ru.BouH.engine.render.scene.objects.texture.samples.Color3FA;
+import ru.BouH.engine.render.scene.objects.texture.samples.DefaultSample;
 import ru.BouH.engine.render.utils.Utils;
 
 public class ItemRenderList {
     public static RenderModeledData entityCube;
-    public static RenderModeledData entityCube2;
-    public static RenderModeledData entityCube3;
-    public static RenderModeledData entityTerrain;
     public static RenderModeledData entityLamp;
-    public static RenderMiscData player;
-    public static RenderMiscData plane;
+    public static StandardRenderData player;
+    public static StandardRenderData plane;
 
     public static void init() {
-        PNGTexture pngTexture1 = PNGTexture.createTexture("props/cube.png");
-        PNGTexture pngTexture2 = PNGTexture.createTexture("props/cube3.png");
-        TestGradientSample testGradientSample = new TestGradientSample();
-        DevGround devGround = new DevGround();
+        DefaultSample defaultSample = new DefaultSample(new Vector3d(0.75f, 0.75f, 0.75f), new Vector3d(0.3f, 0.3f, 0.3f), 16);
+        DefaultSample defaultSample2 = new DefaultSample(new Vector3d(0.85f, 0.32f, 0.11f), new Vector3d(0.55f, 0.1f, 0.55f), 16);
 
-        ItemRenderList.entityCube = new RenderModeledData(new RenderEntity(), pngTexture1, EntityPhysXObject.class, Utils.loadMesh("prop/cube.obj"));
-        ItemRenderList.entityCube2 = new RenderModeledData(new RenderEntity(), testGradientSample, EntityPhysXObject.class, Utils.loadMesh("prop/cube.obj"));
-        ItemRenderList.entityCube3 = new RenderModeledData(new RenderEntity(), pngTexture2, EntityPhysXObject.class, Utils.loadMesh("prop/cube.obj"));
-        ItemRenderList.entityLamp = new RenderModeledData(new RenderEntity(), EntityPhysXObject.class, Utils.loadMesh("prop/sphere.obj"));
-        ItemRenderList.player = new RenderMiscData(new RenderNull(), EntityPhysXObject.class);
-        ItemRenderList.plane = new RenderMiscData(new RenderBrushPlane(), devGround, BrushPlanePhysXObject.class);
+        ItemRenderList.entityCube = new RenderModeledData(new RenderEntity(), defaultSample2, EntityPhysXObject.class, Utils.loadMesh("prop/cube.obj"));
+        ItemRenderList.entityLamp = new RenderModeledData(new RenderEntity(), new Color3FA(0xffffff), PhysXColoredLamp.class, Utils.loadMesh("prop/cube.obj"));
+        ItemRenderList.player = new StandardRenderData(new RenderNull(), EntityPhysXObject.class);
+        ItemRenderList.plane = new StandardRenderData(new RenderBrushPlane(), defaultSample, BrushPlanePhysXObject.class);
     }
 }

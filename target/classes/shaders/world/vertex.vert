@@ -4,18 +4,36 @@ layout (location=0) in vec3 position;
 layout (location=1) in vec2 texture;
 layout (location=2) in vec3 vertex_normal;
 
-layout (std140, binding = 0) uniform Lights {
-    float value1;
+struct PointLight
+{
+    float plPosX;
+    float plPosY;
+    float plPosZ;
+    float plR;
+    float plG;
+    float plB;
+    float brightness;
+};
+
+layout (std140, binding = 0) uniform SunLight {
+    float ambient;
+    float sunBright;
     float sunX;
     float sunY;
     float sunZ;
 };
 
-out float ambient_light;
+layout (std140, binding = 1) uniform PointLights {
+    PointLight p_l[256];
+};
+
+layout (std140, binding = 3) uniform Misc {
+    float w_tick;
+};
+
 out vec2 out_texture;
 out vec3 mv_vertex_normal;
 out vec3 mv_vert_pos;
-out vec3 sun_pos;
 
 uniform mat4 model_view_matrix;
 uniform mat4 projection_matrix;
@@ -27,6 +45,4 @@ void main()
     out_texture = texture;
     mv_vertex_normal = normalize(model_view_matrix * vec4(vertex_normal, 0.0f)).xyz;
     mv_vert_pos = mv_pos.xyz;
-    ambient_light = value1;
-    sun_pos = vec3(sunX, sunY, sunZ);
 }

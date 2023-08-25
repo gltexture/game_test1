@@ -1,31 +1,32 @@
 package ru.BouH.engine.render.scene.programs;
 
+import org.lwjgl.opengl.GL43;
 import ru.BouH.engine.game.Game;
+import ru.BouH.engine.math.IntPair;
 import ru.BouH.engine.render.scene.RenderGroup;
+import ru.BouH.engine.render.scene.SceneRenderBase;
 import ru.BouH.engine.render.utils.Utils;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
+import java.util.*;
 
 public class ShaderManager {
     private final Set<String> uniformsSet;
-    private final Map<String, Integer> uniformBuffersSet;
+    private final Map<String, IntPair> uniformBuffersSet;
+    private final Map<String, UniformBufferProgram> uniformBufferProgramMap;
     private ShaderProgram shaderProgram;
     private UniformProgram uniformProgram;
-    private UniformBufferProgram uniformBufferProgram;
     private final String path;
 
     public ShaderManager(RenderGroup renderGroup) {
-        this.uniformsSet = new HashSet<>();
-        this.uniformBuffersSet = new HashMap<>();
-        this.path = renderGroup.getPath();
+        this(renderGroup.getPath());
     }
 
     public ShaderManager(String path) {
         this.uniformsSet = new HashSet<>();
         this.uniformBuffersSet = new HashMap<>();
+        this.uniformBufferProgramMap = new HashMap<>();
         this.path = path;
     }
 
@@ -41,8 +42,16 @@ public class ShaderManager {
         this.uniformsSet.add(s);
     }
 
-    public void addUniformBuffer(String s, int sizeBytes) {
-        this.uniformBuffersSet.put(s, sizeBytes);
+    public void addUniformBuffer(UniformBufferUtils.UBO_DATA uboData) {
+        this.uniformBuffersSet.put(uboData.getName(), uboData.getIntPair());
+    }
+
+    public void addUniformBuffer(String s, IntPair intPair) {
+        this.uniformBuffersSet.put(s, intPair);
+    }
+
+    public int getUBOIndex(String name) {
+        return this.getUniformBufferProgram(name).getLocation();
     }
 
     public void startProgram() {
@@ -71,8 +80,8 @@ public class ShaderManager {
         return this.uniformProgram;
     }
 
-    public UniformBufferProgram getUniformBufferProgram() {
-        return this.uniformBufferProgram;
+    public UniformBufferProgram getUniformBufferProgram(String name) {
+        return this.uniformBufferProgramMap.get(name);
     }
 
     public void performUniform(String uniform, Object o) {
@@ -81,16 +90,37 @@ public class ShaderManager {
         }
     }
 
+    public void performUniformBuffer(String uniform, ByteBuffer data) {
+        this.performUniformBuffer(uniform, 0, data);
+    }
+
+    public void performUniformBuffer(String uniform, FloatBuffer data) {
+        this.performUniformBuffer(uniform, 0, data);
+    }
+
     public void performUniformBuffer(String uniform, float[] data) {
-        this.getUniformBufferProgram().setUniformBufferData(uniform, data);
+        this.performUniformBuffer(uniform, 0, data);
+    }
+
+    public void performUniformBuffer(String uniform, int offset, ByteBuffer data) {
+        this.getUniformBufferProgram(uniform).setUniformBufferData(offset, data);
+    }
+
+    public void performUniformBuffer(String uniform, int offset, FloatBuffer data) {
+        this.getUniformBufferProgram(uniform).setUniformBufferData(offset, data);
+    }
+
+    public void performUniformBuffer(String uniform, int offset, float[] data) {
+        this.getUniformBufferProgram(uniform).setUniformBufferData(offset, data);
     }
 
     private void initShaders(ShaderProgram shaderProgram) {
         this.shaderProgram = shaderProgram;
         this.shaderProgram.createVertexShader(Utils.loadShader(this.getPath() + "/vertex.vert"));
         this.shaderProgram.createFragmentShader(Utils.loadShader(this.getPath() + "/fragment.frag"));
-        this.shaderProgram.link();
+        shaderProgram.link();
         this.initUniforms(new UniformProgram(this.shaderProgram.getProgramId()));
+        this.initUniformBuffers(this.uniformBuffersSet);
     }
 
     private String getPath() {
@@ -105,15 +135,15 @@ public class ShaderManager {
         for (String s : this.uniformsSet) {
             this.getUniformProgram().createUniform(s);
         }
-        if (!this.uniformBuffersSet.isEmpty()) {
-            this.initUniformBuffers(new UniformBufferProgram());
-        }
     }
 
-    private void initUniformBuffers(UniformBufferProgram uniformBufferProgram) {
-        this.uniformBufferProgram = uniformBufferProgram;
-        for (Map.Entry<String, Integer> s : this.uniformBuffersSet.entrySet()) {
-            this.getUniformBufferProgram().createUniformBuffer(s.getKey(), s.getValue());
+    private void initUniformBuffers(Map<String, IntPair> bufferPrograms) {
+        for (Map.Entry<String, IntPair> s : bufferPrograms.entrySet()) {
+            String name = s.getKey();
+            IntPair intPair = s.getValue();
+            UniformBufferProgram uniformBufferProgram = new UniformBufferProgram(this.shaderProgram.getProgramId(), name);
+            uniformBufferProgram.createUniformBuffer(intPair.getA1(), intPair.getA2());
+            this.uniformBufferProgramMap.put(name, uniformBufferProgram);
         }
     }
 }

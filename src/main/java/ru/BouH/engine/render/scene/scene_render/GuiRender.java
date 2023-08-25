@@ -17,10 +17,12 @@ public class GuiRender extends SceneRenderBase {
     }
 
     public void onRender(double partialTicks) {
+        this.bindProgram();
         GL30.glEnable(GL30.GL_BLEND);
         GL30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
         GUI.renderGUI(partialTicks);
         GL30.glDisable(GL30.GL_BLEND);
+        this.unBindProgram();
     }
 
     public SceneWorld getRenderWorld() {

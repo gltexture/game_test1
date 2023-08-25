@@ -13,7 +13,7 @@ import java.util.Random;
 
 public class Game {
     public static final boolean DEBUG = true;
-    public static final String build = "18.08.2023";
+    public static final String build = "25.08.2023";
     public static long rngSeed;
     public static Random random;
     private static Game startScreen;

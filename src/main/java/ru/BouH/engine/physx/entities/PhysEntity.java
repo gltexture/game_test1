@@ -63,7 +63,7 @@ public abstract class PhysEntity extends CollidableWorldItem implements IDynamic
     public void onJBUpdate() {
         if (this.getRigidBody() != null) {
             this.addObjectVelocity(this.getVelocityVector());
-            if (this.getObjectSpeed() >= 50.0f) {
+            if (this.getObjectSpeed() >= 20.0f) {
                 this.enableExplicitCollisionDetection(this.getRigidBody());
             } else {
                 this.disableExplicitCollisionDetection(this.getRigidBody());

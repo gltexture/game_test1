@@ -59,7 +59,7 @@ public class MathHelper {
     }
 
     public static void getRotation(Matrix3f mat, Quat4f dest) {
-        FloatBuffer floatBuffer = BufferUtils.createFloatBuffer(4);
+        FloatBuffer floatBuffer = BufferUtils.createFloatBuffer(16);
 
         float trace = mat.m00 + mat.m11 + mat.m22;
 
@@ -97,8 +97,20 @@ public class MathHelper {
         return BF_cos[(int) (rad * BF_radToIndex) & BF_SIN_MASK];
     }
 
+    public static float clamp(float d1, float d2, float d3) {
+        return d1 < d2 ? d2 : MathHelper.min(d1, d3);
+    }
+
     public static double clamp(double d1, double d2, double d3) {
         return d1 < d2 ? d2 : MathHelper.min(d1, d3);
+    }
+
+    public static float min(float d1, float d2) {
+        return Math.min(d1, d2);
+    }
+
+    public static float max(float d1, float d2) {
+        return Math.max(d1, d2);
     }
 
     public static double min(double d1, double d2) {
