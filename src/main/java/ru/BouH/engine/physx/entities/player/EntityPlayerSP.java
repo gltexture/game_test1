@@ -133,7 +133,7 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
             PhysEntityCube entityPropInfo = new PhysLightCube(this.getWorld(), new Vector3d(1.0d), this.getPosition().add(this.getLookVector().mul(3.0f)));
             entityPropInfo.setScale(0.25d);
             Game.getGame().getProxy().addItemInWorlds(entityPropInfo, ItemRenderList.entityLamp);
-            entityPropInfo.setLight(new PointLight(new Vector3d(Game.random.nextFloat(), Game.random.nextFloat(), Game.random.nextFloat()), 7.5d));
+            entityPropInfo.setLight(new PointLight(new Vector3d(Game.random.nextFloat(), Game.random.nextFloat(), Game.random.nextFloat()), 6.5d));
             entityPropInfo.getLight().setOffset(new Vector3d(0, 1, 0));
             entityPropInfo.setObjectVelocity(this.getLookVector().mul(20.0f));
         }

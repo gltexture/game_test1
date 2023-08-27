@@ -5,6 +5,7 @@ import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.math.IntPair;
 import ru.BouH.engine.render.scene.RenderGroup;
+import ru.BouH.engine.render.scene.Scene;
 import ru.BouH.engine.render.scene.SceneRenderBase;
 import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.scene.programs.UniformBufferUtils;
@@ -13,20 +14,17 @@ import ru.BouH.engine.render.environment.sky.SkyBox;
 import ru.BouH.engine.render.RenderManager;
 
 public class SkyRender extends SceneRenderBase {
-    private final SceneWorld sceneWorld;
-
-    public SkyRender(SceneWorld sceneWorld) {
-        super(0, sceneWorld, RenderGroup.SKYBOX);
+    public SkyRender(Scene.SceneRenderConveyor sceneRenderConveyor) {
+        super(0, sceneRenderConveyor, RenderGroup.SKYBOX);
         this.addUniform("projection_matrix");
         this.addUniform("model_view_matrix");
         this.addUniform("texture_sampler");
         this.addUniform("use_texture");
         this.addUniformBuffer(UniformBufferUtils.UBO_SUN);
-        this.sceneWorld = sceneWorld;
     }
 
     public void onRender(double partialTicks) {
-        SkyBox skyBox = this.getRenderWorld().getEnvironment().getSky().getSkyBox();
+        SkyBox skyBox = this.getSceneWorld().getEnvironment().getSky().getSkyBox();
         if (skyBox != null) {
             this.bindProgram();
             this.getUtils().performProjectionMatrix();
@@ -48,14 +46,5 @@ public class SkyRender extends SceneRenderBase {
             GL30.glBindVertexArray(0);
             this.unBindProgram();
         }
-    }
-
-    public void onStartRender() {
-        super.onStartRender();
-    }
-
-
-    public SceneWorld getRenderWorld() {
-        return this.sceneWorld;
     }
 }

@@ -65,7 +65,7 @@ public class FreeCamera extends Camera {
             moveZ += Math.cos(Math.toRadians(this.getCamRotation().y - 90)) * direction.x * FreeCamera.CAM_SPEED;
         }
         if (direction.y != 0) {
-            moveY += direction.y * FreeCamera.CAM_SPEED;
+            moveY += direction.y * FreeCamera.CAM_SPEED * 0.25f;
         }
         this.addCameraPos(new Vector3d(moveX, moveY, moveZ));
     }

@@ -5,12 +5,16 @@ in vec3 mv_vertex_normal;
 in vec3 mv_vert_pos;
 out vec4 frag_color;
 
+in vec3 out_view_position;
+in vec4 out_world_position;
+
 uniform vec3 quads_c1;
 uniform vec3 quads_c2;
 uniform int quads_scaling;
 
 uniform vec4 object_rgb;
 uniform sampler2D texture_sampler;
+uniform sampler2D shadow_map_sampler;
 uniform int use_texture;
 
 uniform int enable_light;
@@ -51,6 +55,20 @@ vec4 calc_sun_light(vec3, vec3, vec3);
 vec4 calc_point_light(PointLight, vec3, vec3);
 vec4 calc_light_factor(vec3, float, vec3, vec3, vec3);
 vec4 calc_light();
+float calc_shadows(vec4, int);
+float calc_dist_proj_shadow(vec4, vec2, int);
+float texture_proj(vec4, vec2, int);
+int calc_cascade_index();
+
+struct CascadeShadow {
+    mat4 projection_view_matrix;
+    float split_distance;
+};
+
+uniform CascadeShadow CShadows[3];
+uniform sampler2D shadowMap_0;
+uniform sampler2D shadowMap_1;
+uniform sampler2D shadowMap_2;
 
 void main()
 {
@@ -59,17 +77,58 @@ void main()
 }
 
 vec4 calc_light() {
+    int cascadeIndex = calc_cascade_index();
+    float shadow_factor = calc_shadows(out_world_position, cascadeIndex);
+
     vec4 lightFactors = vec4(0.);
     vec4 calcSunFactor = calc_sun_light(vec3(sunX, sunY, sunZ), mv_vert_pos, mv_vertex_normal);
-    lightFactors += calcSunFactor;
 
     for (int i = 0; i < p_l.length(); i++) {
-        vec4 calcPointLightFactor = calc_point_light(p_l[i], mv_vert_pos, mv_vertex_normal);
+        PointLight p = p_l[i];
+        vec4 calcPointLightFactor = p.brightness == 0 ? vec4(0.) : calc_point_light(p, mv_vert_pos, mv_vertex_normal);
         lightFactors += calcPointLightFactor;
+        float r = calcPointLightFactor.r;
+        float g = calcPointLightFactor.g;
+        float b = calcPointLightFactor.b;
+        float f1 = r + g + b;
+        shadow_factor += (f1 / 3.0);
     }
 
+    lightFactors += calcSunFactor * clamp(shadow_factor, 0., 1.);
     lightFactors += ambient;
     return lightFactors;
+}
+
+int calc_cascade_index() {
+    int cascadeIndex;
+    cascadeIndex = int(out_view_position.z < CShadows[0].split_distance) + int(out_view_position.z < CShadows[1].split_distance);
+    return cascadeIndex++;
+}
+
+float calc_dist_proj_shadow(vec4 shadow_coord, vec2 offset, int idx) {
+    float shadow = 1.0;
+    float dist = texture(idx == 0 ? shadowMap_0 : idx == 1 ? shadowMap_1 : shadowMap_2, vec2(shadow_coord.xy + offset)).r;
+    return shadow_coord.w > 0 && dist < shadow_coord.z - 0.0005 ? 0.25 : shadow;
+}
+
+float texture_proj(vec4 shadow_coord, vec2 offset, int idx) {
+    return shadow_coord.z > -1.0 && shadow_coord.z < 1.0 ? calc_dist_proj_shadow(shadow_coord, offset, idx) : 1.0;
+}
+
+float calc_shadows(vec4 world_pos, int idx) {
+    vec4 shadow_map_pos = CShadows[idx].projection_view_matrix * world_pos;
+    float shadow = 1.0;
+    vec4 shadow_coord = (shadow_map_pos / shadow_map_pos.w) * 0.5 + 0.5;
+    shadow = texture_proj(shadow_coord, vec2(0, 0), idx);
+    vec2 texel_size = 1.0 / textureSize(idx == 0 ? shadowMap_0 : idx == 1 ? shadowMap_1 : shadowMap_2, 0);
+    for (int x = -1; x <= 1; ++x) {
+        for (int y = -1; y <= 1; ++y) {
+            float pcfDepth = texture(idx == 0 ? shadowMap_0 : idx == 1 ? shadowMap_1 : shadowMap_2, shadow_coord.xy + vec2(x, y) * texel_size).r;
+            shadow += shadow_coord.z - 0.0005 > pcfDepth ? 0.0 : 1.0;
+        }
+    }
+    shadow /= 9.0;
+    return shadow;
 }
 
 vec4 setup_colors(vec2 texture_c) {
@@ -86,10 +145,10 @@ vec4 calc_light_factor(vec3 colors, float brightness, vec3 vPos, vec3 light_dir,
     diffuseC = vec4(colors, 1.) * brightness * diffuseF;
 
     vec3 camDir = normalize(camera_pos - vPos);
-    vec3 from_light = -light_dir;
-    vec3 reflectionF = normalize(reflect(from_light, vNormal));
-    specularF = max(dot(camDir, reflectionF), 0.);
-    specularF = pow(specularF, 32.0);
+    vec3 from_light = light_dir;
+    vec3 reflectionF = normalize(from_light + camDir);
+    specularF = max(dot(vNormal, reflectionF), 0.);
+    specularF = pow(specularF, 16.0);
     specularC = brightness * specularF * vec4(colors, 1.);
 
     return diffuseC + specularC;

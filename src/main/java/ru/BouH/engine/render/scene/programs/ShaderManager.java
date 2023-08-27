@@ -2,6 +2,7 @@ package ru.BouH.engine.render.scene.programs;
 
 import org.lwjgl.opengl.GL43;
 import ru.BouH.engine.game.Game;
+import ru.BouH.engine.game.exception.GameException;
 import ru.BouH.engine.math.IntPair;
 import ru.BouH.engine.render.scene.RenderGroup;
 import ru.BouH.engine.render.scene.SceneRenderBase;

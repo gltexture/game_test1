@@ -9,7 +9,7 @@ import ru.BouH.engine.game.g_static.render.ItemRenderList;
 
 public class WorldEvents {
     public static void addEntities(World world) {
-        PhysEntityCube entityPropInfo = new PhysEntityCube(world, new Vector3d(1, 1, 1), new Vector3d(1.0d, 15.0d, 1.0d));
+        PhysEntityCube entityPropInfo = new PhysEntityCube(world, new Vector3d(1, 1, 1), new Vector3d(00.0d, 15.0d, 10.0d));
         Game.getGame().getProxy().addItemInWorlds(entityPropInfo, ItemRenderList.entityCube);
     }
 

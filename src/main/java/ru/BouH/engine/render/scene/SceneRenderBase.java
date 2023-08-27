@@ -19,18 +19,18 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 public abstract class SceneRenderBase {
+    private final int renderPriority;
     private final RenderGroup renderGroup;
     private final ShaderManager shaderManager;
-    private final int renderPriority;
-    private final SceneWorld sceneWorld;
+    private final Scene.SceneRenderConveyor sceneRenderConveyor;
     private final SceneRenderUtils sceneRenderUtils;
 
-    protected SceneRenderBase(int renderPriority, SceneWorld sceneWorld, RenderGroup renderGroup) {
+    protected SceneRenderBase(int renderPriority, Scene.SceneRenderConveyor sceneRenderConveyor, RenderGroup renderGroup) {
         this.renderPriority = renderPriority;
         Game.getGame().getLogManager().log("Scene \"" + renderGroup.getPath() + "\" init");
         this.renderGroup = renderGroup;
         this.shaderManager = new ShaderManager(renderGroup);
-        this.sceneWorld = sceneWorld;
+        this.sceneRenderConveyor = sceneRenderConveyor;
         this.sceneRenderUtils = new SceneRenderUtils();
     }
 
@@ -144,8 +144,16 @@ public abstract class SceneRenderBase {
         return this.sceneRenderUtils;
     }
 
+    public Scene.SceneRenderConveyor getSceneRenderConveyor() {
+        return this.sceneRenderConveyor;
+    }
+
+    public Scene.ShadowDispatcher getShadowDispatcher() {
+        return this.getSceneRenderConveyor().getShadowDispatcher();
+    }
+
     public SceneWorld getSceneWorld() {
-        return this.sceneWorld;
+        return this.getSceneRenderConveyor().getRenderWorld();
     }
 
     public class SceneRenderUtils {
@@ -170,6 +178,10 @@ public abstract class SceneRenderBase {
 
         public void performModelViewMatrix3d(Matrix4d matrix4d) {
             SceneRenderBase.this.performUniform("model_view_matrix", matrix4d);
+        }
+
+        public void performModelMatrix3d(Model3D model3D) {
+            SceneRenderBase.this.performUniform("model_matrix", RenderManager.instance.getModelMatrix(model3D));
         }
 
         public void performProperties(RenderData.RenderProperties renderProperties) {

@@ -1,7 +1,12 @@
 package ru.BouH.engine.render.scene.fabric;
 
+import org.joml.Matrix4d;
+import org.joml.Vector3d;
+import org.joml.Vector3f;
 import org.lwjgl.opengl.GL30;
+import ru.BouH.engine.game.Game;
 import ru.BouH.engine.physx.brush.WorldBrush;
+import ru.BouH.engine.render.RenderManager;
 import ru.BouH.engine.render.scene.SceneRenderBase;
 import ru.BouH.engine.render.scene.components.Model3D;
 import ru.BouH.engine.render.scene.objects.IRenderObject;

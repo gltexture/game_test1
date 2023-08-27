@@ -57,7 +57,7 @@ public class GUI {
     }
 
     private static void performMatrix(Model2D model2D) {
-        sceneRenderBase.performUniform("projection_model_matrix", RenderManager.instance.getOrthoModelMatrix(model2D));
+        sceneRenderBase.performUniform("projection_model_matrix", RenderManager.instance.getOrthographicModelMatrix(model2D));
     }
 
     private static void renderPicture(double partialTicks, int x, int y, int w, int h, PNGTexture PNGTexture) {

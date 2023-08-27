@@ -34,9 +34,12 @@ layout (std140, binding = 3) uniform Misc {
 out vec2 out_texture;
 out vec3 mv_vertex_normal;
 out vec3 mv_vert_pos;
+out vec3 out_view_position;
+out vec4 out_world_position;
 
 uniform mat4 model_view_matrix;
 uniform mat4 projection_matrix;
+uniform mat4 model_matrix;
 
 void main()
 {
@@ -45,4 +48,7 @@ void main()
     out_texture = texture;
     mv_vertex_normal = normalize(model_view_matrix * vec4(vertex_normal, 0.0f)).xyz;
     mv_vert_pos = mv_pos.xyz;
+
+    out_world_position = model_matrix * vec4(position, 1.0);
+    out_view_position = mv_pos.xyz;
 }

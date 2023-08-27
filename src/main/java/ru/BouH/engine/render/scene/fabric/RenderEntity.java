@@ -1,8 +1,12 @@
 package ru.BouH.engine.render.scene.fabric;
 
+import org.joml.Matrix4d;
+import org.joml.Vector3d;
+import org.joml.Vector3f;
 import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.physx.entities.PhysEntity;
+import ru.BouH.engine.render.RenderManager;
 import ru.BouH.engine.render.scene.SceneRenderBase;
 import ru.BouH.engine.render.scene.components.Model3D;
 import ru.BouH.engine.render.scene.objects.IRenderObject;
@@ -20,7 +24,6 @@ public class RenderEntity implements RenderFabric {
         PhysEntity physEntity = entityItem.getEntity();
         if (entityItem.isHasModel()) {
             RenderData renderData = entityItem.getRenderData();
-            RenderData.RenderProperties renderProperties = renderData.getRenderProperties();
             Model3D model3D = entityItem.getModel3D();
             model3D.setScale(physEntity.getScale());
             if (entityItem.shouldInterpolatePos()) {

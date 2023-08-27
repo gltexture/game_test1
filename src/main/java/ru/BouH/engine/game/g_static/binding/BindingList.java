@@ -36,7 +36,7 @@ public class BindingList {
 
     public Key keyY = new FunctionalKey(e -> {
         if (e == IKeyAction.KeyAction.CLICK) {
-            Scene.SceneRenderConveyor.setRender(Scene.SceneRenderConveyor.CURRENT_POST_RENDER + 1);
+            Scene.setPostRender(Scene.getPostRender() + 1);
         }
     }, GLFW.GLFW_KEY_Y);
 

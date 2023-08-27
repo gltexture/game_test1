@@ -25,6 +25,8 @@ float rand(vec2 co)
 void main()
 {
     frag_color = gamma_cor(choose_mode(post_mode), 0.9);
+    //float depthValue = texture(texture_sampler, out_texture).r;
+    //frag_color = vec4(vec3(depthValue), 1.0);
 }
 
 vec4 choose_mode(int i) {

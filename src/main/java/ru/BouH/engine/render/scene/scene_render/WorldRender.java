@@ -3,11 +3,13 @@ package ru.BouH.engine.render.scene.scene_render;
 import org.joml.Vector3d;
 import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.game.Game;
-import ru.BouH.engine.physx.collision.JBulletPhysics;
 import ru.BouH.engine.physx.entities.player.EntityPlayerSP;
-import ru.BouH.engine.physx.world.object.WorldItem;
+import ru.BouH.engine.render.RenderManager;
+import ru.BouH.engine.render.environment.shadows.CascadeShadowBuilder;
 import ru.BouH.engine.render.scene.RenderGroup;
+import ru.BouH.engine.render.scene.Scene;
 import ru.BouH.engine.render.scene.SceneRenderBase;
+import ru.BouH.engine.render.scene.components.Model3D;
 import ru.BouH.engine.render.scene.objects.items.PhysXObject;
 import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.scene.objects.texture.samples.Color3FA;
@@ -16,12 +18,11 @@ import ru.BouH.engine.render.scene.primitive_forms.VectorForm;
 import ru.BouH.engine.render.scene.programs.UniformBufferUtils;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 
-public class WorldRender extends SceneRenderBase {
-    private final SceneWorld sceneWorld;
+import java.util.List;
 
-    public WorldRender(SceneWorld sceneWorld) {
-        super(1, sceneWorld, RenderGroup.WORLD);
-        this.sceneWorld = sceneWorld;
+public class WorldRender extends SceneRenderBase {
+    public WorldRender(Scene.SceneRenderConveyor sceneRenderConveyor) {
+        super(1, sceneRenderConveyor, RenderGroup.WORLD);
         this.addUniform("dimensions");
         this.addUniform("tick");
         this.addUniform("projection_matrix");
@@ -36,6 +37,13 @@ public class WorldRender extends SceneRenderBase {
         this.addUniformBuffer(UniformBufferUtils.UBO_SUN);
         this.addUniformBuffer(UniformBufferUtils.UBO_POINT_LIGHTS);
         this.addUniformBuffer(UniformBufferUtils.UBO_MISC);
+
+        this.addUniform("model_matrix");
+        for (int i = 0; i < CascadeShadowBuilder.SHADOW_CASCADE_MAX; i++) {
+            this.addUniform("shadowMap_" + i);
+            this.addUniform("CShadows[" + i + "]" + ".projection_view_matrix");
+            this.addUniform("CShadows[" + i + "]" + ".split_distance");
+        }
     }
 
     public void onRender(double partialTicks) {
@@ -44,14 +52,29 @@ public class WorldRender extends SceneRenderBase {
         this.performUniform("dimensions", Game.getGame().getScreen().getWindow().getWindowDimensions());
         this.getUtils().performProjectionMatrix();
         this.renderDebugSunDirection(this);
-        for (PhysXObject entityItem : this.sceneWorld.getFilteredEntityList()) {
+        for (PhysXObject entityItem : this.getSceneWorld().getEntityList()) {
             this.renderHitBox(partialTicks, this, entityItem);
             if (entityItem.isHasRender()) {
+                if (entityItem.isHasModel()) {
+                    this.performLightModelProjection(1, entityItem.getModel3D());
+                }
                 this.getUtils().performProperties(entityItem.getRenderData().getRenderProperties());
                 entityItem.renderFabric().onRender(partialTicks, this, entityItem);
             }
         }
         this.unBindProgram();
+    }
+
+    private void performLightModelProjection(int start, Model3D model3D) {
+        this.getUtils().performModelMatrix3d(model3D);
+        List<CascadeShadowBuilder> cascadeShadowBuilders = this.getShadowDispatcher().getCascadeShadowBuilders();
+        for (int i = 0; i < CascadeShadowBuilder.SHADOW_CASCADE_MAX; i++) {
+            this.performUniform("shadowMap_" + i, start + i);
+            CascadeShadowBuilder cascadeShadowBuilder = cascadeShadowBuilders.get(i);
+            this.performUniform("CShadows[" + i + "]" + ".projection_view_matrix", cascadeShadowBuilder.getProjectionViewMatrix());
+            this.performUniform("CShadows[" + i + "]" + ".split_distance", (float) cascadeShadowBuilder.getSplitDistance());
+        }
+        this.getShadowDispatcher().getDepthMap().bindTextures(GL30.GL_TEXTURE1);
     }
 
     private void renderDebugSunDirection(SceneRenderBase sceneRenderBase) {
@@ -71,13 +94,6 @@ public class WorldRender extends SceneRenderBase {
     private void renderHitBox(double partialTicks, SceneRenderBase sceneRenderBase, PhysXObject physXObject) {
         this.getUtils().disableLight();
         IForm form = physXObject.getCollisionForm();
-        WorldItem worldItem = physXObject.getWorldItem();
-        if (worldItem instanceof JBulletPhysics) {
-            JBulletPhysics bulletPhysics = (JBulletPhysics) worldItem;
-            if (bulletPhysics.hasCollision()) {
-
-            }
-        }
         if (form != null && form.hasMesh()) {
             if (Game.getGame().getScreen().getScene().isCameraAttachedToItem(physXObject.getWorldItem()) && physXObject.getWorldItem() instanceof EntityPlayerSP) {
                 EntityPlayerSP entityPlayerSP = (EntityPlayerSP) physXObject.getWorldItem();

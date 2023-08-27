@@ -1,6 +1,7 @@
 package ru.BouH.engine.render.scene.components;
 
 import org.joml.Matrix4d;
+import org.joml.Quaterniond;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 import ru.BouH.engine.render.scene.world.camera.Camera;
@@ -12,6 +13,9 @@ public class TransformMath {
     private final Matrix4d viewMatrix;
     private final Matrix4d orthographicMatrix;
     private final Matrix4d orthoModelMatrix;
+    private final Matrix4d modelMatrix;
+    private final Matrix4d lightViewMatrix;
+    private final Matrix4d modelLightMatrix;
 
     public TransformMath() {
         this.projectionMatrix = new Matrix4d();
@@ -19,6 +23,21 @@ public class TransformMath {
         this.viewMatrix = new Matrix4d();
         this.orthographicMatrix = new Matrix4d();
         this.orthoModelMatrix = new Matrix4d();
+        this.modelMatrix = new Matrix4d();
+        this.lightViewMatrix = new Matrix4d();
+        this.modelLightMatrix = new Matrix4d();
+    }
+
+    public final Matrix4d getModelMatrix(Model3D model3D) {
+        Quaterniond quaterniond = new Quaterniond();
+        quaterniond.rotateXYZ(Math.toRadians(model3D.getRotation().x), Math.toRadians(model3D.getRotation().y), Math.toRadians(model3D.getRotation().z));
+        return this.modelMatrix.identity().translationRotateScale(model3D.getPosition(), quaterniond, model3D.getScale());
+    }
+
+    public final Matrix4d getLightViewMatrix(Vector3d pos, Vector3d rot) {
+        this.lightViewMatrix.identity();
+        this.lightViewMatrix.rotate(Math.toRadians(rot.x), new Vector3d(1.0d, 0.0d, 0.0d)).rotate(Math.toRadians(rot.y), new Vector3d(0.0d, 1.0d, 0.0d)).translate(new Vector3d(pos).negate());
+        return this.lightViewMatrix;
     }
 
     public final Matrix4d getProjectionMatrix(float fov, float width, float height, float zNear, float zFar) {

@@ -2,16 +2,14 @@ package ru.BouH.engine.render.scene.scene_render;
 
 import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.render.scene.RenderGroup;
+import ru.BouH.engine.render.scene.Scene;
 import ru.BouH.engine.render.scene.SceneRenderBase;
 import ru.BouH.engine.render.scene.objects.gui.GUI;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 
 public class GuiRender extends SceneRenderBase {
-    private final SceneWorld sceneWorld;
-
-    public GuiRender(SceneWorld sceneWorld) {
-        super(3, sceneWorld, RenderGroup.GUI);
-        this.sceneWorld = sceneWorld;
+    public GuiRender(Scene.SceneRenderConveyor sceneRenderConveyor) {
+        super(3, sceneRenderConveyor, RenderGroup.GUI);
         this.addUniform("projection_model_matrix");
         this.addUniform("colour");
     }
@@ -23,9 +21,5 @@ public class GuiRender extends SceneRenderBase {
         GUI.renderGUI(partialTicks);
         GL30.glDisable(GL30.GL_BLEND);
         this.unBindProgram();
-    }
-
-    public SceneWorld getRenderWorld() {
-        return this.sceneWorld;
     }
 }
