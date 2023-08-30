@@ -5,10 +5,7 @@ import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.*;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import ru.BouH.engine.game.Game;
@@ -22,11 +19,13 @@ import ru.BouH.engine.game.g_static.render.ItemRenderList;
 import ru.BouH.engine.render.scene.Scene;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 import ru.BouH.engine.render.scene.world.camera.ICamera;
+import ru.BouH.engine.render.screen.timer.Timer;
 import ru.BouH.engine.render.screen.window.Window;
 
 import java.nio.IntBuffer;
 
 public class Screen {
+    private final Timer timer;
     public static int FPS;
     public static int PHYS1_TPS;
     public static int PHYS2_TPS;
@@ -34,9 +33,14 @@ public class Screen {
     private Scene scene;
     private Window window;
     public boolean isInFocus;
+    public static int MSAA_SAMPLES = 4;
     public static final int defaultW = 1280;
     public static final int defaultH = 720;
     private IGWindow igWindow;
+
+    public Screen() {
+        this.timer = new Timer(PhysX.TICKS_PER_SECOND);
+    }
 
     public void init() {
         Game game = Game.getGame();
@@ -116,6 +120,10 @@ public class Screen {
         return true;
     }
 
+    public Timer getTimer() {
+        return this.timer;
+    }
+
     public static boolean isScreenActive() {
         Window window1 = Game.getGame().getScreen().getWindow();
         if (window1.getWidth() == 0 || window1.getHeight() == 0) {
@@ -132,6 +140,13 @@ public class Screen {
         return this.getScene().getCurrentCamera();
     }
 
+    private void enableMSAA() {
+        GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, Screen.MSAA_SAMPLES);
+        GL11.glEnable(GL13.GL_MULTISAMPLE);
+        GL11.glHint(GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST);
+        GL11.glHint(GL11.GL_POLYGON_SMOOTH_HINT, GL11.GL_NICEST);
+    }
+
     private void updateScreen() {
         GL11.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         Game.getGame().getProfiler().startSection(SectionManager.startSystem);
@@ -143,19 +158,16 @@ public class Screen {
         this.controllerDispatcher.attachControllerTo(ControllerDispatcher.mouseKeyboardController, Game.getGame().getPlayerSP());
         int fps = 0;
         double lastFPS = GLFW.glfwGetTime();
-        final float tps = 1.0f / PhysX.TICKS_PER_SECOND;
-        double lastTime = 0;
         GLFW.glfwSetTime(0.0d);
+        this.enableMSAA();
         while (!Game.getGame().shouldBeClosed) {
             Game.getGame().shouldBeClosed = GLFW.glfwWindowShouldClose(this.getWindow().getDescriptor());
+            this.getTimer().update();
             GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
             GL30.glEnable(GL30.GL_CULL_FACE);
             GL30.glCullFace(GL30.GL_BACK);
             this.igWindow.renderIMG();
             double currentTime = GLFW.glfwGetTime();
-            double deltaTime = currentTime - lastTime;
-            lastTime = currentTime;
-            double progress = deltaTime / tps;
             fps += 1;
             if (currentTime - lastFPS >= 1.0f) {
                 Screen.PHYS1_TPS = PhysX.TPS;
@@ -168,7 +180,7 @@ public class Screen {
             }
             this.getRenderWorld().onWorldUpdate();
             if (this.getScene().getCurrentCamera() != null) {
-                this.getScene().renderScene(MathHelper.clamp(progress, 0.0f, 1.0f));
+                this.getScene().renderScene(MathHelper.clamp(this.getTimer().getRenderPartial(), 0.0f, 1.0f));
             }
             if (this.getControllerDispatcher() != null) {
                 this.getControllerDispatcher().updateController(this.isInFocus, this.getWindow());

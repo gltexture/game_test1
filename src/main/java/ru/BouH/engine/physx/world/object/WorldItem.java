@@ -62,7 +62,7 @@ public abstract class WorldItem implements IWorldObject {
     }
 
     public Vector3d getPrevPosition() {
-        return new Vector3d(this.prevPosition);
+        return this.prevPosition;
     }
 
     public int getTicksExisted() {

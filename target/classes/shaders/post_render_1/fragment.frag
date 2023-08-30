@@ -1,12 +1,14 @@
 #version 430
 
 in vec2 out_texture;
-out vec4 frag_color;
+layout (location = 0) out vec4 frag_color;
+
 uniform sampler2D texture_sampler;
+uniform sampler2D blur_sampler;
 uniform int post_mode;
 
 vec4 negate_c(vec4);
-vec4 gamma_cor(vec4, float);
+vec4 hdr(vec4, float, float);
 vec4 choose_mode(int);
 vec4 simple_texture();
 vec4 negative_texture();
@@ -24,9 +26,17 @@ float rand(vec2 co)
 
 void main()
 {
-    frag_color = gamma_cor(choose_mode(post_mode), 0.9);
-    //float depthValue = texture(texture_sampler, out_texture).r;
-    //frag_color = vec4(vec3(depthValue), 1.0);
+    frag_color = hdr(choose_mode(post_mode), 2.15, 0.65);
+}
+
+vec4 hdr(vec4 in_col, float exposure, float gamma) {
+    vec3 rgb = in_col.rgb;
+    vec4 blurSampler = texture(blur_sampler, out_texture);
+    vec3 bl_c = blurSampler.rgb;
+    rgb += bl_c;
+    vec3 mapped = vec3(1.) - exp(-rgb * exposure);
+    mapped = pow(mapped, vec3(1.0 / gamma));
+    return vec4(mapped, in_col.w);
 }
 
 vec4 choose_mode(int i) {
@@ -53,12 +63,6 @@ vec4 ps1_test2() {
     float average = (tex.r + tex.g + tex.b) / 3.0;
     vec3 retroColor = vec3(average, average * 0.7, average * 0.4);
     return vec4(retroColor, tex.a);
-}
-
-vec4 gamma_cor(vec4 in_col, float gamma) {
-    vec4 c = in_col;
-    vec3 g_cor = pow(c.rgb, vec3(1.0 / gamma));
-    return vec4(g_cor, c.a);
 }
 
 vec4 negate_c(vec4 in_col) {

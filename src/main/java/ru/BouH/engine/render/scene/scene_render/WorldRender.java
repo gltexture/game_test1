@@ -69,8 +69,8 @@ public class WorldRender extends SceneRenderBase {
         this.getUtils().performModelMatrix3d(model3D);
         List<CascadeShadowBuilder> cascadeShadowBuilders = this.getShadowDispatcher().getCascadeShadowBuilders();
         for (int i = 0; i < CascadeShadowBuilder.SHADOW_CASCADE_MAX; i++) {
-            this.performUniform("shadowMap_" + i, start + i);
             CascadeShadowBuilder cascadeShadowBuilder = cascadeShadowBuilders.get(i);
+            this.performUniform("shadowMap_" + i, start + i);
             this.performUniform("CShadows[" + i + "]" + ".projection_view_matrix", cascadeShadowBuilder.getProjectionViewMatrix());
             this.performUniform("CShadows[" + i + "]" + ".split_distance", (float) cascadeShadowBuilder.getSplitDistance());
         }
@@ -78,6 +78,7 @@ public class WorldRender extends SceneRenderBase {
     }
 
     private void renderDebugSunDirection(SceneRenderBase sceneRenderBase) {
+        GL30.glDisable(GL30.GL_MULTISAMPLE);
         this.getUtils().disableLight();
         VectorForm vectorForm = sceneRenderBase.getSceneWorld().getEnvironment().sunDebugVector;
         sceneRenderBase.getUtils().performModelViewMatrix3d(this.getSceneWorld(), vectorForm.getMeshInfo());
@@ -89,9 +90,11 @@ public class WorldRender extends SceneRenderBase {
         GL30.glDisableVertexAttribArray(0);
         GL30.glBindVertexArray(0);
         this.getUtils().enableLight();
+        GL30.glEnable(GL30.GL_MULTISAMPLE);
     }
 
     private void renderHitBox(double partialTicks, SceneRenderBase sceneRenderBase, PhysXObject physXObject) {
+        GL30.glDisable(GL30.GL_MULTISAMPLE);
         this.getUtils().disableLight();
         IForm form = physXObject.getCollisionForm();
         if (form != null && form.hasMesh()) {
@@ -116,6 +119,7 @@ public class WorldRender extends SceneRenderBase {
             GL30.glBindVertexArray(0);
         }
         this.getUtils().enableLight();
+        GL30.glEnable(GL30.GL_MULTISAMPLE);
     }
 
     public void onStartRender() {

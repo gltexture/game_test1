@@ -1,6 +1,5 @@
 package ru.BouH.engine.render.scene.objects.texture;
 
-import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3d;
 import ru.BouH.engine.render.scene.objects.texture.samples.DefaultSample;
 
@@ -12,7 +11,7 @@ public class WorldItemTexture {
         this.sample = sample == null ? WorldItemTexture.standardError.getSample() : sample;
     }
 
-    public static WorldItemTexture createItemTexture(@NotNull Sample sample) {
+    public static WorldItemTexture createItemTexture(Sample sample) {
         return new WorldItemTexture(sample);
     }
 

@@ -8,8 +8,8 @@ import java.util.List;
 
 public class CascadeShadowBuilder {
     public static final int SHADOW_CASCADE_MAX = 3;
-    private Matrix4d projectionViewMatrix;
-    private double splitDistance;
+    public Matrix4d projectionViewMatrix;
+    public double splitDistance;
 
     public CascadeShadowBuilder() {
         this.projectionViewMatrix = new Matrix4d();
@@ -31,7 +31,7 @@ public class CascadeShadowBuilder {
 
         for (int i = 0; i < CascadeShadowBuilder.SHADOW_CASCADE_MAX; i++) {
             double p = (i + 1) / (double) (CascadeShadowBuilder.SHADOW_CASCADE_MAX);
-            double log = (float) (nearClip * java.lang.Math.pow(ratio, p));
+            double log = (float) (nearClip * Math.pow(ratio, p));
             double uniform = nearClip + range * p;
             double d = cascadeSplitLambda * (log - uniform) + uniform;
             cascadeSplits[i] = (d - nearClip) / clipRange;
@@ -61,7 +61,7 @@ public class CascadeShadowBuilder {
             for (int j = 0; j < 4; j++) {
                 Vector3d dist = new Vector3d(frustumCorners[j + 4]).sub(frustumCorners[j]);
                 frustumCorners[j + 4] = new Vector3d(frustumCorners[j]).add(new Vector3d(dist).mul(splitDist));
-                frustumCorners[j] = new Vector3d(frustumCorners[j]).add(new Vector3d(dist).mul(lastSplitDist));
+                frustumCorners[j].add(frustumCorners[j], dist.mul(lastSplitDist));
             }
 
             Vector3d frustumCenter = new Vector3d(0.0f);
@@ -73,9 +73,9 @@ public class CascadeShadowBuilder {
             double radius = 0.0f;
             for (int j = 0; j < 8; j++) {
                 double distance = (new Vector3d(frustumCorners[j]).sub(frustumCenter)).length();
-                radius = java.lang.Math.max(radius, distance);
+                radius = Math.max(radius, distance);
             }
-            radius = (float) java.lang.Math.ceil(radius * 16.0f) / 16.0f;
+            radius = Math.ceil(radius * 16.0f) / 16.0f;
 
             Vector3d maxExtents = new Vector3d(radius);
             Vector3d minExtents = new Vector3d(maxExtents).mul(-1);
@@ -84,13 +84,29 @@ public class CascadeShadowBuilder {
             Vector3d eye = new Vector3d(frustumCenter).sub(new Vector3d(lightDir).mul(-minExtents.z));
             Vector3d up = new Vector3d(0.0f, 1.0f, 0.0f);
             Matrix4d lightViewMatrix = new Matrix4d().lookAt(eye, frustumCenter, up);
-            Matrix4d lightOrthographicMatrix = new Matrix4d().ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, 0.0f, maxExtents.z - minExtents.z, true);
+            Matrix4d lightOrthographicMatrix = new Matrix4d().ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, 0.0f, maxExtents.sub(minExtents).z, true);
 
             CascadeShadowBuilder cascadeShadowBuilder = cascadeShadowBuilders.get(i);
             cascadeShadowBuilder.splitDistance = (nearClip + splitDist * clipRange) * -1.0f;
-            cascadeShadowBuilder.projectionViewMatrix = lightOrthographicMatrix.mul(lightViewMatrix);
 
-            lastSplitDist = cascadeSplits[i];
+            Matrix4d shadowMatrix = new Matrix4d(lightOrthographicMatrix.mul(lightViewMatrix));
+            Vector4d shadowOrigin = new Vector4d(0.0d, 0.0d, 0.0d, 1.0d);
+            shadowOrigin.mul(shadowMatrix, shadowOrigin);
+            shadowOrigin.mul(DepthTexture.MAP_DIMENSIONS).div(2.0f);
+
+            Vector4d roundedOrigin = new Vector4d();
+            shadowOrigin.round(roundedOrigin);
+            Vector4d roundOffset = new Vector4d(roundedOrigin).sub(shadowOrigin);
+            roundOffset.mul(2.0d).div(DepthTexture.MAP_DIMENSIONS);
+            roundOffset.z = 0.0d;
+            roundOffset.w = 0.0d;
+
+            Matrix4d shadowProj = new Matrix4d(lightOrthographicMatrix);
+            shadowProj.m30(shadowProj.m30() + roundOffset.x);
+            shadowProj.m31(shadowProj.m31() + roundOffset.y);
+            shadowProj.m32(shadowProj.m32() + roundOffset.z);
+            shadowProj.m33(shadowProj.m33() + roundOffset.w);
+            cascadeShadowBuilder.projectionViewMatrix = shadowProj;
         }
     }
 

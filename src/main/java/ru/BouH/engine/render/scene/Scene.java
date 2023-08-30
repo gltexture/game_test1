@@ -109,6 +109,10 @@ public class Scene {
         return this.screen;
     }
 
+    public Vector2d getWindowDimensions() {
+        return this.getWindow().getWindowDimensions();
+    }
+
     public Window getWindow() {
         return this.window;
     }
@@ -229,22 +233,25 @@ public class Scene {
     }
 
     public class SceneRenderConveyor {
-        private final FrameBufferObjectProgram postProcessFBO;
         private final ShaderManager postProcessingShader;
+        private final ShaderManager blurShader;
         private final ShadowDispatcher shadowDispatcher;
         private boolean wantsTakeScreenshot;
         private int CURRENT_POST_RENDER = 0;
 
         public SceneRenderConveyor() {
-            this.postProcessFBO = new FrameBufferObjectProgram(Scene.this.getWindow());
             this.postProcessingShader = new ShaderManager("post_render_1");
+            this.blurShader = new ShaderManager("post_blur");
             this.shadowDispatcher = new ShadowDispatcher(Scene.this.getRenderWorld(), CascadeShadowBuilder.SHADOW_CASCADE_MAX);
             this.initShaders();
         }
 
         private void initShaders() {
+            this.getBlurShader().addUniform("projection_model_matrix");
+            this.getBlurShader().addUniform("texture_sampler");
             this.getPostProcessingShader().addUniform("projection_model_matrix");
             this.getPostProcessingShader().addUniform("texture_sampler");
+            this.getPostProcessingShader().addUniform("blur_sampler");
             this.getPostProcessingShader().addUniform("post_mode");
             this.getPostProcessingShader().addUniformBuffer(UniformBufferUtils.UBO_MISC);
         }
@@ -260,24 +267,46 @@ public class Scene {
             this.getShadowDispatcher().renderDepthBuffer(partialTicks, Scene.this.getEntityRender());
 
             Vector2d v2 = Game.getGame().getScreen().getDimensions();
+            Vector2i dim = new Vector2i((int) v2.x, (int) v2.y);
             Model2D model2D = this.genFrameBufferSquare((float) v2.x, (float) v2.y);
 
-            FrameBufferObjectProgram frameBufferObjectProgram = this.getPostProcessFBO();
-            frameBufferObjectProgram.createRenderBuffer(v2);
+            FrameBufferObjectProgram fboBlur = new FrameBufferObjectProgram();
+            fboBlur.createFBO(dim, GL30.GL_RGBA, false);
 
-            frameBufferObjectProgram.bindFBO();
+            int[] at = new int[] {GL30.GL_COLOR_ATTACHMENT0, GL30.GL_COLOR_ATTACHMENT1};
+            FrameBufferObjectProgram sceneFbo = new FrameBufferObjectProgram();
+            sceneFbo.createFBO_MRT(dim, at, GL30.GL_RGBA16F, true);
+
+            sceneFbo.bindFBO();
+            GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
             this.renderMainScene(partialTicks, mainList);
-            frameBufferObjectProgram.unBindFBO();
+            sceneFbo.unBindFBO();
+
+            fboBlur.bindFBO();
+            this.getBlurShader().bind();
+            this.getBlurShader().performUniform("projection_model_matrix", RenderManager.instance.getOrthographicModelMatrix(model2D));
+            this.getBlurShader().performUniform("texture_sampler", 0);
+            GL30.glActiveTexture(GL30.GL_TEXTURE0);
+            sceneFbo.bindTextureFBO(1);
+            GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
+            this.renderTexture(model2D);
+            sceneFbo.unBindTextureFBO();
+            this.getBlurShader().unBind();
+            fboBlur.unBindFBO();
 
             this.getPostProcessingShader().bind();
             this.getPostProcessingShader().performUniform("projection_model_matrix", RenderManager.instance.getOrthographicModelMatrix(model2D));
             this.getPostProcessingShader().performUniform("texture_sampler", 0);
+            this.getPostProcessingShader().performUniform("blur_sampler", 1);
             this.getPostProcessingShader().performUniform("post_mode", this.getPostRender());
-
             GL30.glActiveTexture(GL30.GL_TEXTURE0);
-            frameBufferObjectProgram.bindTextureFBO();
+            sceneFbo.bindTextureFBO();
+            GL30.glActiveTexture(GL30.GL_TEXTURE1);
+            fboBlur.bindTextureFBO();
+            GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
             this.renderTexture(model2D);
-            frameBufferObjectProgram.unBindTextureFBO();
+            fboBlur.unBindTextureFBO();
+            sceneFbo.unBindTextureFBO();
             this.getPostProcessingShader().unBind();
 
             for (SceneRenderBase sceneRenderBase : additionalList) {
@@ -289,7 +318,8 @@ public class Scene {
                 this.writeBufferInFile();
                 this.wantsTakeScreenshot = false;
             }
-            frameBufferObjectProgram.clearFBO();
+            fboBlur.clearFBO();
+            sceneFbo.clearFBO();
             model2D.clean();
         }
 
@@ -306,8 +336,7 @@ public class Scene {
         }
 
         private void renderMainScene(double partialTicks, List<SceneRenderBase> mainList) {
-            GL30.glViewport(0, 0, Game.getGame().getScreen().getWidth(), Game.getGame().getScreen().getHeight());
-            GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
+            GL30.glViewport(0, 0, (int) Scene.this.getWindowDimensions().x, (int) Scene.this.getWindowDimensions().y);
             for (SceneRenderBase sceneRenderBase : mainList) {
                 sceneRenderBase.onRender(partialTicks);
             }
@@ -410,18 +439,20 @@ public class Scene {
             return new Model2D(new MeshModel(f1, i1, f2));
         }
 
-        public FrameBufferObjectProgram getPostProcessFBO() {
-            return this.postProcessFBO;
-        }
-
         public void onStartRender() {
+            this.getBlurShader().startProgram();
             this.getPostProcessingShader().startProgram();
             this.getShadowDispatcher().onStartRender();
         }
 
         public void onStopRender() {
+            this.getBlurShader().destroyProgram();
             this.getPostProcessingShader().destroyProgram();
             this.getShadowDispatcher().onStopRender();
+        }
+
+        public ShaderManager getBlurShader() {
+            return this.blurShader;
         }
 
         public ShaderManager getPostProcessingShader() {
@@ -460,7 +491,7 @@ public class Scene {
 
         private void renderDepthBuffer(double partialTicks, SceneRenderBase base) {
             Vector3f sunPos = this.getSceneWorld().getEnvironment().getSunPosition();
-            CascadeShadowBuilder.updateCascadeShadow(this.getCascadeShadowBuilders(), new Vector4d(sunPos, 1.0d), RenderManager.instance.getViewMatrix(base.getCamera()), RenderManager.instance.getProjectionMatrix());
+            CascadeShadowBuilder.updateCascadeShadow(this.getCascadeShadowBuilders(), new Vector4d(sunPos, 0.0d), RenderManager.instance.getViewMatrix(base.getCamera()), RenderManager.instance.getProjectionMatrix());
             GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, this.depthMap.getDepthFbo());
             GL30.glViewport(0, 0, DepthTexture.MAP_DIMENSIONS, DepthTexture.MAP_DIMENSIONS);
             this.getDepthShaderManager().bind();
@@ -492,6 +523,7 @@ public class Scene {
 
         public void onStopRender() {
             this.getDepthShaderManager().destroyProgram();
+            this.getDepthMap().cleanBuffer();
         }
 
         public ShaderManager getDepthShaderManager() {

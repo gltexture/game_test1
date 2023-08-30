@@ -1,5 +1,7 @@
 package ru.BouH.engine.render.scene.world;
 
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.exception.GameException;
 import ru.BouH.engine.game.g_static.profiler.SectionManager;

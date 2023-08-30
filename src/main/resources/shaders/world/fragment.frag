@@ -3,7 +3,8 @@
 in vec2 out_texture;
 in vec3 mv_vertex_normal;
 in vec3 mv_vert_pos;
-out vec4 frag_color;
+layout (location = 0) out vec4 frag_color;
+layout (location = 1) out vec4 bright_color;
 
 in vec3 out_view_position;
 in vec4 out_world_position;
@@ -73,13 +74,14 @@ uniform sampler2D shadowMap_2;
 void main()
 {
     vec4 lightFactor = enable_light == 1 ? calc_light() : vec4(1.);
-    frag_color = setup_colors(out_texture) * lightFactor;
+    vec4 fin_col = setup_colors(out_texture) * lightFactor;
+    frag_color = fin_col;
+
+    float brightness = frag_color.r + frag_color.g + frag_color.b;
+    bright_color = brightness >= 8.0 ? frag_color : vec4(0., 0., 0., 1.);
 }
 
 vec4 calc_light() {
-    int cascadeIndex = calc_cascade_index();
-    float shadow_factor = calc_shadows(out_world_position, cascadeIndex);
-
     vec4 lightFactors = vec4(0.);
     vec4 calcSunFactor = calc_sun_light(vec3(sunX, sunY, sunZ), mv_vert_pos, mv_vertex_normal);
 
@@ -87,14 +89,9 @@ vec4 calc_light() {
         PointLight p = p_l[i];
         vec4 calcPointLightFactor = p.brightness == 0 ? vec4(0.) : calc_point_light(p, mv_vert_pos, mv_vertex_normal);
         lightFactors += calcPointLightFactor;
-        float r = calcPointLightFactor.r;
-        float g = calcPointLightFactor.g;
-        float b = calcPointLightFactor.b;
-        float f1 = r + g + b;
-        shadow_factor += (f1 / 3.0);
     }
 
-    lightFactors += calcSunFactor * clamp(shadow_factor, 0., 1.);
+    lightFactors += calcSunFactor;
     lightFactors += ambient;
     return lightFactors;
 }
@@ -102,7 +99,7 @@ vec4 calc_light() {
 int calc_cascade_index() {
     int cascadeIndex;
     cascadeIndex = int(out_view_position.z < CShadows[0].split_distance) + int(out_view_position.z < CShadows[1].split_distance);
-    return cascadeIndex++;
+    return cascadeIndex;
 }
 
 float calc_dist_proj_shadow(vec4 shadow_coord, vec2 offset, int idx) {
@@ -119,15 +116,10 @@ float calc_shadows(vec4 world_pos, int idx) {
     vec4 shadow_map_pos = CShadows[idx].projection_view_matrix * world_pos;
     float shadow = 1.0;
     vec4 shadow_coord = (shadow_map_pos / shadow_map_pos.w) * 0.5 + 0.5;
-    shadow = texture_proj(shadow_coord, vec2(0, 0), idx);
-    vec2 texel_size = 1.0 / textureSize(idx == 0 ? shadowMap_0 : idx == 1 ? shadowMap_1 : shadowMap_2, 0);
-    for (int x = -1; x <= 1; ++x) {
-        for (int y = -1; y <= 1; ++y) {
-            float pcfDepth = texture(idx == 0 ? shadowMap_0 : idx == 1 ? shadowMap_1 : shadowMap_2, shadow_coord.xy + vec2(x, y) * texel_size).r;
-            shadow += shadow_coord.z - 0.0005 > pcfDepth ? 0.0 : 1.0;
-        }
+    shadow = texture_proj(shadow_coord, vec2(0), idx);
+    if (shadow_map_pos.z > 1.0) {
+        shadow = 1.0;
     }
-    shadow /= 9.0;
     return shadow;
 }
 

@@ -49,25 +49,6 @@ public class RenderManager {
         return RenderManager.instance.getTransform().getModelMatrix(model3D);
     }
 
-    public Matrix4d getLightViewMatrix(Vector3d pos, Vector3d rot) {
-        return RenderManager.instance.getTransform().getLightViewMatrix(pos, rot);
-    }
-
-    public Matrix4d getLightOrthoMatrix() {
-        return new Matrix4d(this.lightOrthoMatrix);
-    }
-
-    public Matrix4d getLightOrthoMatrix(Model3D model3D) {
-        Matrix4d matrix4d = this.getLightOrthoMatrix();
-        return matrix4d.translate(model3D.getPosition().z, 0, 0);
-    }
-
-    public Matrix4d getLightOrthoMatrix(WorldItem physEntity) {
-        Matrix4d matrix4d = new Matrix4d().identity();
-        matrix4d.translate(new Vector3d(-physEntity.getPosition().x, 0, 0));
-        return this.getLightOrthoMatrix();
-    }
-
     public Matrix4d getOrthographicModelMatrix(Model2D model2D) {
         Matrix4d orthographicMatrix = RenderManager.instance.getTransform().getOrthographicMatrix(0, Game.getGame().getScreen().getWidth(), Game.getGame().getScreen().getHeight(), 0);
         return RenderManager.instance.getTransform().getOrthoModelMatrix(model2D, orthographicMatrix);

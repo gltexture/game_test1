@@ -13,7 +13,7 @@ import java.util.Random;
 
 public class Game {
     public static final boolean DEBUG = true;
-    public static final String build = "28.08.2023";
+    public static final String build = "30.08.2023";
     public static long rngSeed;
     public static Random random;
     private static Game startScreen;
@@ -32,6 +32,10 @@ public class Game {
         this.physX = new PhysX();
         this.screen = new Screen();
         this.proxy = new Proxy(this.physX, this.screen);
+    }
+
+    public static long systemTime() {
+        return System.nanoTime();
     }
 
     public static Game getGame() {
