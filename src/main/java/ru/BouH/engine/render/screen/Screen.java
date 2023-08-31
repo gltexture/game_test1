@@ -1,6 +1,7 @@
 package ru.BouH.engine.render.screen;
 
 import org.joml.Vector2d;
+import org.joml.Vector2i;
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -77,11 +78,15 @@ public class Screen {
 
     private void setWindowCallbacks() {
         Callbacks.glfwFreeCallbacks(this.getWindow().getDescriptor());
-        GLFW.glfwSetWindowSizeCallback(this.getWindow().getDescriptor(), (a, b, c) -> GL30.glViewport(0, 0, b, c));
+        GLFW.glfwSetWindowSizeCallback(this.getWindow().getDescriptor(), (a, b, c) -> this.resizeWindow(new Vector2i(b, c)));
         GLFWErrorCallback glfwErrorCallback = GLFW.glfwSetErrorCallback(null);
         if (glfwErrorCallback != null) {
             glfwErrorCallback.free();
         }
+    }
+
+    private void resizeWindow(Vector2i dim) {
+        this.getScene().onWindowResize(dim);
     }
 
     private boolean tryToBuildScreen() {
@@ -130,6 +135,14 @@ public class Screen {
             return false;
         }
         return GLFW.glfwGetWindowAttrib(window1.getDescriptor(), GLFW.GLFW_ICONIFIED) == 0;
+    }
+
+    public static void setViewport(Vector2d dim) {
+        GL30.glViewport(0, 0, (int) dim.x, (int) dim.y);
+    }
+
+    public static void setViewport(Vector2i dim) {
+        GL30.glViewport(0, 0, dim.x, dim.y);
     }
 
     public SceneWorld getRenderWorld() {

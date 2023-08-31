@@ -85,10 +85,10 @@ vec4 calc_light() {
     vec4 lightFactors = vec4(0.);
     vec4 calcSunFactor = calc_sun_light(vec3(sunX, sunY, sunZ), mv_vert_pos, mv_vertex_normal);
 
-    for (int i = 0; i < p_l.length(); i++) {
-        PointLight p = p_l[i];
-        vec4 calcPointLightFactor = p.brightness == 0 ? vec4(0.) : calc_point_light(p, mv_vert_pos, mv_vertex_normal);
-        lightFactors += calcPointLightFactor;
+    int i = 0;
+    while (p_l[i].brightness > 0) {
+        PointLight p = p_l[i++];
+        lightFactors += calc_point_light(p, mv_vert_pos, mv_vertex_normal);
     }
 
     lightFactors += calcSunFactor;
@@ -140,8 +140,8 @@ vec4 calc_light_factor(vec3 colors, float brightness, vec3 vPos, vec3 light_dir,
     vec3 from_light = light_dir;
     vec3 reflectionF = normalize(from_light + camDir);
     specularF = max(dot(vNormal, reflectionF), 0.);
-    specularF = pow(specularF, 16.0);
-    specularC = brightness * specularF * vec4(colors, 1.);
+    specularF = pow(specularF, 8.0);
+    specularC = dot(vNormal, from_light) + 0.0001 >= 0 ? brightness * specularF * vec4(colors, 1.) : vec4(0.);
 
     return diffuseC + specularC;
 }

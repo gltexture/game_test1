@@ -18,11 +18,11 @@ public class FrameBufferObjectProgram {
     public FrameBufferObjectProgram() {
     }
 
-    public void createFBO(Vector2i xy, int target, boolean msaa) {
-        this.createFBO_MRT(xy, new int[] {GL30.GL_COLOR_ATTACHMENT0}, target, msaa);
+    public void createFBO(Vector2i xy, int target, boolean depthBuffer, boolean msaa) {
+        this.createFBO_MRT(xy, new int[] {GL30.GL_COLOR_ATTACHMENT0}, target, depthBuffer, msaa);
     }
 
-    public void createFBO_MRT(Vector2i xy, int[] attachments, int target, boolean msaa) {
+    public void createFBO_MRT(Vector2i xy, int[] attachments, int target, boolean depthBuffer, boolean msaa) {
         this.frameBufferId = GL30.glGenFramebuffers();
         this.renderBufferId = GL30.glGenRenderbuffers();
         this.bindFBO();
@@ -42,13 +42,15 @@ public class FrameBufferObjectProgram {
         }
         GL30.glDrawBuffers(attachments);
 
-        this.bindRenderDFBO();
-        if (msaa) {
-            GL43.glRenderbufferStorageMultisample(GL30.GL_RENDERBUFFER, this.msaaSamples(), GL30.GL_DEPTH24_STENCIL8, xy.x, xy.y);
-        } else {
-            GL30.glRenderbufferStorage(GL30.GL_RENDERBUFFER, GL30.GL_DEPTH24_STENCIL8, xy.x, xy.y);
+        if (depthBuffer) {
+            this.bindRenderDFBO();
+            if (msaa) {
+                GL43.glRenderbufferStorageMultisample(GL30.GL_RENDERBUFFER, this.msaaSamples(), GL30.GL_DEPTH24_STENCIL8, xy.x, xy.y);
+            } else {
+                GL30.glRenderbufferStorage(GL30.GL_RENDERBUFFER, GL30.GL_DEPTH24_STENCIL8, xy.x, xy.y);
+            }
+            GL30.glFramebufferRenderbuffer(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_STENCIL_ATTACHMENT, GL30.GL_RENDERBUFFER, this.renderBufferId);
         }
-        GL30.glFramebufferRenderbuffer(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_STENCIL_ATTACHMENT, GL30.GL_RENDERBUFFER, this.renderBufferId);
 
         if (GL30.glCheckFramebufferStatus(GL30.GL_FRAMEBUFFER) != GL30.GL_FRAMEBUFFER_COMPLETE) {
             Game.getGame().getLogManager().error("Failed to create framebuffer!");
@@ -80,7 +82,9 @@ public class FrameBufferObjectProgram {
     }
 
     public void bindTextureFBO(int i) {
-        GL30.glBindTexture(GL30.GL_TEXTURE_2D, this.textureBufferId[i]);
+        if (this.textureBufferId != null) {
+            GL30.glBindTexture(GL30.GL_TEXTURE_2D, this.textureBufferId[i]);
+        }
     }
 
     public void bindTextureFBO() {

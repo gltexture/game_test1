@@ -1,7 +1,9 @@
 package ru.BouH.engine.render.scene;
 
 import org.joml.*;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL43;
 import org.lwjgl.system.MemoryUtil;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.controller.IController;
@@ -35,6 +37,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.Math;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
@@ -138,19 +141,21 @@ public class Scene {
 
     private void initPointLights(SceneRenderBase sceneRenderBase, String bufferName) {
         FloatBuffer value1Buffer = MemoryUtil.memAllocFloat(7 * LightManager.MAX_POINT_LIGHTS);
-        PointLight pointLight = new PointLight();
-        float[] f1 = LightManager.getPointLightArray(pointLight);
-        value1Buffer.put(f1[0]);
-        value1Buffer.put(f1[1]);
-        value1Buffer.put(f1[2]);
-        value1Buffer.put(f1[3]);
-        value1Buffer.put(f1[4]);
-        value1Buffer.put(f1[5]);
-        value1Buffer.put(f1[6]);
+        value1Buffer.put(0.0f);
+        value1Buffer.put(0.0f);
+        value1Buffer.put(0.0f);
+        value1Buffer.put(0.0f);
+        value1Buffer.put(0.0f);
+        value1Buffer.put(0.0f);
+        value1Buffer.put(0.0f);
         for (int i = 0; i < LightManager.MAX_POINT_LIGHTS; i++) {
-            sceneRenderBase.performUniformBuffer(bufferName, i * 32, f1);
+            sceneRenderBase.performUniformBuffer(bufferName, i * 32, value1Buffer);
         }
         MemoryUtil.memFree(value1Buffer);
+    }
+
+    public void onWindowResize(Vector2i dim) {
+        this.getSceneRenderConveyor().onWindowResize(dim);
     }
 
     public SceneRenderConveyor getSceneRenderConveyor() {
@@ -233,20 +238,30 @@ public class Scene {
     }
 
     public class SceneRenderConveyor {
+        private int CURRENT_POST_RENDER = 0;
         private final ShaderManager postProcessingShader;
         private final ShaderManager blurShader;
         private final ShadowDispatcher shadowDispatcher;
+        private final FrameBufferObjectProgram fboBlur;
+        private final FrameBufferObjectProgram sceneFbo;
+        private final float[] blurKernel;
         private boolean wantsTakeScreenshot;
-        private int CURRENT_POST_RENDER = 0;
 
         public SceneRenderConveyor() {
             this.postProcessingShader = new ShaderManager("post_render_1");
             this.blurShader = new ShaderManager("post_blur");
+            this.fboBlur = new FrameBufferObjectProgram();
+            this.sceneFbo = new FrameBufferObjectProgram();
+            this.blurKernel = this.blurKernels(8.0f, 7);
             this.shadowDispatcher = new ShadowDispatcher(Scene.this.getRenderWorld(), CascadeShadowBuilder.SHADOW_CASCADE_MAX);
             this.initShaders();
         }
 
         private void initShaders() {
+            this.attachFBO(new Vector2i((int) this.getWindowDimensions().x, (int) this.getWindowDimensions().y));
+            for (int i = 0; i < this.blurKernel.length; i++) {
+                this.getBlurShader().addUniform("kernel[" + i + "]");
+            }
             this.getBlurShader().addUniform("projection_model_matrix");
             this.getBlurShader().addUniform("texture_sampler");
             this.getPostProcessingShader().addUniform("projection_model_matrix");
@@ -254,6 +269,32 @@ public class Scene {
             this.getPostProcessingShader().addUniform("blur_sampler");
             this.getPostProcessingShader().addUniform("post_mode");
             this.getPostProcessingShader().addUniformBuffer(UniformBufferUtils.UBO_MISC);
+        }
+
+        private float[] blurKernels(float sigma, int kernelC) {
+            float[] kernel = new float[kernelC];
+            float weight = 0.0f;
+
+            for (int i = 0; i < kernelC; i++) {
+                float x = i - (kernelC / 2.0f);
+                kernel[i] = (float) Math.exp(-(x * x) / (2.0f * sigma * sigma));
+                weight += kernel[i];
+            }
+
+            for (int i = 0; i < kernelC; i++) {
+                kernel[i] /= weight;
+            }
+
+            return kernel;
+        }
+
+        private void attachFBO(Vector2i dim) {
+            this.fboBlur.createFBO(dim, GL30.GL_SRGB_ALPHA, false, false);
+            this.sceneFbo.createFBO_MRT(dim, new int[] {GL30.GL_COLOR_ATTACHMENT0, GL30.GL_COLOR_ATTACHMENT1}, GL43.GL_RGB16F, true, true);
+        }
+
+        public void onWindowResize(Vector2i dim) {
+            this.attachFBO(dim);
         }
 
         public void setPostRender(int a) {
@@ -264,35 +305,29 @@ public class Scene {
         }
 
         public void onRender(double partialTicks, List<SceneRenderBase> mainList, List<SceneRenderBase> additionalList) {
-            this.getShadowDispatcher().renderDepthBuffer(partialTicks, Scene.this.getEntityRender());
+            //this.getShadowDispatcher().renderDepthBuffer(partialTicks, Scene.this.getEntityRender());
 
-            Vector2d v2 = Game.getGame().getScreen().getDimensions();
-            Vector2i dim = new Vector2i((int) v2.x, (int) v2.y);
-            Model2D model2D = this.genFrameBufferSquare((float) v2.x, (float) v2.y);
+            Model2D model2D = this.genFrameBufferSquare((float) this.getWindowDimensions().x, (float) this.getWindowDimensions().y);
 
-            FrameBufferObjectProgram fboBlur = new FrameBufferObjectProgram();
-            fboBlur.createFBO(dim, GL30.GL_RGBA, false);
-
-            int[] at = new int[] {GL30.GL_COLOR_ATTACHMENT0, GL30.GL_COLOR_ATTACHMENT1};
-            FrameBufferObjectProgram sceneFbo = new FrameBufferObjectProgram();
-            sceneFbo.createFBO_MRT(dim, at, GL30.GL_RGBA16F, true);
-
-            sceneFbo.bindFBO();
+            this.sceneFbo.bindFBO();
             GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
             this.renderMainScene(partialTicks, mainList);
-            sceneFbo.unBindFBO();
+            this.sceneFbo.unBindFBO();
 
-            fboBlur.bindFBO();
+            this.fboBlur.bindFBO();
             this.getBlurShader().bind();
             this.getBlurShader().performUniform("projection_model_matrix", RenderManager.instance.getOrthographicModelMatrix(model2D));
             this.getBlurShader().performUniform("texture_sampler", 0);
+            for (int i = 0; i < this.blurKernel.length; i++) {
+                this.getBlurShader().performUniform("kernel[" + i + "]", this.blurKernel[i]);
+            }
             GL30.glActiveTexture(GL30.GL_TEXTURE0);
-            sceneFbo.bindTextureFBO(1);
+            this.sceneFbo.bindTextureFBO(1);
             GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
             this.renderTexture(model2D);
-            sceneFbo.unBindTextureFBO();
+            this.sceneFbo.unBindTextureFBO();
             this.getBlurShader().unBind();
-            fboBlur.unBindFBO();
+            this.fboBlur.unBindFBO();
 
             this.getPostProcessingShader().bind();
             this.getPostProcessingShader().performUniform("projection_model_matrix", RenderManager.instance.getOrthographicModelMatrix(model2D));
@@ -300,13 +335,13 @@ public class Scene {
             this.getPostProcessingShader().performUniform("blur_sampler", 1);
             this.getPostProcessingShader().performUniform("post_mode", this.getPostRender());
             GL30.glActiveTexture(GL30.GL_TEXTURE0);
-            sceneFbo.bindTextureFBO();
+            this.sceneFbo.bindTextureFBO();
             GL30.glActiveTexture(GL30.GL_TEXTURE1);
-            fboBlur.bindTextureFBO();
+            this.fboBlur.bindTextureFBO();
             GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
             this.renderTexture(model2D);
-            fboBlur.unBindTextureFBO();
-            sceneFbo.unBindTextureFBO();
+            this.fboBlur.unBindTextureFBO();
+            this.sceneFbo.unBindTextureFBO();
             this.getPostProcessingShader().unBind();
 
             for (SceneRenderBase sceneRenderBase : additionalList) {
@@ -318,9 +353,11 @@ public class Scene {
                 this.writeBufferInFile();
                 this.wantsTakeScreenshot = false;
             }
-            fboBlur.clearFBO();
-            sceneFbo.clearFBO();
             model2D.clean();
+        }
+
+        public Vector2d getWindowDimensions() {
+            return Scene.this.getWindowDimensions();
         }
 
         public SceneWorld getRenderWorld() {
@@ -336,10 +373,32 @@ public class Scene {
         }
 
         private void renderMainScene(double partialTicks, List<SceneRenderBase> mainList) {
-            GL30.glViewport(0, 0, (int) Scene.this.getWindowDimensions().x, (int) Scene.this.getWindowDimensions().y);
+            Screen.setViewport(Scene.this.getWindowDimensions());
             for (SceneRenderBase sceneRenderBase : mainList) {
                 sceneRenderBase.onRender(partialTicks);
             }
+        }
+
+        public void onStartRender() {
+            this.getBlurShader().startProgram();
+            this.getPostProcessingShader().startProgram();
+            this.getShadowDispatcher().onStartRender();
+        }
+
+        public void onStopRender() {
+            this.fboBlur.clearFBO();
+            this.sceneFbo.clearFBO();
+            this.getBlurShader().destroyProgram();
+            this.getPostProcessingShader().destroyProgram();
+            this.getShadowDispatcher().onStopRender();
+        }
+
+        public ShaderManager getBlurShader() {
+            return this.blurShader;
+        }
+
+        public ShaderManager getPostProcessingShader() {
+            return this.postProcessingShader;
         }
 
         private void writeBufferInFile() {
@@ -439,26 +498,6 @@ public class Scene {
             return new Model2D(new MeshModel(f1, i1, f2));
         }
 
-        public void onStartRender() {
-            this.getBlurShader().startProgram();
-            this.getPostProcessingShader().startProgram();
-            this.getShadowDispatcher().onStartRender();
-        }
-
-        public void onStopRender() {
-            this.getBlurShader().destroyProgram();
-            this.getPostProcessingShader().destroyProgram();
-            this.getShadowDispatcher().onStopRender();
-        }
-
-        public ShaderManager getBlurShader() {
-            return this.blurShader;
-        }
-
-        public ShaderManager getPostProcessingShader() {
-            return this.postProcessingShader;
-        }
-
         public void takeScreenshot() {
             this.wantsTakeScreenshot = true;
         }
@@ -493,7 +532,7 @@ public class Scene {
             Vector3f sunPos = this.getSceneWorld().getEnvironment().getSunPosition();
             CascadeShadowBuilder.updateCascadeShadow(this.getCascadeShadowBuilders(), new Vector4d(sunPos, 0.0d), RenderManager.instance.getViewMatrix(base.getCamera()), RenderManager.instance.getProjectionMatrix());
             GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, this.depthMap.getDepthFbo());
-            GL30.glViewport(0, 0, DepthTexture.MAP_DIMENSIONS, DepthTexture.MAP_DIMENSIONS);
+            Screen.setViewport(new Vector2i(DepthTexture.MAP_DIMENSIONS));
             this.getDepthShaderManager().bind();
             for (int i = 0; i < this.getNumCascades(); i++) {
                 GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL30.GL_TEXTURE_2D, this.depthMap.getDepthTexture().getId()[i], 0);
