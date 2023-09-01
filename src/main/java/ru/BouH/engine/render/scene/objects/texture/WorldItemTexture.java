@@ -2,13 +2,23 @@ package ru.BouH.engine.render.scene.objects.texture;
 
 import org.joml.Vector3d;
 import ru.BouH.engine.render.scene.objects.texture.samples.DefaultSample;
+import ru.BouH.engine.render.scene.objects.texture.samples.PNGTexture;
+import ru.BouH.engine.render.utils.Utils;
 
 public class WorldItemTexture {
     public static final WorldItemTexture standardError = new WorldItemTexture(new DefaultSample(new Vector3d(0.0f, 0.0f, 0.0f), new Vector3d(1.0f, 0.0f, 1.0f), 32));
+    private PNGTexture normalMap;
+
     private Sample sample;
 
     public WorldItemTexture(Sample sample) {
         this.sample = sample == null ? WorldItemTexture.standardError.getSample() : sample;
+        this.setNormalMap((PNGTexture) null);
+    }
+
+    public WorldItemTexture(Sample sample, String normalMapPath) {
+        this.sample = sample == null ? WorldItemTexture.standardError.getSample() : sample;
+        this.setNormalMap(normalMapPath);
     }
 
     public static WorldItemTexture createItemTexture(Sample sample) {
@@ -17,6 +27,22 @@ public class WorldItemTexture {
 
     public Sample getSample() {
         return this.sample;
+    }
+
+    public boolean hasNormalMap() {
+        return this.getNormalMap() != null;
+    }
+
+    public void setNormalMap(String normalMapPath) {
+        this.setNormalMap(PNGTexture.createTexture("normals/" + normalMapPath));
+    }
+
+    public void setNormalMap(PNGTexture normalMap) {
+        this.normalMap = normalMap;
+    }
+
+    public PNGTexture getNormalMap() {
+        return this.normalMap;
     }
 
     public void setSample(Sample sample) {

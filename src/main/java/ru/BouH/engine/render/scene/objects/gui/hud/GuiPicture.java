@@ -1,6 +1,7 @@
 package ru.BouH.engine.render.scene.objects.gui.hud;
 
 import org.jetbrains.annotations.NotNull;
+import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.render.scene.components.MeshModel;
 import ru.BouH.engine.render.scene.components.Model2D;
 import ru.BouH.engine.render.scene.fabric.RenderFabric;
@@ -18,7 +19,7 @@ public class GuiPicture extends AbstractGui {
     private float height;
 
     public GuiPicture(@NotNull PNGTexture PNGTexture, int x, int y, float w, float h, int zLevel) {
-        super("gui_picture: " + PNGTexture.getPath(), zLevel);
+        super("gui_picture", zLevel);
         this.setPicture(PNGTexture, x, y, w, h);
     }
 
@@ -27,7 +28,7 @@ public class GuiPicture extends AbstractGui {
     }
 
     public GuiPicture(@NotNull PNGTexture PNGTexture, int x, int y, int zLevel) {
-        super("gui_picture: " + PNGTexture.getPath(), zLevel);
+        super("gui_picture", zLevel);
         this.setPicture(PNGTexture, x, y);
     }
 
@@ -131,6 +132,6 @@ public class GuiPicture extends AbstractGui {
 
     @Override
     public void performGuiTexture() {
-        this.getTexture().performTexture();
+        this.getTexture().performTexture(GL30.GL_TEXTURE0);
     }
 }

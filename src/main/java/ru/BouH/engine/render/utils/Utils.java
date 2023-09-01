@@ -38,6 +38,10 @@ public class Utils {
         return Utils.loadFile("/textures/" + path);
     }
 
+    public static InputStream loadNormalMapTexture(String path) {
+        return Utils.loadTexture("normals/" + path);
+    }
+
     public static MeshModel loadMesh(String path) {
         return OBJLoader.loadMesh(path);
     }

@@ -17,7 +17,7 @@ public class FontTexture {
     private final Font font;
     private final FontCode fontCode;
     private final Map<Character, CharInfo> charMap = new HashMap<>();
-    private PNGTexture PNGTexture;
+    private PNGTexture texture;
     private int height;
     private int width;
 
@@ -60,7 +60,7 @@ public class FontTexture {
         } catch (IOException e) {
             Game.getGame().getLogManager().error(e.getMessage());
         }
-        this.PNGTexture = ru.BouH.engine.render.scene.objects.texture.samples.PNGTexture.createTexture(inputStream);
+        this.texture = PNGTexture.createTexture(inputStream);
     }
 
     public CharInfo getCharInfo(char c) {
@@ -68,7 +68,7 @@ public class FontTexture {
     }
 
     public PNGTexture getTexture() {
-        return this.PNGTexture;
+        return this.texture;
     }
 
     public Font getFont() {

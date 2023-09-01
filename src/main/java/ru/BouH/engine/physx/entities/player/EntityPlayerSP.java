@@ -124,17 +124,17 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
     @Override
     public void performController(Vector2d rotationInput, Vector3d xyzInput) {
         if (BindingList.instance.keyBlock1.isClicked()) {
-            PhysEntityCube entityPropInfo = new PhysEntityCube(this.getWorld(), new Vector3d(1.0d), this.getPosition().add(this.getLookVector().mul(3.0f)));
+            PhysEntityCube entityPropInfo = new PhysEntityCube(this.getWorld(), new Vector3d(1.0d), this.getPosition().add(this.getLookVector().mul(2.0f)));
             entityPropInfo.setScale(0.5d);
             Game.getGame().getProxy().addItemInWorlds(entityPropInfo, ItemRenderList.entityCube);
             entityPropInfo.setObjectVelocity(this.getLookVector().mul(20.0f));
         }
         if (BindingList.instance.keyBlock2.isClicked()) {
-            PhysEntityCube entityPropInfo = new PhysLightCube(this.getWorld(), new Vector3d(1.0d), this.getPosition().add(this.getLookVector().mul(3.0f)));
+            PhysEntityCube entityPropInfo = new PhysLightCube(this.getWorld(), new Vector3d(1.0d), this.getPosition().add(this.getLookVector().mul(2.0f)));
             entityPropInfo.setScale(0.25d);
             Game.getGame().getProxy().addItemInWorlds(entityPropInfo, ItemRenderList.entityLamp);
             int a1 = Game.random.nextInt(3);
-            entityPropInfo.setLight(new PointLight(new Vector3d(a1 == 0 ? 1.0d : Game.random.nextFloat(), a1 == 1 ? 1.0d : Game.random.nextFloat(), a1 == 2 ? 1.0d : Game.random.nextFloat()), 6.5d));
+            entityPropInfo.setLight(new PointLight(new Vector3d(a1 == 0 ? 1.0d : Game.random.nextFloat(), a1 == 1 ? 1.0d : Game.random.nextFloat() * 0.5f, a1 == 2 ? 1.0d : Game.random.nextFloat() * 0.5f), 6.5d));
             entityPropInfo.setObjectVelocity(this.getLookVector().mul(20.0f));
         }
         this.getCameraRotation().add(new Vector3d(rotationInput, 0.0d));

@@ -9,12 +9,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MeshModel implements IMesh {
-    private final int vao;
-    private final int idxVbo;
-    private final int posVbo;
-    private final int textureVbo;
-    private final int normalsVbo;
-    private final int vertexCount;
+    protected int vao;
+    protected int idxVbo;
+    protected int posVbo;
+    protected int textureVbo;
+    protected int normalsVbo;
+    protected int vertexCount;
+
+    protected MeshModel() {
+    }
 
     public MeshModel(float[] pos, int[] inc, float[] textPos, float[] normals) {
         IntBuffer incBuffer = MemoryUtil.memAllocInt(inc.length);
@@ -73,7 +76,6 @@ public class MeshModel implements IMesh {
         this.idxVbo = GL30.glGenBuffers();
         this.posVbo = GL30.glGenBuffers();
         this.textureVbo = GL30.glGenBuffers();
-        this.normalsVbo = -999;
 
         GL30.glBindVertexArray(this.vao);
 
@@ -106,36 +108,12 @@ public class MeshModel implements IMesh {
 
         this.idxVbo = GL30.glGenBuffers();
         this.posVbo = GL30.glGenBuffers();
-        this.textureVbo = -999;
-        this.normalsVbo = -999;
 
         GL30.glBindVertexArray(this.vao);
 
         GL30.glBindBuffer(GL30.GL_ELEMENT_ARRAY_BUFFER, this.idxVbo);
         GL30.glBufferData(GL30.GL_ELEMENT_ARRAY_BUFFER, incBuffer, GL30.GL_STATIC_DRAW);
         MemoryUtil.memFree(incBuffer);
-
-        GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, this.posVbo);
-        GL30.glBufferData(GL30.GL_ARRAY_BUFFER, vrtBuffer, GL30.GL_STATIC_DRAW);
-        GL30.glVertexAttribPointer(0, 3, GL30.GL_FLOAT, false, 0, 0);
-        MemoryUtil.memFree(vrtBuffer);
-
-        GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, 0);
-        GL30.glBindVertexArray(0);
-    }
-
-    public MeshModel(float[] pos) {
-        FloatBuffer vrtBuffer = MemoryUtil.memAllocFloat(pos.length);
-        this.vao = GL30.glGenVertexArrays();
-        this.vertexCount = 0;
-        vrtBuffer.put(pos).flip();
-
-        this.idxVbo = GL30.glGenBuffers();
-        this.posVbo = GL30.glGenBuffers();
-        this.textureVbo = -999;
-        this.normalsVbo = -999;
-
-        GL30.glBindVertexArray(this.vao);
 
         GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, this.posVbo);
         GL30.glBufferData(GL30.GL_ARRAY_BUFFER, vrtBuffer, GL30.GL_STATIC_DRAW);

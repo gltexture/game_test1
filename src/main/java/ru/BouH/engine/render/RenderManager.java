@@ -1,14 +1,10 @@
 package ru.BouH.engine.render;
 
 import org.joml.Matrix4d;
-import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
-import ru.BouH.engine.physx.entities.PhysEntity;
-import ru.BouH.engine.physx.world.object.WorldItem;
 import ru.BouH.engine.render.scene.components.Model2D;
 import ru.BouH.engine.render.scene.components.Model3D;
-import ru.BouH.engine.render.scene.components.TransformMath;
-import ru.BouH.engine.render.scene.world.SceneWorld;
+import ru.BouH.engine.render.scene.components.TransformationUtils;
 import ru.BouH.engine.render.scene.world.camera.ICamera;
 
 public class RenderManager {
@@ -18,15 +14,15 @@ public class RenderManager {
     public static final float Z_FAR = 1000.0f;
     public Matrix4d lightOrthoMatrix;
 
-    private final TransformMath transformMath;
+    private final TransformationUtils transformationUtils;
 
     public RenderManager() {
-        this.transformMath = new TransformMath();
+        this.transformationUtils = new TransformationUtils();
         this.lightOrthoMatrix = new Matrix4d().identity().ortho(-10.0d, 10.0d, -10.0d, 10.0d, -1.0f, 20.0f);
     }
 
-    public TransformMath getTransform() {
-        return this.transformMath;
+    public TransformationUtils getTransform() {
+        return this.transformationUtils;
     }
 
     public Matrix4d getProjectionMatrix() {

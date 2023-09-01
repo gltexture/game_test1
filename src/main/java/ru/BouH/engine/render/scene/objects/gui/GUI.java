@@ -72,7 +72,7 @@ public class GUI {
             guiPicture.renderFabric().onRender(partialTicks, GUI.sceneRenderBase, guiPicture);
             guiPicture.getModel2DInfo().clean();
         } else {
-            Game.getGame().getLogManager().warn("Invalid Texture! - " + PNGTexture.getPath());
+            Game.getGame().getLogManager().warn("Invalid Texture!");
         }
     }
 

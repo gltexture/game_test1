@@ -10,7 +10,6 @@ import ru.BouH.engine.render.screen.Screen;
 import java.nio.ByteBuffer;
 
 public class FrameBufferObjectProgram {
-    private boolean msaa;
     private int frameBufferId;
     private int renderBufferId;
     private int[] textureBufferId;

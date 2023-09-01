@@ -21,7 +21,7 @@ public class PhysXColoredLamp extends EntityPhysXObject {
         if (this.getWorldItem() instanceof PhysLightCube) {
             if (this.getWorldItem().hasLight()) {
                 ILight light = this.getWorldItem().getLight();
-                Vector3d color = light.getLightColor();
+                Vector3d color = light.getLightColor().mul(8.0d);
                 this.getRenderData().setTexture(new Color3FA(color));
             }
         }

@@ -1,12 +1,16 @@
 package ru.BouH.engine.render.scene;
 
 import org.joml.Matrix4d;
+import org.lwjgl.opengl.GL13;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL43;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.math.IntPair;
 import ru.BouH.engine.render.RenderManager;
 import ru.BouH.engine.render.scene.components.Model3D;
 import ru.BouH.engine.render.scene.objects.data.RenderData;
+import ru.BouH.engine.render.scene.objects.texture.samples.PNGTexture;
+import ru.BouH.engine.render.scene.programs.CubeMapSample;
 import ru.BouH.engine.render.scene.programs.ShaderManager;
 import ru.BouH.engine.render.scene.programs.UniformBufferProgram;
 import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
@@ -180,17 +184,49 @@ public abstract class SceneRenderBase {
             SceneRenderBase.this.performUniform("model_view_matrix", matrix4d);
         }
 
+        public void performViewMatrix3d(Matrix4d matrix4d) {
+            SceneRenderBase.this.performUniform("view_matrix", matrix4d);
+        }
+
         public void performModelMatrix3d(Model3D model3D) {
             SceneRenderBase.this.performUniform("model_matrix", RenderManager.instance.getModelMatrix(model3D));
         }
 
         public void performProperties(RenderData.RenderProperties renderProperties) {
-            boolean b1 = renderProperties.isLightExposed();
-            if (b1) {
+            if (renderProperties.isLightExposed()) {
                 this.enableLight();
             } else {
                 this.disableLight();
             }
+        }
+
+        public void setNormalMap(WorldItemTexture worldItemTexture) {
+            this.setNormalMap(1, worldItemTexture);
+        }
+
+        public void setNormalMap(int code, WorldItemTexture worldItemTexture) {
+            if (worldItemTexture != null && worldItemTexture.hasNormalMap()) {
+                PNGTexture pngTexture = worldItemTexture.getNormalMap();
+                SceneRenderBase.this.performUniform("normal_map", code);
+                SceneRenderBase.this.performUniform("use_normal_map", 1);
+                pngTexture.performTexture(GL30.GL_TEXTURE0 + code);
+            } else {
+                SceneRenderBase.this.performUniform("use_normal_map", 0);
+            }
+        }
+
+        public void setCubeMapTexture(CubeMapSample cubeMapTexture) {
+            this.setCubeMapTexture(GL30.GL_TEXTURE0, cubeMapTexture);
+        }
+
+        public void setCubeMapTexture(int code, CubeMapSample cubeMapTexture) {
+            if (cubeMapTexture == null) {
+                Game.getGame().getLogManager().warn("CubeMap is NULL!");
+                return;
+            }
+            SceneRenderBase.this.performUniform("cube_map_sampler", code);
+            GL30.glActiveTexture(GL30.GL_TEXTURE0 + code);
+            GL30.glBindTexture(GL30.GL_TEXTURE_CUBE_MAP, cubeMapTexture.getTextureId());
         }
 
         public void setTexture(WorldItemTexture worldItemTexture) {
@@ -209,7 +245,7 @@ public abstract class SceneRenderBase {
         public void setPngTexture(WorldItemTexture worldItemTexture, PictureSample sample) {
             if (sample != null && sample.isValid()) {
                 SceneRenderBase.this.performUniform("use_texture", worldItemTexture.getRenderID());
-                sample.performTexture();
+                sample.performTexture(GL30.GL_TEXTURE0);
             } else {
                 this.setTexture(WorldItemTexture.standardError);
             }

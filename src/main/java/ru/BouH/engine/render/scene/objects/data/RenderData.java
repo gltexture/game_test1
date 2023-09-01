@@ -6,6 +6,7 @@ import ru.BouH.engine.render.scene.fabric.RenderFabric;
 import ru.BouH.engine.render.scene.objects.items.PhysXObject;
 import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.scene.objects.texture.Sample;
+import ru.BouH.engine.render.scene.objects.texture.samples.PNGTexture;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 import java.lang.reflect.InvocationTargetException;
 
@@ -31,6 +32,18 @@ public abstract class RenderData {
         return this;
     }
 
+    public void attachNormalMap(String mapPath) {
+        this.getItemTexture().setNormalMap(mapPath);
+    }
+
+    public void attachNormalMap(PNGTexture pngTexture) {
+        this.getItemTexture().setNormalMap(pngTexture);
+    }
+
+    public boolean hasNormalMap() {
+        return this.getItemTexture().hasNormalMap();
+    }
+
     public RenderProperties getRenderProperties() {
         return this.renderProperties;
     }
@@ -51,6 +64,11 @@ public abstract class RenderData {
 
     public RenderData setTexture(Sample sample) {
         this.setWorldItemTexture(new WorldItemTexture(sample));
+        return this;
+    }
+
+    public RenderData setTexture(Sample sample, String normalMap) {
+        this.setWorldItemTexture(new WorldItemTexture(sample, normalMap));
         return this;
     }
 

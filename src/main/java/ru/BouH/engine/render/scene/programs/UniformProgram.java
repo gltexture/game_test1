@@ -18,12 +18,10 @@ public class UniformProgram {
         this.uniforms = new HashMap<>();
     }
 
-    public void createUniform(String uniformName) {
+    public boolean createUniform(String uniformName) {
         int uniformLocation = GL20.glGetUniformLocation(this.programId, uniformName);
-        if (uniformLocation < 0) {
-            Game.getGame().getLogManager().warn("Could not find uniform " + uniformName);
-        }
         this.uniforms.put(uniformName, uniformLocation);
+        return uniformLocation >= 0;
     }
 
     public boolean setUniform(String uniformName, Object value) {

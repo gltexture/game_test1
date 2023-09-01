@@ -3,11 +3,13 @@
 in vec2 out_texture;
 in vec3 mv_vertex_normal;
 in vec3 mv_vert_pos;
+
 layout (location = 0) out vec4 frag_color;
 layout (location = 1) out vec4 bright_color;
 
 in vec3 out_view_position;
 in vec4 out_world_position;
+in mat4 out_model_view_matrix;
 
 uniform vec3 quads_c1;
 uniform vec3 quads_c2;
@@ -15,8 +17,11 @@ uniform int quads_scaling;
 
 uniform vec4 object_rgb;
 uniform sampler2D texture_sampler;
+uniform sampler2D normal_map;
+uniform samplerCube cube_map_sampler;
 uniform sampler2D shadow_map_sampler;
 uniform int use_texture;
+uniform int use_normal_map;
 
 uniform int enable_light;
 uniform vec3 camera_pos;
@@ -59,6 +64,8 @@ vec4 calc_light();
 float calc_shadows(vec4, int);
 float calc_dist_proj_shadow(vec4, vec2, int);
 float texture_proj(vec4, vec2, int);
+vec3 calc_normal_map(vec3, vec2, mat4);
+
 int calc_cascade_index();
 
 struct CascadeShadow {
@@ -82,18 +89,26 @@ void main()
 }
 
 vec4 calc_light() {
+    vec3 new_normal = use_normal_map == 1 ? calc_normal_map(mv_vertex_normal, out_texture, out_model_view_matrix) : mv_vertex_normal;
     vec4 lightFactors = vec4(0.);
-    vec4 calcSunFactor = calc_sun_light(vec3(sunX, sunY, sunZ), mv_vert_pos, mv_vertex_normal);
+    vec4 calcSunFactor = calc_sun_light(vec3(sunX, sunY, sunZ), mv_vert_pos, new_normal);
 
     int i = 0;
     while (p_l[i].brightness > 0) {
         PointLight p = p_l[i++];
-        lightFactors += calc_point_light(p, mv_vert_pos, mv_vertex_normal);
+        lightFactors += calc_point_light(p, mv_vert_pos, new_normal);
     }
 
     lightFactors += calcSunFactor;
     lightFactors += ambient;
     return lightFactors;
+}
+
+vec3 calc_normal_map(vec3 vNorm, vec2 text_c, mat4 mvm) {
+    vec3 normalMap = texture2D(normal_map, text_c).rgb * 2.0 - 1.0;
+    vec4 transformedNormal = mvm * vec4(normalMap, 0.0);
+    vec3 correctedNormal = normalize(transformedNormal.xyz) + vNorm;
+    return normalize(correctedNormal + vNorm);
 }
 
 int calc_cascade_index() {
@@ -142,8 +157,9 @@ vec4 calc_light_factor(vec3 colors, float brightness, vec3 vPos, vec3 light_dir,
     specularF = max(dot(vNormal, reflectionF), 0.);
     specularF = pow(specularF, 8.0);
     specularC = dot(vNormal, from_light) + 0.0001 >= 0 ? brightness * specularF * vec4(colors, 1.) : vec4(0.);
+    vec4 reflected = texture(cube_map_sampler, reflectionF);
 
-    return diffuseC + specularC;
+    return diffuseC + specularC * reflected;
 }
 
 vec4 calc_sun_light(vec3 sunPos, vec3 vPos, vec3 vNormal) {

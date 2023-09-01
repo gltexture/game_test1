@@ -87,7 +87,7 @@ public class ShaderManager {
 
     public void performUniform(String uniform, Object o) {
         if (!this.getUniformProgram().setUniform(uniform, o)) {
-            Game.getGame().getLogManager().warn("Wrong arguments! U: " + uniform);
+            Game.getGame().getLogManager().warn("[" + this.getPath() + "] Wrong arguments! U: " + uniform);
         }
     }
 
@@ -134,7 +134,9 @@ public class ShaderManager {
             Game.getGame().getLogManager().warn("Warning! No Uniforms found in: " + this.getPath());
         }
         for (String s : this.uniformsSet) {
-            this.getUniformProgram().createUniform(s);
+            if (!this.getUniformProgram().createUniform(s)) {
+                Game.getGame().getLogManager().warn("[" + this.getPath() + "] Could not find uniform " + s);
+            }
         }
     }
 

@@ -1,6 +1,5 @@
 package ru.BouH.engine.render.scene.components;
 
-import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
 public class Model3D extends ObjectModel {

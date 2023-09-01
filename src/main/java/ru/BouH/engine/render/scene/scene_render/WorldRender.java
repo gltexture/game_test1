@@ -4,7 +4,6 @@ import org.joml.Vector3d;
 import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.physx.entities.player.EntityPlayerSP;
-import ru.BouH.engine.render.RenderManager;
 import ru.BouH.engine.render.environment.shadows.CascadeShadowBuilder;
 import ru.BouH.engine.render.scene.RenderGroup;
 import ru.BouH.engine.render.scene.Scene;
@@ -15,22 +14,28 @@ import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.scene.objects.texture.samples.Color3FA;
 import ru.BouH.engine.render.scene.primitive_forms.IForm;
 import ru.BouH.engine.render.scene.primitive_forms.VectorForm;
+import ru.BouH.engine.render.scene.programs.CubeMapSample;
 import ru.BouH.engine.render.scene.programs.UniformBufferUtils;
-import ru.BouH.engine.render.scene.world.SceneWorld;
 
 import java.util.List;
 
 public class WorldRender extends SceneRenderBase {
+    private final CubeMapSample cubeEnvironmentTexture;
+
     public WorldRender(Scene.SceneRenderConveyor sceneRenderConveyor) {
         super(1, sceneRenderConveyor, RenderGroup.WORLD);
+        this.cubeEnvironmentTexture = this.getSceneWorld().getEnvironment().getSky().getSkyBox().getCubeMap();
         this.addUniform("dimensions");
         this.addUniform("tick");
         this.addUniform("projection_matrix");
         this.addUniform("model_view_matrix");
         this.addUniform("texture_sampler");
+        this.addUniform("normal_map");
+        this.addUniform("cube_map_sampler");
         this.addUniform("object_rgb");
         this.addUniform("use_texture");
         this.addUniform("enable_light");
+        this.addUniform("use_normal_map");
         this.addUniform("quads_c1");
         this.addUniform("quads_c2");
         this.addUniform("quads_scaling");
@@ -56,13 +61,19 @@ public class WorldRender extends SceneRenderBase {
             this.renderHitBox(partialTicks, this, entityItem);
             if (entityItem.isHasRender()) {
                 if (entityItem.isHasModel()) {
-                    this.performLightModelProjection(1, entityItem.getModel3D());
+                    this.performLightModelProjection(2, entityItem.getModel3D());
                 }
+                this.getUtils().setCubeMapTexture(2, this.getCubeEnvironmentTexture());
+                this.getUtils().setNormalMap(1, entityItem.getRenderData().getItemTexture());
                 this.getUtils().performProperties(entityItem.getRenderData().getRenderProperties());
                 entityItem.renderFabric().onRender(partialTicks, this, entityItem);
             }
         }
         this.unBindProgram();
+    }
+
+    public CubeMapSample getCubeEnvironmentTexture() {
+        return this.cubeEnvironmentTexture;
     }
 
     private void performLightModelProjection(int start, Model3D model3D) {

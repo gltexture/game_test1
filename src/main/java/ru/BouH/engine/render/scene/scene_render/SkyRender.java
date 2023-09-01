@@ -3,6 +3,7 @@ package ru.BouH.engine.render.scene.scene_render;
 import org.joml.Matrix4d;
 import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.game.Game;
+import ru.BouH.engine.game.g_static.render.ItemRenderList;
 import ru.BouH.engine.math.IntPair;
 import ru.BouH.engine.render.scene.RenderGroup;
 import ru.BouH.engine.render.scene.Scene;
@@ -18,8 +19,7 @@ public class SkyRender extends SceneRenderBase {
         super(0, sceneRenderConveyor, RenderGroup.SKYBOX);
         this.addUniform("projection_matrix");
         this.addUniform("model_view_matrix");
-        this.addUniform("texture_sampler");
-        this.addUniform("use_texture");
+        this.addUniform("cube_map_sampler");
         this.addUniformBuffer(UniformBufferUtils.UBO_SUN);
     }
 
@@ -27,6 +27,8 @@ public class SkyRender extends SceneRenderBase {
         SkyBox skyBox = this.getSceneWorld().getEnvironment().getSky().getSkyBox();
         if (skyBox != null) {
             this.bindProgram();
+            GL30.glDisable(GL30.GL_CULL_FACE);
+            GL30.glDepthFunc(GL30.GL_LEQUAL);
             this.getUtils().performProjectionMatrix();
             Matrix4d matrix4d = RenderManager.instance.getModelViewMatrix(Game.getGame().getScreen().getCamera(), skyBox.getModel3DInfo());
             matrix4d.m30(0);
@@ -35,16 +37,13 @@ public class SkyRender extends SceneRenderBase {
             this.getUtils().performModelViewMatrix3d(matrix4d);
             GL30.glBindVertexArray(skyBox.getModel3DInfo().getVao());
             GL30.glEnableVertexAttribArray(0);
-            GL30.glEnableVertexAttribArray(1);
-            GL30.glEnableVertexAttribArray(2);
-            GL30.glDisable(GL30.GL_DEPTH_TEST);
-            this.getUtils().setTexture(WorldItemTexture.createItemTexture(skyBox.getTexture()));
+            this.getUtils().setCubeMapTexture(skyBox.getCubeMap());
             GL30.glDrawElements(GL30.GL_TRIANGLES, skyBox.getModel3DInfo().getVertexCount(), GL30.GL_UNSIGNED_INT, 0);
             GL30.glDisableVertexAttribArray(0);
-            GL30.glDisableVertexAttribArray(1);
-            GL30.glDisableVertexAttribArray(2);
             GL30.glBindVertexArray(0);
             this.unBindProgram();
+            GL30.glDepthFunc(GL30.GL_LESS);
+            GL30.glEnable(GL30.GL_CULL_FACE);
         }
     }
 }

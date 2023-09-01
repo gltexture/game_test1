@@ -1,5 +1,6 @@
 package ru.BouH.engine.render.scene.objects.gui.hud;
 
+import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.render.scene.components.MeshModel;
 import ru.BouH.engine.render.scene.components.Model2D;
 import ru.BouH.engine.render.scene.fabric.RenderFabric;
@@ -133,6 +134,6 @@ public class GuiText extends AbstractGui {
 
     @Override
     public void performGuiTexture() {
-        this.getFontTexture().getTexture().performTexture();
+        this.getFontTexture().getTexture().performTexture(GL30.GL_TEXTURE0);
     }
 }

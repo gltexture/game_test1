@@ -1,6 +1,5 @@
 package ru.BouH.engine.render.scene.objects.texture.samples;
 
-import org.joml.Vector2d;
 import org.joml.Vector3d;
 import ru.BouH.engine.render.scene.objects.texture.Sample;
 import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;

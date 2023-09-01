@@ -63,7 +63,7 @@ public class UniformBufferUtils {
             value1Buffer.put(f1[5]);
             value1Buffer.put(f1[6]);
             value1Buffer.flip();
-            sceneRenderBase.performUniformBuffer(bufferName, i * 32, f1);
+            sceneRenderBase.performUniformBuffer(bufferName, i * 32, value1Buffer);
         }
         MemoryUtil.memFree(value1Buffer);
     }
