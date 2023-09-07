@@ -1,7 +1,5 @@
 package ru.BouH.engine.render.scene.world;
 
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.exception.GameException;
 import ru.BouH.engine.game.g_static.profiler.SectionManager;
@@ -9,6 +7,7 @@ import ru.BouH.engine.physx.world.World;
 import ru.BouH.engine.physx.world.object.WorldItem;
 import ru.BouH.engine.proxy.IWorld;
 import ru.BouH.engine.render.environment.Environment;
+import ru.BouH.engine.render.environment.light.ILight;
 import ru.BouH.engine.render.frustum.FrustumCulling;
 import ru.BouH.engine.render.scene.components.IMesh;
 import ru.BouH.engine.render.scene.objects.data.RenderData;
@@ -19,11 +18,11 @@ import java.util.stream.Collectors;
 
 public final class SceneWorld implements IWorld {
     public static Set<IMesh> toCleanSet = new HashSet<>();
+    public static float elapsedRenderTicks;
     private final List<PhysXObject> entityList = new ArrayList<>();
     private final Environment environment;
-    private FrustumCulling frustumCulling;
     private final World world;
-    public static float elapsedRenderTicks;
+    private FrustumCulling frustumCulling;
 
     public SceneWorld(World world) {
         this.world = world;
@@ -69,6 +68,35 @@ public final class SceneWorld implements IWorld {
         }
     }
 
+    public void addAttachedLight(PhysXObject physXObject, ILight light) {
+        light.doAttachTo(physXObject);
+        this.addLight(light);
+    }
+
+    public void doDetachLight(PhysXObject physXObject) {
+        physXObject.getLight().doAttachTo(null);
+    }
+
+    public void deactivateLight(ILight light) {
+        light.deactivate();
+    }
+
+    public void removeLight(PhysXObject physXObject) {
+        this.removeLight(physXObject.getLight());
+    }
+
+    public void removeLight(ILight iLight) {
+        this.getEnvironment().getLightManager().removeLight(iLight);
+    }
+
+    public void deactivateLight(PhysXObject physXObject) {
+        this.deactivateLight(physXObject.getLight());
+    }
+
+    public void addLight(ILight light) {
+        this.getEnvironment().getLightManager().addLight(light);
+    }
+
     @Override
     public void onWorldStart() {
         Game.getGame().getProfiler().startSection(SectionManager.renderWorld);
@@ -81,7 +109,7 @@ public final class SceneWorld implements IWorld {
             PhysXObject physXObject = iterator.next();
             physXObject.onUpdate(this);
             physXObject.checkCulling(this.getFrustumCulling());
-            if (physXObject.getWorldItem() == null || physXObject.isDead()) {
+            if (physXObject.isDead()) {
                 physXObject.onDestroy(this);
                 iterator.remove();
             }

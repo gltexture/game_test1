@@ -4,14 +4,13 @@ import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.controller.components.Key;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class Binding {
-    private Key key;
-    private final String description;
     private static List<Binding> bindingList = new ArrayList<>();
+    private final String description;
+    private Key key;
 
     private Binding(Key key, String description) {
         this.key = key;
@@ -37,12 +36,12 @@ public class Binding {
         return binding;
     }
 
-    public void setKeyToBinding(Key key) {
-        this.key = key;
-    }
-
     public static List<Binding> getBindingList() {
         return new ArrayList<>(bindingList);
+    }
+
+    public void setKeyToBinding(Key key) {
+        this.key = key;
     }
 
     public String getDescription() {

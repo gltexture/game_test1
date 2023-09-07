@@ -4,9 +4,15 @@ import org.joml.Matrix4d;
 import org.joml.Quaterniond;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
+import ru.BouH.engine.physx.world.object.WorldItem;
 import ru.BouH.engine.render.scene.world.camera.ICamera;
 
 public class TransformationUtils {
+    private final Matrix4d viewMatrix;
+    public TransformationUtils() {
+        this.viewMatrix = new Matrix4d();
+    }
+
     public final Matrix4d getModelMatrix(Model3D model3D) {
         Matrix4d m1 = new Matrix4d();
         Quaterniond quaterniond = new Quaterniond();
@@ -40,10 +46,14 @@ public class TransformationUtils {
         return viewCurr.mul(m1);
     }
 
-    public Matrix4d getViewMatrix(ICamera camera) {
+    public void updateViewMatrix(ICamera camera) {
         Vector3d cameraPos = camera.getCamPosition();
         Vector3d cameraRot = camera.getCamRotation();
         Matrix4d m1 = new Matrix4d();
-        return m1.identity().rotate(Math.toRadians(cameraRot.x), new Vector3d(1.0d, 0.0d, 0.0d)).rotate(Math.toRadians(cameraRot.y), new Vector3d(0.0d, 1.0d, 0.0d)).rotate(Math.toRadians(cameraRot.z), new Vector3d(0.0d, 0.0d, 1.0d)).translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
+        this.viewMatrix.set(m1.identity().rotate(Math.toRadians(cameraRot.x), new Vector3d(1.0d, 0.0d, 0.0d)).rotate(Math.toRadians(cameraRot.y), new Vector3d(0.0d, 1.0d, 0.0d)).rotate(Math.toRadians(cameraRot.z), new Vector3d(0.0d, 0.0d, 1.0d)).translate(-cameraPos.x, -cameraPos.y, -cameraPos.z));
+    }
+
+    public Matrix4d getViewMatrix() {
+        return this.viewMatrix;
     }
 }

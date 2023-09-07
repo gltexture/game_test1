@@ -3,8 +3,8 @@ package ru.BouH.engine.render.scene.objects.data;
 import org.jetbrains.annotations.NotNull;
 import ru.BouH.engine.render.scene.fabric.RenderFabric;
 import ru.BouH.engine.render.scene.objects.items.PhysXObject;
-import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.scene.objects.texture.Sample;
+import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 
 public class StandardRenderData extends RenderData {
     public StandardRenderData(RenderFabric renderFabric, @NotNull WorldItemTexture worldItemTexture, @NotNull Class<? extends PhysXObject> clazz) {

@@ -3,7 +3,7 @@ package ru.BouH.engine.proxy;
 import org.joml.Vector3d;
 import ru.BouH.engine.events.WorldEvents;
 import ru.BouH.engine.game.exception.GameException;
-import ru.BouH.engine.physx.PhysX;
+import ru.BouH.engine.physx.world.timer.GameWorldTimer;
 import ru.BouH.engine.physx.entities.PhysEntity;
 import ru.BouH.engine.physx.entities.player.EntityPlayerSP;
 import ru.BouH.engine.physx.world.object.WorldItem;
@@ -12,22 +12,22 @@ import ru.BouH.engine.render.scene.objects.data.RenderData;
 import ru.BouH.engine.render.screen.Screen;
 
 public class Proxy {
-    private final PhysX physX;
+    private final GameWorldTimer gameWorldTimer;
     private final Screen screen;
     private LocalPlayer localPlayer;
 
-    public Proxy(PhysX physX, Screen screen) {
-        this.physX = physX;
+    public Proxy(GameWorldTimer gameWorldTimer, Screen screen) {
+        this.gameWorldTimer = gameWorldTimer;
         this.screen = screen;
     }
 
     public void createLocalPlayer() {
-        this.localPlayer = new LocalPlayer(physX.getWorld(), new Vector3d(0.0d, 5.0d, 0.0d));
+        this.localPlayer = new LocalPlayer(gameWorldTimer.getWorld(), new Vector3d(0.0d, 5.0d, 0.0d));
     }
 
     public void addItemInWorlds(WorldItem worldItem, RenderData renderData) {
         try {
-            this.physX.getWorld().addItem(worldItem);
+            this.gameWorldTimer.getWorld().addItem(worldItem);
             this.screen.getRenderWorld().addItem(worldItem, renderData);
         } catch (GameException e) {
             throw new RuntimeException(e);
@@ -39,13 +39,9 @@ public class Proxy {
     }
 
     public void onSystemStarted() {
-        WorldEvents.addEntities(this.physX.getWorld());
-        WorldEvents.addBrushes(this.physX.getWorld());
+        WorldEvents.addEntities(this.gameWorldTimer.getWorld());
+        WorldEvents.addBrushes(this.gameWorldTimer.getWorld());
         this.getLocalPlayer().addPlayerInWorlds(this);
-    }
-
-    public void tickWorlds() {
-        this.physX.getWorld().onWorldUpdate();
     }
 
     public LocalPlayer getLocalPlayer() {
@@ -57,10 +53,10 @@ public class Proxy {
     }
 
     public void removeEntityFromWorlds(PhysEntity physEntity) {
-        this.physX.getWorld().removeItem(physEntity);
+        this.gameWorldTimer.getWorld().removeItem(physEntity);
     }
 
     public void clearEntities() {
-        this.physX.getWorld().clearAllItems();
+        this.gameWorldTimer.getWorld().clearAllItems();
     }
 }

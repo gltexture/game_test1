@@ -8,29 +8,29 @@ import ru.BouH.engine.game.controller.Binding;
 import ru.BouH.engine.game.controller.input.Keyboard;
 import ru.BouH.engine.physx.entities.player.EntityPlayerSP;
 import ru.BouH.engine.render.RenderManager;
+import ru.BouH.engine.render.scene.SceneRenderBase;
 import ru.BouH.engine.render.scene.components.Model2D;
-import ru.BouH.engine.render.scene.objects.texture.samples.Color3FA;
-import ru.BouH.engine.render.scene.objects.texture.samples.PNGTexture;
 import ru.BouH.engine.render.scene.objects.gui.font.FontCode;
 import ru.BouH.engine.render.scene.objects.gui.font.FontTexture;
 import ru.BouH.engine.render.scene.objects.gui.hud.GuiPicture;
 import ru.BouH.engine.render.scene.objects.gui.hud.GuiText;
-import ru.BouH.engine.render.scene.SceneRenderBase;
+import ru.BouH.engine.render.scene.objects.texture.samples.Color3FA;
+import ru.BouH.engine.render.scene.objects.texture.samples.PNGTexture;
 import ru.BouH.engine.render.screen.Screen;
 
 import java.awt.*;
 
 public class GUI {
     public static final FontTexture standardFont = new FontTexture(new Font("Cambria", Font.PLAIN, 18), FontCode.Window);
-    private static final SceneRenderBase sceneRenderBase = Game.getGame().getScreen().getScene().getGuiRender();
     public static final PNGTexture pic1 = PNGTexture.createTexture("gui/pictures/meme2.png");
+    private static final SceneRenderBase sceneRenderBase = Game.getGame().getScreen().getScene().getGuiRender();
 
     public static void renderGUI(double partialTicks) {
         double width = Game.getGame().getScreen().getWidth();
         double height = Game.getGame().getScreen().getHeight();
         EntityPlayerSP entityPlayerSP = Game.getGame().getPlayerSP();
         GUI.renderText(partialTicks, 0, 0, "FPS: " + Screen.FPS + " | TPS1: " + Screen.PHYS1_TPS + " | TPS2: " + Screen.PHYS2_TPS, 0xffffff);
-        GUI.renderText(partialTicks, 0, 20, "entities: " + Game.getGame().getPhysX().getWorld().countItems(), 0xffffff);
+        GUI.renderText(partialTicks, 0, 20, "entities: " + Game.getGame().getPhysicsWorld().countItems(), 0xffffff);
         GUI.renderText(partialTicks, 0, 40, String.format("%s %s %s", (int) entityPlayerSP.getPosition().x, (int) entityPlayerSP.getPosition().y, (int) entityPlayerSP.getPosition().z), 0xffffff);
         int i1 = 60;
         if (!Keyboard.isPressedKey(GLFW.GLFW_KEY_LEFT_CONTROL)) {

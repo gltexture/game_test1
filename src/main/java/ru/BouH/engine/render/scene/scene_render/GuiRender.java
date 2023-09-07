@@ -5,7 +5,6 @@ import ru.BouH.engine.render.scene.RenderGroup;
 import ru.BouH.engine.render.scene.Scene;
 import ru.BouH.engine.render.scene.SceneRenderBase;
 import ru.BouH.engine.render.scene.objects.gui.GUI;
-import ru.BouH.engine.render.scene.world.SceneWorld;
 
 public class GuiRender extends SceneRenderBase {
     public GuiRender(Scene.SceneRenderConveyor sceneRenderConveyor) {

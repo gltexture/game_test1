@@ -1,12 +1,7 @@
 package ru.BouH.engine.render.scene.fabric;
 
-import org.joml.Matrix4d;
-import org.joml.Vector3d;
-import org.joml.Vector3f;
 import org.lwjgl.opengl.GL30;
-import ru.BouH.engine.game.Game;
 import ru.BouH.engine.physx.brush.WorldBrush;
-import ru.BouH.engine.render.RenderManager;
 import ru.BouH.engine.render.scene.SceneRenderBase;
 import ru.BouH.engine.render.scene.components.Model3D;
 import ru.BouH.engine.render.scene.objects.IRenderObject;
@@ -26,7 +21,7 @@ public class RenderBrushPlane implements RenderFabric {
             model3D.setScale(worldBrush.getScale());
             model3D.getPosition().lerp(entityItem.getRenderPosition(), partialTicks);
             model3D.setRotation(entityItem.getRenderRotation());
-            sceneRenderBase.getUtils().performModelViewMatrix3d(sceneRenderBase.getSceneWorld(), model3D);
+            sceneRenderBase.getUtils().performModelViewMatrix3d(model3D);
             RenderData renderData = entityItem.getRenderData();
             GL30.glBindVertexArray(model3D.getVao());
             GL30.glEnableVertexAttribArray(0);

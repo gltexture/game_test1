@@ -1,7 +1,5 @@
 package ru.BouH.engine.physx.entities.player;
 
-import com.bulletphysics.dynamics.RigidBody;
-import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
@@ -21,15 +19,15 @@ import ru.BouH.engine.render.environment.light.PointLight;
 
 public class EntityPlayerSP extends PhysEntity implements IRemoteController {
     private final Vector3d cameraRotation;
+    private final double eyeHeight;
     private IController controller;
     private Vector3d inputMotion;
-    private final double eyeHeight;
 
     public EntityPlayerSP(World world, Vector3d pos, Vector3d rot, String name) {
         super(world, pos, rot, name);
         this.inputMotion = new Vector3d(0.0d);
         this.cameraRotation = new Vector3d();
-        this.eyeHeight = 0.82d;
+        this.eyeHeight = 0.425d;
         this.setSpeed(3.0f);
     }
 
@@ -64,7 +62,7 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
         super.onUpdate(iWorld);
         if (this.isValidController()) {
             Vector3d vector3d = this.calcControllerMotion();
-            this.setVelocityVector(this.getMotionVector(vector3d));
+            this.setVelocityVector(this.getMotionVector(vector3d).mul(2.5d));
         }
     }
 
@@ -127,7 +125,7 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
             PhysEntityCube entityPropInfo = new PhysEntityCube(this.getWorld(), new Vector3d(1.0d), this.getPosition().add(this.getLookVector().mul(2.0f)));
             entityPropInfo.setScale(0.5d);
             Game.getGame().getProxy().addItemInWorlds(entityPropInfo, ItemRenderList.entityCube);
-            entityPropInfo.setObjectVelocity(this.getLookVector().mul(20.0f));
+            entityPropInfo.setObjectVelocity(this.getLookVector().mul(30.0f));
         }
         if (BindingList.instance.keyBlock2.isClicked()) {
             PhysEntityCube entityPropInfo = new PhysLightCube(this.getWorld(), new Vector3d(1.0d), this.getPosition().add(this.getLookVector().mul(2.0f)));

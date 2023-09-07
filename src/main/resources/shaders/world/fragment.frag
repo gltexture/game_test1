@@ -3,6 +3,7 @@
 in vec2 out_texture;
 in vec3 mv_vertex_normal;
 in vec3 mv_vert_pos;
+in vec3 out_texture_3d;
 
 layout (location = 0) out vec4 frag_color;
 layout (location = 1) out vec4 bright_color;
@@ -10,6 +11,8 @@ layout (location = 1) out vec4 bright_color;
 in vec3 out_view_position;
 in vec4 out_world_position;
 in mat4 out_model_view_matrix;
+uniform vec3 camera_pos;
+uniform vec2 dimensions;
 
 uniform vec3 quads_c1;
 uniform vec3 quads_c2;
@@ -20,13 +23,10 @@ uniform sampler2D texture_sampler;
 uniform sampler2D normal_map;
 uniform samplerCube cube_map_sampler;
 uniform sampler2D shadow_map_sampler;
+
 uniform int use_texture;
 uniform int use_normal_map;
-
 uniform int enable_light;
-uniform vec3 camera_pos;
-
-uniform vec2 dimensions;
 
 struct PointLight
 {
@@ -155,8 +155,9 @@ vec4 calc_light_factor(vec3 colors, float brightness, vec3 vPos, vec3 light_dir,
     vec3 from_light = light_dir;
     vec3 reflectionF = normalize(from_light + camDir);
     specularF = max(dot(vNormal, reflectionF), 0.);
-    specularF = pow(specularF, 8.0);
+    specularF = pow(specularF, 10.0);
     specularC = dot(vNormal, from_light) + 0.0001 >= 0 ? brightness * specularF * vec4(colors, 1.) : vec4(0.);
+
     vec4 reflected = texture(cube_map_sampler, reflectionF);
 
     return diffuseC + specularC * reflected;

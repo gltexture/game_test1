@@ -1,14 +1,11 @@
 package ru.BouH.engine.math;
 
-import com.bulletphysics.linearmath.QuaternionUtil;
-import com.bulletphysics.util.ArrayPool;
 import org.joml.Math;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 import org.lwjgl.BufferUtils;
 
 import javax.vecmath.Matrix3f;
-import javax.vecmath.Quat4d;
 import javax.vecmath.Quat4f;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -36,8 +33,8 @@ public class MathHelper {
         BF_cos = new float[BF_SIN_COUNT];
         int i;
         for (i = 0; i < BF_SIN_COUNT; ++i) {
-            BF_sin[i] = (float) Math.sin(((float) i + 0.5F) / (float) BF_SIN_COUNT * BF_radFull);
-            BF_cos[i] = (float) Math.cos(((float) i + 0.5F) / (float) BF_SIN_COUNT * BF_radFull);
+            BF_sin[i] = Math.sin(((float) i + 0.5F) / (float) BF_SIN_COUNT * BF_radFull);
+            BF_cos[i] = Math.cos(((float) i + 0.5F) / (float) BF_SIN_COUNT * BF_radFull);
         }
         for (i = 0; i < 360; i += 90) {
             BF_sin[(int) ((float) i * BF_degToIndex) & BF_SIN_MASK] = (float) Math.sin((double) i * Math.PI / 180.0);

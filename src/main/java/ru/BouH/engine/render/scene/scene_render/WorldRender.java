@@ -1,19 +1,17 @@
 package ru.BouH.engine.render.scene.scene_render;
 
-import org.joml.Vector3d;
 import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.game.Game;
-import ru.BouH.engine.physx.entities.player.EntityPlayerSP;
 import ru.BouH.engine.render.environment.shadows.CascadeShadowBuilder;
 import ru.BouH.engine.render.scene.RenderGroup;
 import ru.BouH.engine.render.scene.Scene;
 import ru.BouH.engine.render.scene.SceneRenderBase;
 import ru.BouH.engine.render.scene.components.Model3D;
+import ru.BouH.engine.render.scene.mesh_forms.AbstractMeshForm;
+import ru.BouH.engine.render.scene.mesh_forms.VectorForm;
 import ru.BouH.engine.render.scene.objects.items.PhysXObject;
 import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.scene.objects.texture.samples.Color3FA;
-import ru.BouH.engine.render.scene.primitive_forms.IForm;
-import ru.BouH.engine.render.scene.primitive_forms.VectorForm;
 import ru.BouH.engine.render.scene.programs.CubeMapSample;
 import ru.BouH.engine.render.scene.programs.UniformBufferUtils;
 
@@ -56,17 +54,24 @@ public class WorldRender extends SceneRenderBase {
         UniformBufferUtils.updateLightBuffers(this);
         this.performUniform("dimensions", Game.getGame().getScreen().getWindow().getWindowDimensions());
         this.getUtils().performProjectionMatrix();
+        this.getUtils().disableMsaa();
         this.renderDebugSunDirection(this);
+        this.getUtils().enableMsaa();
         for (PhysXObject entityItem : this.getSceneWorld().getEntityList()) {
+            entityItem.updateRenderPos(partialTicks);
+            this.getUtils().disableMsaa();
             this.renderHitBox(partialTicks, this, entityItem);
-            if (entityItem.isHasRender()) {
-                if (entityItem.isHasModel()) {
-                    this.performLightModelProjection(2, entityItem.getModel3D());
+            this.getUtils().enableMsaa();
+            if (entityItem.isVisible()) {
+                if (entityItem.isHasRender()) {
+                    if (entityItem.isHasModel()) {
+                        this.performLightModelProjection(2, entityItem.getModel3D());
+                    }
+                    this.getUtils().setCubeMapTexture(2, this.getCubeEnvironmentTexture());
+                    this.getUtils().setNormalMap(1, entityItem.getRenderData().getItemTexture());
+                    this.getUtils().performProperties(entityItem.getRenderData().getRenderProperties());
+                    entityItem.renderFabric().onRender(partialTicks, this, entityItem);
                 }
-                this.getUtils().setCubeMapTexture(2, this.getCubeEnvironmentTexture());
-                this.getUtils().setNormalMap(1, entityItem.getRenderData().getItemTexture());
-                this.getUtils().performProperties(entityItem.getRenderData().getRenderProperties());
-                entityItem.renderFabric().onRender(partialTicks, this, entityItem);
             }
         }
         this.unBindProgram();
@@ -89,10 +94,9 @@ public class WorldRender extends SceneRenderBase {
     }
 
     private void renderDebugSunDirection(SceneRenderBase sceneRenderBase) {
-        GL30.glDisable(GL30.GL_MULTISAMPLE);
         this.getUtils().disableLight();
         VectorForm vectorForm = sceneRenderBase.getSceneWorld().getEnvironment().sunDebugVector;
-        sceneRenderBase.getUtils().performModelViewMatrix3d(this.getSceneWorld(), vectorForm.getMeshInfo());
+        sceneRenderBase.getUtils().performModelViewMatrix3d(vectorForm.getMeshInfo());
         GL30.glBindVertexArray(vectorForm.getMeshInfo().getVao());
         GL30.glEnableVertexAttribArray(0);
         GL30.glEnable(GL30.GL_DEPTH_TEST);
@@ -101,26 +105,15 @@ public class WorldRender extends SceneRenderBase {
         GL30.glDisableVertexAttribArray(0);
         GL30.glBindVertexArray(0);
         this.getUtils().enableLight();
-        GL30.glEnable(GL30.GL_MULTISAMPLE);
     }
 
     private void renderHitBox(double partialTicks, SceneRenderBase sceneRenderBase, PhysXObject physXObject) {
-        GL30.glDisable(GL30.GL_MULTISAMPLE);
-        this.getUtils().disableLight();
-        IForm form = physXObject.getCollisionForm();
+        AbstractMeshForm form = physXObject.genCollisionMesh();
         if (form != null && form.hasMesh()) {
-            if (Game.getGame().getScreen().getScene().isCameraAttachedToItem(physXObject.getWorldItem()) && physXObject.getWorldItem() instanceof EntityPlayerSP) {
-                EntityPlayerSP entityPlayerSP = (EntityPlayerSP) physXObject.getWorldItem();
-                Vector3d vector3d = new Vector3d(this.getCamera().getCamPosition().x, this.getCamera().getCamPosition().y, this.getCamera().getCamPosition().z);
-                Vector3d v = entityPlayerSP.getRigidBodyRot(entityPlayerSP.getRigidBody());
-                Vector3d vector3d2 = new Vector3d(v.x, v.y, v.z);
-                form.getMeshInfo().getPosition().set(vector3d);
-                form.getMeshInfo().getRotation().set(vector3d2);
-            } else {
-                form.getMeshInfo().getPosition().set(physXObject.getRenderPosition());
-                form.getMeshInfo().getRotation().set(physXObject.getRenderRotation());
-            }
-            sceneRenderBase.getUtils().performModelViewMatrix3d(this.getSceneWorld(), form.getMeshInfo());
+            this.getUtils().disableLight();
+            form.getMeshInfo().getPosition().set(physXObject.getRenderPosition());
+            form.getMeshInfo().getRotation().set(physXObject.getRenderRotation());
+            sceneRenderBase.getUtils().performModelViewMatrix3d(form.getMeshInfo());
             GL30.glBindVertexArray(form.getMeshInfo().getVao());
             GL30.glEnableVertexAttribArray(0);
             GL30.glEnable(GL30.GL_DEPTH_TEST);
@@ -128,9 +121,9 @@ public class WorldRender extends SceneRenderBase {
             GL30.glDrawElements(GL30.GL_LINES, form.getMeshInfo().getVertexCount(), GL30.GL_UNSIGNED_INT, 0);
             GL30.glDisableVertexAttribArray(0);
             GL30.glBindVertexArray(0);
+            form.clearMesh();
+            this.getUtils().enableLight();
         }
-        this.getUtils().enableLight();
-        GL30.glEnable(GL30.GL_MULTISAMPLE);
     }
 
     public void onStartRender() {

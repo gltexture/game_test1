@@ -29,7 +29,7 @@ public class DefaultSample implements Sample {
 
     @Override
     public WorldItemTexture.PassUniValue[] toPassShaderValues() {
-        return new WorldItemTexture.PassUniValue[] {new WorldItemTexture.PassUniValue("quads_c1", this.getColors1()), new WorldItemTexture.PassUniValue("quads_c2", this.getColors2()), new WorldItemTexture.PassUniValue("quads_scaling", this.getScaling())};
+        return new WorldItemTexture.PassUniValue[]{new WorldItemTexture.PassUniValue("quads_c1", this.getColors1()), new WorldItemTexture.PassUniValue("quads_c2", this.getColors2()), new WorldItemTexture.PassUniValue("quads_scaling", this.getScaling())};
     }
 
     @Override

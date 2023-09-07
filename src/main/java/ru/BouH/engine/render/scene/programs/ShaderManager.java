@@ -1,24 +1,24 @@
 package ru.BouH.engine.render.scene.programs;
 
-import org.lwjgl.opengl.GL43;
 import ru.BouH.engine.game.Game;
-import ru.BouH.engine.game.exception.GameException;
 import ru.BouH.engine.math.IntPair;
 import ru.BouH.engine.render.scene.RenderGroup;
-import ru.BouH.engine.render.scene.SceneRenderBase;
 import ru.BouH.engine.render.utils.Utils;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class ShaderManager {
     private final Set<String> uniformsSet;
     private final Map<String, IntPair> uniformBuffersSet;
     private final Map<String, UniformBufferProgram> uniformBufferProgramMap;
+    private final String path;
     private ShaderProgram shaderProgram;
     private UniformProgram uniformProgram;
-    private final String path;
 
     public ShaderManager(RenderGroup renderGroup) {
         this(renderGroup.getPath());

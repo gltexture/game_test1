@@ -4,16 +4,17 @@ import org.jetbrains.annotations.NotNull;
 import ru.BouH.engine.physx.world.object.WorldItem;
 import ru.BouH.engine.render.scene.fabric.RenderFabric;
 import ru.BouH.engine.render.scene.objects.items.PhysXObject;
-import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.scene.objects.texture.Sample;
+import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.scene.objects.texture.samples.PNGTexture;
 import ru.BouH.engine.render.scene.world.SceneWorld;
+
 import java.lang.reflect.InvocationTargetException;
 
 public abstract class RenderData {
-    private WorldItemTexture worldItemTexture;
     private final RenderFabric renderFabric;
     private final Class<? extends PhysXObject> aClass;
+    private WorldItemTexture worldItemTexture;
     private RenderProperties renderProperties;
 
     public RenderData(RenderFabric renderFabric, @NotNull WorldItemTexture worldItemTexture, @NotNull Class<? extends PhysXObject> clazz) {
@@ -25,11 +26,6 @@ public abstract class RenderData {
         this.worldItemTexture = worldItemTexture;
         this.renderProperties = renderProperties;
         this.aClass = clazz;
-    }
-
-    public RenderData setRenderProperties(RenderProperties renderProperties) {
-        this.renderProperties = renderProperties;
-        return this;
     }
 
     public void attachNormalMap(String mapPath) {
@@ -48,10 +44,16 @@ public abstract class RenderData {
         return this.renderProperties;
     }
 
+    public RenderData setRenderProperties(RenderProperties renderProperties) {
+        this.renderProperties = renderProperties;
+        return this;
+    }
+
     public PhysXObject getPhysRender(SceneWorld sceneWorld, WorldItem worldItem) {
         try {
             return this.aClass.getDeclaredConstructor(SceneWorld.class, WorldItem.class, RenderData.class).newInstance(sceneWorld, worldItem, this.copyRenderData());
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException |
+                 InvocationTargetException e) {
             throw new RuntimeException(e);
         }
     }
@@ -95,32 +97,32 @@ public abstract class RenderData {
             this.lerpRotation = lerpRotation;
         }
 
-        public void setLerpPosition(boolean lerpPosition) {
-            this.lerpPosition = lerpPosition;
-        }
-
-        public void setLerpRotation(boolean lerpRotation) {
-            this.lerpRotation = lerpRotation;
-        }
-
         public static RenderProperties defaultRenderProperties() {
             return new RenderProperties(true, true, true);
-        }
-
-        public void setLightExposed(boolean lightExposed) {
-            this.lightExposed = lightExposed;
         }
 
         public boolean isLerpPosition() {
             return this.lerpPosition;
         }
 
+        public void setLerpPosition(boolean lerpPosition) {
+            this.lerpPosition = lerpPosition;
+        }
+
         public boolean isLerpRotation() {
             return this.lerpRotation;
         }
 
+        public void setLerpRotation(boolean lerpRotation) {
+            this.lerpRotation = lerpRotation;
+        }
+
         public boolean isLightExposed() {
             return this.lightExposed;
+        }
+
+        public void setLightExposed(boolean lightExposed) {
+            this.lightExposed = lightExposed;
         }
     }
 }

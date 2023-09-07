@@ -13,16 +13,16 @@ public class Keyboard {
         this.window = window;
     }
 
+    public static boolean isPressedKey(int keyCode) {
+        return GLFW.glfwGetKey(Game.getGame().getScreen().getWindow().getDescriptor(), keyCode) == GLFW.GLFW_PRESS;
+    }
+
     public boolean isKeyPressed(int keyCode) {
         return GLFW.glfwGetKey(this.getWindow().getDescriptor(), keyCode) == GLFW.GLFW_PRESS;
     }
 
     public void updateKeys() {
         Binding.getBindingList().forEach(e -> e.getKey().refreshState(this.isKeyPressed(e.getKey())));
-    }
-
-    public static boolean isPressedKey(int keyCode) {
-        return GLFW.glfwGetKey(Game.getGame().getScreen().getWindow().getDescriptor(), keyCode) == GLFW.GLFW_PRESS;
     }
 
     public boolean isKeyPressed(Key key) {

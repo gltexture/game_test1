@@ -4,7 +4,7 @@ import ru.BouH.engine.game.Game;
 
 public class Timer {
     private final int physicsTicks;
-    private long lastTime;
+    private double lastTime;
     private double renderPartial;
 
     public Timer(int physicsTicks) {
@@ -12,12 +12,11 @@ public class Timer {
         this.lastTime = Game.systemTime();
     }
 
-    public void update() {
-        long currentTime = Game.systemTime();
-        long elapsed = currentTime - this.lastTime;
+    public void updateTimer() {
+        double currentTime = Game.systemTime();
+        double elapsed = currentTime - this.lastTime;
         this.lastTime = currentTime;
-        float deltaTime = elapsed / 1000000000f;
-        this.renderPartial = deltaTime * this.physicsTicks;
+        this.renderPartial = elapsed * this.physicsTicks;
     }
 
     public double getRenderPartial() {

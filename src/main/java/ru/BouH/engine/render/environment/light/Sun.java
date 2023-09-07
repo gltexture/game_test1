@@ -10,11 +10,6 @@ public class Sun {
         this.sunPosition = new Vector3f(0, 1, 0);
     }
 
-    public void setSunPosition(Vector3f sunPosition) {
-        this.sunPosition = sunPosition;
-        this.sunPosition.normalize();
-    }
-
     public float getBrightness() {
         Vector3f nv = this.getSunPosition().mul(1, 0, 1);
         float angle1 = nv.angle(this.getSunPosition());
@@ -25,5 +20,10 @@ public class Sun {
 
     public Vector3f getSunPosition() {
         return new Vector3f(this.sunPosition);
+    }
+
+    public void setSunPosition(Vector3f sunPosition) {
+        this.sunPosition = sunPosition;
+        this.sunPosition.normalize();
     }
 }

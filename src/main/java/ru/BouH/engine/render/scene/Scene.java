@@ -1,7 +1,6 @@
 package ru.BouH.engine.render.scene;
 
 import org.joml.*;
-import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL43;
 import org.lwjgl.system.MemoryUtil;
@@ -11,7 +10,6 @@ import ru.BouH.engine.physx.world.object.WorldItem;
 import ru.BouH.engine.proxy.LocalPlayer;
 import ru.BouH.engine.render.RenderManager;
 import ru.BouH.engine.render.environment.light.LightManager;
-import ru.BouH.engine.render.environment.light.PointLight;
 import ru.BouH.engine.render.environment.shadows.CascadeShadowBuilder;
 import ru.BouH.engine.render.environment.shadows.DepthBuffer;
 import ru.BouH.engine.render.environment.shadows.DepthTexture;
@@ -70,18 +68,26 @@ public class Scene {
         this.currentCamera = null;
     }
 
-    public void init() {
-        this.sceneRenderBases.add(this.getSkyRender());
-        this.sceneRenderBases.add(this.getEntityRender());
-        this.sceneRenderBases.add(this.getGuiRender());
-    }
-
     public static boolean isSceneActive() {
         return Screen.isScreenActive();
     }
 
     public static void setCamera(ICamera camera) {
         Game.getGame().getScreen().getScene().setRenderCamera(camera);
+    }
+
+    public static int getPostRender() {
+        return Game.getGame().getScreen().getScene().getRenderPostMode();
+    }
+
+    public static void setPostRender(int a) {
+        Game.getGame().getScreen().getScene().setRenderPostMode(a);
+    }
+
+    public void init() {
+        this.sceneRenderBases.add(this.getSkyRender());
+        this.sceneRenderBases.add(this.getEntityRender());
+        this.sceneRenderBases.add(this.getGuiRender());
     }
 
     public void setRenderCamera(ICamera camera) {
@@ -162,14 +168,6 @@ public class Scene {
         return this.sceneRenderConveyor;
     }
 
-    public static int getPostRender() {
-        return Game.getGame().getScreen().getScene().getRenderPostMode();
-    }
-
-    public static void setPostRender(int a) {
-        Game.getGame().getScreen().getScene().setRenderPostMode(a);
-    }
-
     public int getRenderPostMode() {
         return this.getSceneRender().getPostRender();
     }
@@ -199,16 +197,15 @@ public class Scene {
     public void renderScene(double partialTicks) {
         if (Scene.isSceneActive()) {
             if (this.getCurrentCamera() != null) {
-                this.getFrustumCulling().refreshFrustumCullingState(RenderManager.instance.getProjectionMatrix(), RenderManager.instance.getViewMatrix(this.getCurrentCamera()));
-            }
-            this.getSceneRender().onRender(partialTicks, this.sortedList(this.getEntityRender(), this.getSkyRender()), this.sortedList(this.getGuiRender()));
-            if (this.getCurrentCamera() != null) {
                 this.getCurrentCamera().updateCamera(partialTicks);
+                RenderManager.instance.updateViewMatrix(this.getCurrentCamera());
+                this.getFrustumCulling().refreshFrustumCullingState(RenderManager.instance.getProjectionMatrix(), RenderManager.instance.getViewMatrix());
             }
+            this.getSceneRender().onRender(partialTicks, this.sortedSceneList(this.getEntityRender(), this.getSkyRender()), this.sortedSceneList(this.getGuiRender()));
         }
     }
 
-    private List<SceneRenderBase> sortedList(SceneRenderBase... s) {
+    private List<SceneRenderBase> sortedSceneList(SceneRenderBase... s) {
         List<SceneRenderBase> sceneRenderBases1 = new ArrayList<>(Arrays.asList(s));
         sceneRenderBases1.sort(Comparator.comparing(SceneRenderBase::getRenderPriority));
         return sceneRenderBases1;
@@ -237,14 +234,93 @@ public class Scene {
         Game.getGame().getLogManager().log("Scene rendering stopped");
     }
 
+    public static class ShadowDispatcher {
+        private final DepthBuffer depthMap;
+        private final List<CascadeShadowBuilder> cascadeShadowBuilders;
+        private final ShaderManager depthShaderManager;
+        private final int numCascades;
+        private final SceneWorld sceneWorld;
+
+        public ShadowDispatcher(SceneWorld sceneWorld, int cascadeCount) {
+            this.numCascades = cascadeCount;
+            this.sceneWorld = sceneWorld;
+            this.depthMap = new DepthBuffer();
+            this.cascadeShadowBuilders = new ArrayList<>();
+            for (int i = 0; i < cascadeCount; i++) {
+                CascadeShadowBuilder cascadeShadowBuilder = new CascadeShadowBuilder();
+                cascadeShadowBuilders.add(cascadeShadowBuilder);
+            }
+            this.depthShaderManager = new ShaderManager("shadows");
+            this.initShaders();
+        }
+
+        private void initShaders() {
+            this.getDepthShaderManager().addUniform("model_matrix");
+            this.getDepthShaderManager().addUniform("projection_view_matrix");
+        }
+
+        private void renderDepthBuffer(double partialTicks, SceneRenderBase base) {
+            Vector3f sunPos = this.getSceneWorld().getEnvironment().getSunPosition();
+            CascadeShadowBuilder.updateCascadeShadow(this.getCascadeShadowBuilders(), new Vector4d(sunPos, 0.0d), RenderManager.instance.getViewMatrix(), RenderManager.instance.getProjectionMatrix());
+            GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, this.depthMap.getDepthFbo());
+            Screen.setViewport(new Vector2i(DepthTexture.MAP_DIMENSIONS));
+            this.getDepthShaderManager().bind();
+            for (int i = 0; i < this.getNumCascades(); i++) {
+                GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL30.GL_TEXTURE_2D, this.depthMap.getDepthTexture().getId()[i], 0);
+                GL30.glClear(GL30.GL_DEPTH_BUFFER_BIT);
+                CascadeShadowBuilder cascadeShadowBuilder = this.cascadeShadowBuilders.get(i);
+                this.getDepthShaderManager().performUniform("projection_view_matrix", cascadeShadowBuilder.getProjectionViewMatrix());
+                for (PhysXObject physXObject : base.getSceneWorld().getEntityList()) {
+                    if (physXObject.isHasModel()) {
+                        Model3D model3D = physXObject.getModel3D();
+                        Matrix4d m2 = RenderManager.instance.getModelMatrix(model3D);
+                        this.getDepthShaderManager().performUniform("model_matrix", m2);
+                        physXObject.renderFabric().onRender(partialTicks, base, physXObject);
+                    }
+                }
+            }
+            this.getDepthShaderManager().unBind();
+            GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
+        }
+
+        public SceneWorld getSceneWorld() {
+            return this.sceneWorld;
+        }
+
+        public void onStartRender() {
+            this.getDepthShaderManager().startProgram();
+        }
+
+        public void onStopRender() {
+            this.getDepthShaderManager().destroyProgram();
+            this.getDepthMap().cleanBuffer();
+        }
+
+        public ShaderManager getDepthShaderManager() {
+            return this.depthShaderManager;
+        }
+
+        public DepthBuffer getDepthMap() {
+            return this.depthMap;
+        }
+
+        public int getNumCascades() {
+            return this.numCascades;
+        }
+
+        public List<CascadeShadowBuilder> getCascadeShadowBuilders() {
+            return this.cascadeShadowBuilders;
+        }
+    }
+
     public class SceneRenderConveyor {
-        private int CURRENT_POST_RENDER = 0;
         private final ShaderManager postProcessingShader;
         private final ShaderManager blurShader;
         private final ShadowDispatcher shadowDispatcher;
         private final FrameBufferObjectProgram fboBlur;
         private final FrameBufferObjectProgram sceneFbo;
         private final float[] blurKernel;
+        private int CURRENT_POST_RENDER = 0;
         private boolean wantsTakeScreenshot;
 
         public SceneRenderConveyor() {
@@ -290,18 +366,11 @@ public class Scene {
 
         private void attachFBO(Vector2i dim) {
             this.fboBlur.createFBO(dim, GL30.GL_SRGB_ALPHA, false, false);
-            this.sceneFbo.createFBO_MRT(dim, new int[] {GL30.GL_COLOR_ATTACHMENT0, GL30.GL_COLOR_ATTACHMENT1}, GL43.GL_RGB16F, true, true);
+            this.sceneFbo.createFBO_MRT(dim, new int[]{GL30.GL_COLOR_ATTACHMENT0, GL30.GL_COLOR_ATTACHMENT1}, GL43.GL_RGB16F, true, true);
         }
 
         public void onWindowResize(Vector2i dim) {
             this.attachFBO(dim);
-        }
-
-        public void setPostRender(int a) {
-            this.CURRENT_POST_RENDER = a;
-            if (this.CURRENT_POST_RENDER > 3) {
-                this.CURRENT_POST_RENDER = 0;
-            }
         }
 
         public void onRender(double partialTicks, List<SceneRenderBase> mainList, List<SceneRenderBase> additionalList) {
@@ -366,6 +435,13 @@ public class Scene {
 
         public int getPostRender() {
             return this.CURRENT_POST_RENDER;
+        }
+
+        public void setPostRender(int a) {
+            this.CURRENT_POST_RENDER = a;
+            if (this.CURRENT_POST_RENDER > 3) {
+                this.CURRENT_POST_RENDER = 0;
+            }
         }
 
         public ShadowDispatcher getShadowDispatcher() {
@@ -500,85 +576,6 @@ public class Scene {
 
         public void takeScreenshot() {
             this.wantsTakeScreenshot = true;
-        }
-    }
-
-    public static class ShadowDispatcher {
-        private final DepthBuffer depthMap;
-        private final List<CascadeShadowBuilder> cascadeShadowBuilders;
-        private final ShaderManager depthShaderManager;
-        private final int numCascades;
-        private final SceneWorld sceneWorld;
-
-        public ShadowDispatcher(SceneWorld sceneWorld, int cascadeCount) {
-            this.numCascades = cascadeCount;
-            this.sceneWorld = sceneWorld;
-            this.depthMap = new DepthBuffer();
-            this.cascadeShadowBuilders = new ArrayList<>();
-            for (int i = 0; i < cascadeCount; i++) {
-                CascadeShadowBuilder cascadeShadowBuilder = new CascadeShadowBuilder();
-                cascadeShadowBuilders.add(cascadeShadowBuilder);
-            }
-            this.depthShaderManager = new ShaderManager("shadows");
-            this.initShaders();
-        }
-
-        private void initShaders() {
-            this.getDepthShaderManager().addUniform("model_matrix");
-            this.getDepthShaderManager().addUniform("projection_view_matrix");
-        }
-
-        private void renderDepthBuffer(double partialTicks, SceneRenderBase base) {
-            Vector3f sunPos = this.getSceneWorld().getEnvironment().getSunPosition();
-            CascadeShadowBuilder.updateCascadeShadow(this.getCascadeShadowBuilders(), new Vector4d(sunPos, 0.0d), RenderManager.instance.getViewMatrix(base.getCamera()), RenderManager.instance.getProjectionMatrix());
-            GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, this.depthMap.getDepthFbo());
-            Screen.setViewport(new Vector2i(DepthTexture.MAP_DIMENSIONS));
-            this.getDepthShaderManager().bind();
-            for (int i = 0; i < this.getNumCascades(); i++) {
-                GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL30.GL_TEXTURE_2D, this.depthMap.getDepthTexture().getId()[i], 0);
-                GL30.glClear(GL30.GL_DEPTH_BUFFER_BIT);
-                CascadeShadowBuilder cascadeShadowBuilder = this.cascadeShadowBuilders.get(i);
-                this.getDepthShaderManager().performUniform("projection_view_matrix", cascadeShadowBuilder.getProjectionViewMatrix());
-                for (PhysXObject physXObject : base.getSceneWorld().getEntityList()) {
-                    if (physXObject.isHasModel()) {
-                        Model3D model3D = physXObject.getModel3D();
-                        Matrix4d m2 = RenderManager.instance.getModelMatrix(model3D);
-                        this.getDepthShaderManager().performUniform("model_matrix", m2);
-                        physXObject.renderFabric().onRender(partialTicks, base, physXObject);
-                    }
-                }
-            }
-            this.getDepthShaderManager().unBind();
-            GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
-        }
-
-        public SceneWorld getSceneWorld() {
-            return this.sceneWorld;
-        }
-
-        public void onStartRender() {
-            this.getDepthShaderManager().startProgram();
-        }
-
-        public void onStopRender() {
-            this.getDepthShaderManager().destroyProgram();
-            this.getDepthMap().cleanBuffer();
-        }
-
-        public ShaderManager getDepthShaderManager() {
-            return this.depthShaderManager;
-        }
-
-        public DepthBuffer getDepthMap() {
-            return this.depthMap;
-        }
-
-        public int getNumCascades() {
-            return this.numCascades;
-        }
-
-        public List<CascadeShadowBuilder> getCascadeShadowBuilders() {
-            return this.cascadeShadowBuilders;
         }
     }
 }

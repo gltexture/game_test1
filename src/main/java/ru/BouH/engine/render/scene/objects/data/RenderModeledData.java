@@ -4,8 +4,8 @@ import org.jetbrains.annotations.NotNull;
 import ru.BouH.engine.render.scene.components.MeshModel;
 import ru.BouH.engine.render.scene.fabric.RenderFabric;
 import ru.BouH.engine.render.scene.objects.items.PhysXObject;
-import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.scene.objects.texture.Sample;
+import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 
 public class RenderModeledData extends RenderData {
     private MeshModel meshModel;
@@ -23,12 +23,12 @@ public class RenderModeledData extends RenderData {
         this(renderFabric, WorldItemTexture.standardError, clazz, meshModel);
     }
 
-    public void setMeshModel(MeshModel meshModel) {
-        this.meshModel = meshModel;
-    }
-
     public MeshModel getMeshModel() {
         return this.meshModel;
+    }
+
+    public void setMeshModel(MeshModel meshModel) {
+        this.meshModel = meshModel;
     }
 
     @Override

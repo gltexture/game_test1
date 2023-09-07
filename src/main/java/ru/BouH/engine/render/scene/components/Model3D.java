@@ -14,10 +14,6 @@ public class Model3D extends ObjectModel {
         this.scale = 1.0f;
     }
 
-    public void setPosition(Vector3d vector3d) {
-        this.getPosition().set(vector3d);
-    }
-
     public void setPosition(double x, double y, double z) {
         this.getPosition().x = x;
         this.getPosition().y = y;
@@ -30,18 +26,22 @@ public class Model3D extends ObjectModel {
         this.getRotation().z = z;
     }
 
+    public Vector3d getRotation() {
+        return this.rotation;
+    }
+
     public void setRotation(Vector3d v) {
         this.getRotation().x = v.x;
         this.getRotation().y = v.y;
         this.getRotation().z = v.z;
     }
 
-    public Vector3d getRotation() {
-        return this.rotation;
-    }
-
     public Vector3d getPosition() {
         return this.position;
+    }
+
+    public void setPosition(Vector3d vector3d) {
+        this.getPosition().set(vector3d);
     }
 
     public double getScale() {

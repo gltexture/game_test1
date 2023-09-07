@@ -4,8 +4,8 @@ import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.joml.Vector4d;
 import org.joml.Vector4f;
-import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.scene.objects.texture.Sample;
+import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 
 public final class Color3FA implements Sample {
     private final float red;
@@ -48,7 +48,7 @@ public final class Color3FA implements Sample {
         int r = (hex & 0xFFFFFF) >> 16;
         int g = (hex & 0xFFFF) >> 8;
         int b = hex & 0xFF;
-        return new float[] {r / 255.0f, g / 255.0f, b / 255.0f};
+        return new float[]{r / 255.0f, g / 255.0f, b / 255.0f};
     }
 
     public Vector4f getVectorColors4f() {
@@ -82,6 +82,6 @@ public final class Color3FA implements Sample {
 
     @Override
     public WorldItemTexture.PassUniValue[] toPassShaderValues() {
-        return new WorldItemTexture.PassUniValue[] {new WorldItemTexture.PassUniValue("object_rgb", this.getVectorColors4f())};
+        return new WorldItemTexture.PassUniValue[]{new WorldItemTexture.PassUniValue("object_rgb", this.getVectorColors4f())};
     }
 }

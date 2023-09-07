@@ -1,10 +1,7 @@
 package ru.BouH.engine.render.scene.programs;
 
-import org.joml.Vector2i;
 import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.render.scene.objects.texture.samples.PNGTexture;
-
-import java.nio.ByteBuffer;
 
 public class CubeMapSample {
     private int textureId;

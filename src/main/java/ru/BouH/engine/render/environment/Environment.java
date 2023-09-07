@@ -5,14 +5,14 @@ import org.joml.Vector3f;
 import ru.BouH.engine.render.environment.light.LightManager;
 import ru.BouH.engine.render.environment.light.PointLight;
 import ru.BouH.engine.render.environment.sky.Sky;
-import ru.BouH.engine.render.scene.primitive_forms.VectorForm;
+import ru.BouH.engine.render.scene.mesh_forms.VectorForm;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 
 public class Environment {
-    private Sky sky;
     private final SceneWorld sceneWorld;
     private final LightManager lightManager;
     public VectorForm sunDebugVector;
+    private Sky sky;
 
     public Environment(SceneWorld sceneWorld) {
         this.sceneWorld = sceneWorld;

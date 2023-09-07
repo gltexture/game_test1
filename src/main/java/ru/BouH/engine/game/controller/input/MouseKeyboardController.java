@@ -8,9 +8,9 @@ import ru.BouH.engine.render.screen.window.Window;
 public class MouseKeyboardController implements IController {
     private final Vector2d displayInput;
     private final Vector3d xyzInput;
-    private Window window;
     private final Keyboard keyboard;
     private final Mouse mouse;
+    private Window window;
 
     public MouseKeyboardController(Window window) {
         this.keyboard = new Keyboard(window);

@@ -44,10 +44,6 @@ public class PNGTexture implements PictureSample {
         }
     }
 
-    public boolean isValid() {
-        return this.getPNGInBuffer() != null;
-    }
-
     public static PNGTexture createTexture(String textureName) {
         PNGTexture PNGTexture = null;
         try {
@@ -69,6 +65,10 @@ public class PNGTexture implements PictureSample {
 
     public static PNGTexture createTexture(InputStream inputStream) {
         return new PNGTexture(inputStream);
+    }
+
+    public boolean isValid() {
+        return this.getPNGInBuffer() != null;
     }
 
     public ByteBuffer getPNGInBuffer() {
@@ -101,6 +101,6 @@ public class PNGTexture implements PictureSample {
 
     @Override
     public WorldItemTexture.PassUniValue[] toPassShaderValues() {
-        return new WorldItemTexture.PassUniValue[] {new WorldItemTexture.PassUniValue("texture_sampler", 0)};
+        return new WorldItemTexture.PassUniValue[]{new WorldItemTexture.PassUniValue("texture_sampler", 0)};
     }
 }

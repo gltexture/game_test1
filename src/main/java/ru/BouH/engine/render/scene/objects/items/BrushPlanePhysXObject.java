@@ -4,8 +4,8 @@ import ru.BouH.engine.physx.brush.Plane4dBrush;
 import ru.BouH.engine.physx.brush.WorldBrush;
 import ru.BouH.engine.physx.world.object.WorldItem;
 import ru.BouH.engine.proxy.IWorld;
+import ru.BouH.engine.render.scene.mesh_forms.PlaneForm;
 import ru.BouH.engine.render.scene.objects.data.RenderData;
-import ru.BouH.engine.render.scene.primitive_forms.PlaneForm;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 
 public class BrushPlanePhysXObject extends PhysXObject {

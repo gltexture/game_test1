@@ -6,6 +6,8 @@ import ru.BouH.engine.render.screen.window.Window;
 
 public interface IController {
     Vector2d getDisplayInput();
+
     Vector3d getXYZInput();
+
     void updateControllerState(Window window);
 }

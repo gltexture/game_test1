@@ -9,9 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FrustumCulling {
-    private Matrix4d projectionViewMatrix;
     private final List<Vector4d> planes;
     private final FrustumIntersection frustumIntersection;
+    private Matrix4d projectionViewMatrix;
 
     public FrustumCulling() {
         this.projectionViewMatrix = new Matrix4d();

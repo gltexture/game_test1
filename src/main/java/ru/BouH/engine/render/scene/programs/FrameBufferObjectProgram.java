@@ -5,6 +5,7 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.GL43;
 import ru.BouH.engine.game.Game;
+import ru.BouH.engine.render.scene.Scene;
 import ru.BouH.engine.render.screen.Screen;
 
 import java.nio.ByteBuffer;
@@ -18,10 +19,13 @@ public class FrameBufferObjectProgram {
     }
 
     public void createFBO(Vector2i xy, int target, boolean depthBuffer, boolean msaa) {
-        this.createFBO_MRT(xy, new int[] {GL30.GL_COLOR_ATTACHMENT0}, target, depthBuffer, msaa);
+        this.createFBO_MRT(xy, new int[]{GL30.GL_COLOR_ATTACHMENT0}, target, depthBuffer, msaa);
     }
 
     public void createFBO_MRT(Vector2i xy, int[] attachments, int target, boolean depthBuffer, boolean msaa) {
+        if (!Scene.isSceneActive()) {
+            return;
+        }
         this.frameBufferId = GL30.glGenFramebuffers();
         this.renderBufferId = GL30.glGenRenderbuffers();
         this.bindFBO();

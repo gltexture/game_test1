@@ -22,15 +22,15 @@ public class Mouse {
         double[] dx = new double[1];
         double[] dy = new double[1];
         GLFW.glfwGetCursorPos(this.getWindow().getDescriptor(), dx, dy);
-        return new double[] {dx[0], dy[0]};
-    }
-
-    public boolean isCursorInWindowBounds() {
-        return this.isInWindowBounds;
+        return new double[]{dx[0], dy[0]};
     }
 
     public void setCursorCoordinates(double[] xy) {
         GLFW.glfwSetCursorPos(window.getDescriptor(), xy[0], xy[1]);
+    }
+
+    public boolean isCursorInWindowBounds() {
+        return this.isInWindowBounds;
     }
 
     public boolean isLeftKeyPressed() {

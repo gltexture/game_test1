@@ -35,6 +35,7 @@ out vec2 out_texture;
 out vec3 mv_vertex_normal;
 out vec3 mv_vert_pos;
 out vec3 out_view_position;
+out vec3 out_texture_3d;
 out vec4 out_world_position;
 out mat4 out_model_view_matrix;
 
@@ -52,6 +53,7 @@ void main()
 
     out_world_position = model_matrix * vec4(position, 1.0);
     out_view_position = mv_pos.xyz;
+    out_texture_3d = position;
 
     out_model_view_matrix = model_view_matrix;
 }

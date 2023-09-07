@@ -9,13 +9,13 @@ import ru.BouH.engine.render.environment.light.ILight;
 
 public abstract class WorldItem implements IWorldObject {
     private static int globalId;
-    private ILight iLight;
     protected final Vector3d position;
     protected final Vector3d rotation;
     private final World world;
     private final Vector3d prevPosition;
     private final String itemName;
     private final int itemId;
+    private ILight iLight;
     private int spawnTick;
     private boolean isDead;
     private double scale;
@@ -53,14 +53,6 @@ public abstract class WorldItem implements IWorldObject {
         return this.getItemName() + "(" + this.getItemId() + ")";
     }
 
-    public void setPosition(Vector3d vector3d) {
-        this.position.set(vector3d);
-    }
-
-    public void setRotation(Vector3d vector3d) {
-        this.rotation.set(vector3d);
-    }
-
     public Vector3d getPrevPosition() {
         return this.prevPosition;
     }
@@ -73,8 +65,16 @@ public abstract class WorldItem implements IWorldObject {
         return new Vector3d(this.position);
     }
 
+    public void setPosition(Vector3d vector3d) {
+        this.position.set(vector3d);
+    }
+
     public Vector3d getRotation() {
         return new Vector3d(this.rotation);
+    }
+
+    public void setRotation(Vector3d vector3d) {
+        this.rotation.set(vector3d);
     }
 
     public double getScale() {
@@ -105,14 +105,12 @@ public abstract class WorldItem implements IWorldObject {
         return this.getLight() != null && this.getLight().isActive();
     }
 
-    public void setLight(ILight iLight) {
-        this.iLight = iLight;
-        iLight.doAttachTo(this);
-        this.getWorld().addLight(iLight);
-    }
-
     public ILight getLight() {
         return this.iLight;
+    }
+
+    public void setLight(ILight iLight) {
+        this.iLight = iLight;
     }
 
     public boolean isDead() {

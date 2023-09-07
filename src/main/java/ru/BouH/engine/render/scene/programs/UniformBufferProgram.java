@@ -3,18 +3,15 @@ package ru.BouH.engine.render.scene.programs;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL43;
 import ru.BouH.engine.game.Game;
-import ru.BouH.engine.math.IntPair;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.util.HashMap;
-import java.util.Map;
 
 public class UniformBufferProgram {
     private final int uboBlock;
     private final String name;
-    private int binding;
     private final int shaderId;
+    private int binding;
 
     public UniformBufferProgram(int shaderId, String name) {
         this.uboBlock = GL20.glGenBuffers();

@@ -2,10 +2,10 @@ package ru.BouH.engine.events;
 
 import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
+import ru.BouH.engine.game.g_static.render.ItemRenderList;
 import ru.BouH.engine.physx.brush.Plane4dBrush;
 import ru.BouH.engine.physx.entities.prop.PhysEntityCube;
 import ru.BouH.engine.physx.world.World;
-import ru.BouH.engine.game.g_static.render.ItemRenderList;
 
 public class WorldEvents {
     public static void addEntities(World world) {

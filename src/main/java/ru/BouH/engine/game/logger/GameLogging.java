@@ -39,7 +39,7 @@ public class GameLogging {
         Game.getGame().getProfiler().crashSection(SectionManager.game);
         Game.getGame().getProfiler().stopAllSections();
         JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
-        Game.getGame().shouldBeClosed = true;
+        Game.getGame().destroyGame();
     }
 
     private StringBuilder getStringBuilder(String message, Object[] objects, StackTraceElement[] trace) {

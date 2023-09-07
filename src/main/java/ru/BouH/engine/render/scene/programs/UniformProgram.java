@@ -3,7 +3,6 @@ package ru.BouH.engine.render.scene.programs;
 import org.joml.*;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryStack;
-import ru.BouH.engine.game.Game;
 
 import java.nio.FloatBuffer;
 import java.util.HashMap;

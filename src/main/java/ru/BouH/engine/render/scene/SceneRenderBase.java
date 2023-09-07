@@ -1,20 +1,19 @@
 package ru.BouH.engine.render.scene;
 
 import org.joml.Matrix4d;
-import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL43;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.math.IntPair;
+import ru.BouH.engine.physx.world.object.WorldItem;
 import ru.BouH.engine.render.RenderManager;
 import ru.BouH.engine.render.scene.components.Model3D;
 import ru.BouH.engine.render.scene.objects.data.RenderData;
+import ru.BouH.engine.render.scene.objects.texture.PictureSample;
+import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.scene.objects.texture.samples.PNGTexture;
 import ru.BouH.engine.render.scene.programs.CubeMapSample;
 import ru.BouH.engine.render.scene.programs.ShaderManager;
 import ru.BouH.engine.render.scene.programs.UniformBufferProgram;
-import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
-import ru.BouH.engine.render.scene.objects.texture.PictureSample;
 import ru.BouH.engine.render.scene.programs.UniformBufferUtils;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 import ru.BouH.engine.render.scene.world.camera.ICamera;
@@ -164,6 +163,14 @@ public abstract class SceneRenderBase {
         public SceneRenderUtils() {
         }
 
+        public void disableMsaa() {
+            GL30.glDisable(GL30.GL_MULTISAMPLE);
+        }
+
+        public void enableMsaa() {
+            GL30.glEnable(GL30.GL_MULTISAMPLE);
+        }
+
         public void disableLight() {
             SceneRenderBase.this.performUniform("enable_light", 0);
         }
@@ -176,8 +183,8 @@ public abstract class SceneRenderBase {
             SceneRenderBase.this.performUniform("projection_matrix", RenderManager.instance.getProjectionMatrix());
         }
 
-        public void performModelViewMatrix3d(SceneWorld sceneWorld, Model3D model3D) {
-            SceneRenderBase.this.performUniform("model_view_matrix", RenderManager.instance.getModelViewMatrix(Game.getGame().getScreen().getCamera(), model3D));
+        public void performModelViewMatrix3d(Model3D model3D) {
+            SceneRenderBase.this.performUniform("model_view_matrix", RenderManager.instance.getModelViewMatrix(model3D));
         }
 
         public void performModelViewMatrix3d(Matrix4d matrix4d) {

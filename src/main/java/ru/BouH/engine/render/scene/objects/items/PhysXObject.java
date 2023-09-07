@@ -1,7 +1,6 @@
 package ru.BouH.engine.render.scene.objects.items;
 
 import org.jetbrains.annotations.NotNull;
-import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.math.BPVector3f;
@@ -14,15 +13,16 @@ import ru.BouH.engine.physx.world.object.IDynamic;
 import ru.BouH.engine.physx.world.object.IWorldObject;
 import ru.BouH.engine.physx.world.object.WorldItem;
 import ru.BouH.engine.proxy.IWorld;
+import ru.BouH.engine.render.environment.light.ILight;
 import ru.BouH.engine.render.frustum.FrustumCulling;
 import ru.BouH.engine.render.frustum.RenderABB;
 import ru.BouH.engine.render.scene.components.Model3D;
 import ru.BouH.engine.render.scene.fabric.RenderFabric;
+import ru.BouH.engine.render.scene.mesh_forms.AbstractMeshForm;
+import ru.BouH.engine.render.scene.mesh_forms.collision_wire.CollisionOBBoxForm;
+import ru.BouH.engine.render.scene.mesh_forms.collision_wire.CollisionPlaneForm;
 import ru.BouH.engine.render.scene.objects.IRenderObject;
 import ru.BouH.engine.render.scene.objects.data.RenderData;
-import ru.BouH.engine.render.scene.primitive_forms.CollisionOBBoxForm;
-import ru.BouH.engine.render.scene.primitive_forms.CollisionPlaneForm;
-import ru.BouH.engine.render.scene.primitive_forms.IForm;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 
 public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynamic {
@@ -30,16 +30,21 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
     private final SceneWorld sceneWorld;
     private final WorldItem worldItem;
     private final RenderData renderData;
-    private IForm collisionForm;
     protected Model3D model3D;
     private boolean blockInterpolation;
     private boolean isObjectCulled;
     private boolean isVisible;
     private boolean isDead;
+    protected Vector3d renderPosition;
+    protected Vector3d renderRotation;
+    private ILight light;
 
     public PhysXObject(@NotNull SceneWorld sceneWorld, @NotNull WorldItem worldItem, @NotNull RenderData renderData) {
         this.renderABB = new RenderABB();
         this.worldItem = worldItem;
+        this.renderPosition = new Vector3d(worldItem.getPosition());
+        this.renderRotation = new Vector3d(worldItem.getRotation());
+        this.light = null;
         this.sceneWorld = sceneWorld;
         this.renderData = renderData;
         this.isVisible = true;
@@ -50,13 +55,17 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
         this.model3D = null;
     }
 
-    private void genCollisionBox(JBulletPhysics JBulletPhysics) {
-        if (JBulletPhysics.hasCollision()) {
-            this.collisionForm = this.constructForm(JBulletPhysics.getCollision());
+    public AbstractMeshForm genCollisionMesh() {
+        if (this.getWorldItem() instanceof JBulletPhysics) {
+            JBulletPhysics JBulletPhysics = (JBulletPhysics) this.getWorldItem();
+            if (JBulletPhysics.hasCollision()) {
+                return this.constructForm(JBulletPhysics.getCollision());
+            }
         }
+        return null;
     }
 
-    private IForm constructForm(AbstractCollision iCollision) {
+    private AbstractMeshForm constructForm(AbstractCollision iCollision) {
         if (iCollision != null) {
             if (iCollision instanceof OBB) {
                 return new CollisionOBBoxForm((OBB) iCollision);
@@ -71,8 +80,8 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
     @Override
     public void onSpawn(IWorld iWorld) {
         Game.getGame().getLogManager().debug("[ " + this.getWorldItem().toString() + " ]" + " - PreRender");
-        if (worldItem instanceof JBulletPhysics) {
-            this.genCollisionBox((JBulletPhysics) worldItem);
+        if (this.getWorldItem().hasLight()) {
+            this.addLight(this.getWorldItem().getLight());
         }
         this.setModel();
         if (this.isHasRender()) {
@@ -83,8 +92,8 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
     @Override
     public void onDestroy(IWorld iWorld) {
         Game.getGame().getLogManager().debug("[ " + this.getWorldItem().toString() + " ]" + " - PostRender");
-        if (this.hasCollisionForm()) {
-            this.getCollisionForm().getMeshInfo().clean();
+        if (this.hasLight()) {
+            this.removeLight();
         }
         if (this.isHasRender()) {
             this.renderFabric().onStopRender(this);
@@ -105,16 +114,27 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
         return new Vector3d(worldItem.getScale() + 1.0d);
     }
 
+    protected void removeLight() {
+        this.getSceneWorld().removeLight(this.getLight());
+        this.light = null;
+    }
+
+    protected void addLight(ILight light) {
+        this.light = light;
+        light.doAttachTo(this);
+        this.getSceneWorld().addLight(light);
+    }
+
+    public boolean hasLight() {
+        return this.light != null;
+    }
+
+    public ILight getLight() {
+        return this.light;
+    }
+
     public RenderABB getRenderABB() {
         return this.getWorldItem() instanceof WorldBrush ? null : this.renderABB;
-    }
-
-    public IForm getCollisionForm() {
-        return this.collisionForm;
-    }
-
-    public boolean hasCollisionForm() {
-        return this.getCollisionForm() != null;
     }
 
     public boolean shouldInterpolatePos() {
@@ -132,17 +152,32 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
     @Override
     public void onUpdate(IWorld iWorld) {
         this.blockInterpolation = !this.isVisible();
+        if (this.getWorldItem().hasLight() && !this.hasLight()) {
+            this.addLight(this.getWorldItem().getLight());
+        }
         if (this.getRenderABB() != null) {
             Vector3d size = this.calcABBSize(this.getWorldItem());
             if (size != null) {
                 this.getRenderABB().setAbbForm(this.getRenderPosition(), this.calcABBSize(this.getWorldItem()));
             }
         }
-        if (this.getWorldItem() instanceof JBulletPhysics && !this.hasCollisionForm()) {
-            this.genCollisionBox((JBulletPhysics) this.getWorldItem());
-        }
         if (this.getWorldItem().isDead()) {
             this.setDead();
+        }
+    }
+
+    public void updateRenderPos(double partialTicks) {
+        Vector3d pos = this.getFixedPosition();
+        Vector3d rot = this.getFixedRotation();
+        if (this.shouldInterpolatePos()) {
+            this.renderPosition.lerp(pos, partialTicks);
+        } else {
+            this.renderPosition.set(pos);
+        }
+        if (this.shouldInterpolateRot()) {
+            this.renderRotation.lerp(rot, partialTicks);
+        } else {
+            this.renderRotation.set(rot);
         }
     }
 
@@ -150,20 +185,36 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
         this.isObjectCulled = !frustumCulling.isInFrustum(this.getRenderABB());
     }
 
-    public void setVisible(boolean visible) {
-        this.isVisible = visible;
-    }
-
     public boolean isVisible() {
         return !this.isObjectCulled && this.isVisible;
     }
 
-    public Vector3d getRenderPosition() {
+    public void setVisible(boolean visible) {
+        this.isVisible = visible;
+    }
+
+    protected Vector3d getFixedPosition() {
+        if (this.getWorldItem() instanceof JBulletPhysics) {
+            JBulletPhysics jBulletPhysics = (JBulletPhysics) this.getWorldItem();
+            return jBulletPhysics.getRigidBodyPos();
+        }
         return this.getWorldItem().getPosition();
     }
 
-    public Vector3d getRenderRotation() {
+    protected Vector3d getFixedRotation() {
+        if (this.getWorldItem() instanceof JBulletPhysics) {
+            JBulletPhysics jBulletPhysics = (JBulletPhysics) this.getWorldItem();
+            return jBulletPhysics.getRigidBodyRot();
+        }
         return this.getWorldItem().getRotation();
+    }
+
+    public Vector3d getRenderPosition() {
+        return new Vector3d(this.renderPosition);
+    }
+
+    public Vector3d getRenderRotation() {
+        return new Vector3d(this.renderRotation);
     }
 
     public Model3D getModel3D() {

@@ -25,16 +25,21 @@ public class ControllerDispatcher {
         return ControllerDispatcher.mouseKeyboardController;
     }
 
+    public static Vector2d getOptionedDisplayVec(IController iController) {
+        return new Vector2d(iController.getDisplayInput()).mul(ControllerDispatcher.CAM_SENS);
+    }
+
+    public static Vector3d getOptionedXYZVec(IController iController) {
+        Vector3d v = iController.getXYZInput();
+        return new Vector3d(v.x == 0 ? 0 : v.x > 0 ? 1 : -1, v.y == 0 ? 0 : v.y > 0 ? 1 : -1, v.z == 0 ? 0 : v.z > 0 ? 1 : -1);
+    }
+
     public void setController(IController iController) {
         this.currentController = iController;
     }
 
     public IController getCurrentController() {
         return this.currentController;
-    }
-
-    public static Vector2d getOptionedDisplayVec(IController iController) {
-        return new Vector2d(iController.getDisplayInput()).mul(ControllerDispatcher.CAM_SENS);
     }
 
     public void attachControllerTo(IController controller, IRemoteController remoteController) {
@@ -49,11 +54,6 @@ public class ControllerDispatcher {
             this.getCurrentControlledItem().setController(null);
             this.currentControlledItem = null;
         }
-    }
-
-    public static Vector3d getOptionedXYZVec(IController iController) {
-        Vector3d v = iController.getXYZInput();
-        return new Vector3d(v.x == 0 ? 0 : v.x > 0 ? 1 : -1, v.y == 0 ? 0 : v.y > 0 ? 1 : -1, v.z == 0 ? 0 : v.z > 0 ? 1 : -1);
     }
 
     public IRemoteController getCurrentControlledItem() {

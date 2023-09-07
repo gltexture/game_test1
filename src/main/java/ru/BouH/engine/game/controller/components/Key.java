@@ -1,9 +1,5 @@
 package ru.BouH.engine.game.controller.components;
 
-import org.lwjgl.glfw.GLFW;
-import ru.BouH.engine.game.controller.Binding;
-
-import javax.swing.*;
 import java.awt.event.KeyEvent;
 
 public class Key {

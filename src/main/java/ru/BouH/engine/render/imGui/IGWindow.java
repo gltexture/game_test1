@@ -1,7 +1,6 @@
 package ru.BouH.engine.render.imGui;
 
 import imgui.ImDrawData;
-import imgui.ImGui;
 import ru.BouH.engine.render.screen.window.Window;
 
 public class IGWindow {

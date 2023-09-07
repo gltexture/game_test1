@@ -1,7 +1,5 @@
 package ru.BouH.engine.render.environment.sky;
 
-import ru.BouH.engine.render.scene.world.SceneWorld;
-
 public class Sky {
     private final SkyBox skyBox;
 

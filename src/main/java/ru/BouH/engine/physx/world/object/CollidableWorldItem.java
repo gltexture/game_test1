@@ -9,7 +9,6 @@ import org.joml.Quaterniond;
 import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.math.BPVector3f;
-import ru.BouH.engine.math.MathHelper;
 import ru.BouH.engine.physx.collision.JBulletPhysics;
 import ru.BouH.engine.physx.collision.objects.AbstractCollision;
 import ru.BouH.engine.physx.world.World;
@@ -70,7 +69,7 @@ public abstract class CollidableWorldItem extends WorldItem implements JBulletPh
         transform.setRotation(quat4f);
         collisionObject.setWorldTransform(transform);
         this.updateCollisionObjectState(collisionObject);
-        this.getWorld().getPhysXBulletManager().updateRigidBodyAabb(this.getRigidBody());
+        this.getWorld().getBulletTimer().updateRigidBodyAabb(this.getRigidBody());
     }
 
     protected void translateCollisionObject(CollisionObject collisionObject, Vector3d pos) {
@@ -79,43 +78,7 @@ public abstract class CollidableWorldItem extends WorldItem implements JBulletPh
         transform.origin.set(new BPVector3f((float) (pos.x), (float) (pos.y), (float) (pos.z)));
         collisionObject.setWorldTransform(transform);
         this.updateCollisionObjectState(collisionObject);
-        this.getWorld().getPhysXBulletManager().updateRigidBodyAabb(this.getRigidBody());
-    }
-
-    public Vector3d getRigidBodyRot(RigidBody rigidBody) {
-        Transform transform = new Transform();
-        rigidBody.getWorldTransform(transform);
-        Quat4f r = new Quat4f();
-        MathHelper.getRotation(transform.basis, r);
-        return MathHelper.toDegrees(r);
-    }
-
-    public Vector3d getRigidBodyPos(RigidBody rigidBody) {
-        Transform transform = new Transform();
-        rigidBody.getWorldTransform(transform);
-        return new Vector3d(transform.origin.x, transform.origin.y, transform.origin.z);
-    }
-
-    private void setCollision(AbstractCollision abstractCollision) {
-        if (abstractCollision != null) {
-            RigidBodyConstructionInfo constructionInfo = abstractCollision.getCollisionInfo().getRigidBodyConstructionInfo();
-            if (this.getRigidBody() == null) {
-                Vector3d trans = this.getPosition();
-                Vector3d rotate = this.getRotation();
-                this.rigidBody = this.createRigidBody(constructionInfo);
-                this.onRigidBodyCreated(this.getRigidBody());
-                this.getWorld().getPhysXBulletManager().addRigidBodyInWorld(this.getRigidBody());
-                this.translateCollisionObject(this.rigidBody, trans);
-                this.rotateCollisionObject(this.rigidBody, rotate);
-                this.abstractCollision = abstractCollision;
-                this.updateCollisionObjectState(this.rigidBody);
-            } else {
-               if (this.getRigidBody().getCollisionShape() != null) {
-                   this.getRigidBody().setCollisionShape(null);
-               }
-               this.getRigidBody().setCollisionShape(abstractCollision.getCollisionShape());
-            }
-        }
+        this.getWorld().getBulletTimer().updateRigidBodyAabb(this.getRigidBody());
     }
 
     protected void onRigidBodyCreated(RigidBody rigidBody) {
@@ -133,17 +96,17 @@ public abstract class CollidableWorldItem extends WorldItem implements JBulletPh
     }
 
     public Vector3d getPosition() {
-        return this.getRigidBody() != null ? this.getRigidBodyPos(this.getRigidBody()) : super.getPosition();
-    }
-
-    public Vector3d getRotation() {
-        return this.getRigidBody() != null ? this.getRigidBodyRot(this.getRigidBody()) : super.getRotation();
+        return this.getRigidBody() != null ? this.getRigidBodyPos() : super.getPosition();
     }
 
     public void setPosition(Vector3d vector3d) {
         if (this.getRigidBody() != null) {
             this.translateCollisionObject(this.getRigidBody(), new Vector3d(vector3d.x, vector3d.y, vector3d.z));
         }
+    }
+
+    public Vector3d getRotation() {
+        return this.getRigidBody() != null ? this.getRigidBodyRot() : super.getRotation();
     }
 
     public void setRotation(Vector3d vector3d) {
@@ -163,6 +126,28 @@ public abstract class CollidableWorldItem extends WorldItem implements JBulletPh
 
     public AbstractCollision getCollision() {
         return this.abstractCollision;
+    }
+
+    private void setCollision(AbstractCollision abstractCollision) {
+        if (abstractCollision != null) {
+            RigidBodyConstructionInfo constructionInfo = abstractCollision.getCollisionInfo().getRigidBodyConstructionInfo();
+            if (this.getRigidBody() == null) {
+                Vector3d trans = this.getPosition();
+                Vector3d rotate = this.getRotation();
+                this.rigidBody = this.createRigidBody(constructionInfo);
+                this.onRigidBodyCreated(this.getRigidBody());
+                this.getWorld().getBulletTimer().addRigidBodyInWorld(this.getRigidBody());
+                this.translateCollisionObject(this.rigidBody, trans);
+                this.rotateCollisionObject(this.rigidBody, rotate);
+                this.abstractCollision = abstractCollision;
+                this.updateCollisionObjectState(this.rigidBody);
+            } else {
+                if (this.getRigidBody().getCollisionShape() != null) {
+                    this.getRigidBody().setCollisionShape(null);
+                }
+                this.getRigidBody().setCollisionShape(abstractCollision.getCollisionShape());
+            }
+        }
     }
 
     @Override

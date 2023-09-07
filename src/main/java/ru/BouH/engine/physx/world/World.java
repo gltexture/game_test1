@@ -7,6 +7,9 @@ import ru.BouH.engine.game.g_static.profiler.SectionManager;
 import ru.BouH.engine.physx.collision.JBulletPhysics;
 import ru.BouH.engine.physx.world.object.IDynamic;
 import ru.BouH.engine.physx.world.object.WorldItem;
+import ru.BouH.engine.physx.world.timer.BulletWorldTimer;
+import ru.BouH.engine.physx.world.timer.GameWorldTimer;
+import ru.BouH.engine.physx.world.timer.PhysicThreadManager;
 import ru.BouH.engine.proxy.IWorld;
 import ru.BouH.engine.render.environment.light.ILight;
 
@@ -15,7 +18,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public final class World implements IWorld {
-    private final BulletManager bulletManager;
     private final List<WorldItem> allWorldItems;
     private final List<JBulletPhysics> allJBItems;
     private final List<IDynamic> allDynamicItems;
@@ -28,11 +30,22 @@ public final class World implements IWorld {
         this.allJBItems = new ArrayList<>();
         this.allDynamicItems = new ArrayList<>();
         this.toCleanItems = new ArrayList<>();
-        this.bulletManager = new BulletManager(this);
     }
 
-    public BulletManager getPhysXBulletManager() {
-        return this.bulletManager;
+    public static boolean isItemDynamic(WorldItem worldItem) {
+        return worldItem instanceof IDynamic;
+    }
+
+    public static boolean isItemJB(WorldItem worldItem) {
+        return worldItem instanceof JBulletPhysics;
+    }
+
+    public BulletWorldTimer getBulletTimer() {
+        return Game.getGame().getPhysicThreadManager().getBulletWorldTimer();
+    }
+
+    public GameWorldTimer getGameWorldTimer() {
+        return Game.getGame().getPhysicThreadManager().getGameWorldTimer();
     }
 
     public void onWorldStart() {
@@ -40,11 +53,9 @@ public final class World implements IWorld {
         Game.getGame().getLogManager().log("Creating local player");
         Game.getGame().getProxy().createLocalPlayer();
         Game.getGame().getLogManager().log("Local player created!");
-        this.getPhysXBulletManager().startBulletThread();
     }
 
     public void onWorldEnd() {
-        this.getPhysXBulletManager().cleanResources();
         Game.getGame().getProfiler().endSection(SectionManager.physWorld);
         this.clearAllItems();
     }
@@ -69,9 +80,11 @@ public final class World implements IWorld {
         List<WorldItem> copy1 = new ArrayList<>(this.getAllWorldItems());
         if (this.collectionsWaitingRefresh) {
             this.getAllDynamicItems().clear();
-            this.getAllJBItems().clear();
             this.getAllDynamicItems().addAll(copy1.stream().filter(World::isItemDynamic).map(e -> (IDynamic) e).collect(Collectors.toList()));
-            this.getAllJBItems().addAll(copy1.stream().filter(World::isItemJB).map(e -> (JBulletPhysics) e).collect(Collectors.toList()));
+            synchronized (BulletWorldTimer.lock) {
+                this.getAllJBItems().clear();
+                this.getAllJBItems().addAll(copy1.stream().filter(World::isItemJB).map(e -> (JBulletPhysics) e).collect(Collectors.toList()));
+            }
             this.collectionsWaitingRefresh = false;
         }
         List<IDynamic> copy2 = new ArrayList<>(this.getAllDynamicItems());
@@ -79,12 +92,13 @@ public final class World implements IWorld {
             iDynamic.onUpdate(this);
         }
         for (WorldItem worldItem : this.toCleanItems) {
+            this.collectionsWaitingRefresh = true;
             worldItem.onDestroy(this);
             if (World.isItemJB(worldItem)) {
                 JBulletPhysics jbItem = (JBulletPhysics) worldItem;
                 RigidBody rigidBody = jbItem.getRigidBody();
                 if (rigidBody != null) {
-                    this.getPhysXBulletManager().removeRigidBodyFromWorld(rigidBody);
+                    this.getBulletTimer().removeRigidBodyFromWorld(rigidBody);
                 }
             }
             this.getAllWorldItems().remove(worldItem);
@@ -95,14 +109,6 @@ public final class World implements IWorld {
 
     public int getTicks() {
         return this.ticks;
-    }
-
-    public static boolean isItemDynamic(WorldItem worldItem) {
-        return worldItem instanceof IDynamic;
-    }
-
-    public static boolean isItemJB(WorldItem worldItem) {
-        return worldItem instanceof JBulletPhysics;
     }
 
     private void addItemInWorld(WorldItem worldItem) throws GameException {
