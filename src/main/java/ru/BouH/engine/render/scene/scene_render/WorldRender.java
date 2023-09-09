@@ -2,6 +2,7 @@ package ru.BouH.engine.render.scene.scene_render;
 
 import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.game.Game;
+import ru.BouH.engine.physx.world.object.WorldItem;
 import ru.BouH.engine.render.environment.shadows.CascadeShadowBuilder;
 import ru.BouH.engine.render.scene.RenderGroup;
 import ru.BouH.engine.render.scene.Scene;
@@ -58,39 +59,34 @@ public class WorldRender extends SceneRenderBase {
         this.renderDebugSunDirection(this);
         this.getUtils().enableMsaa();
         for (PhysXObject entityItem : this.getSceneWorld().getEntityList()) {
-            entityItem.updateRenderPos(partialTicks);
             this.getUtils().disableMsaa();
             this.renderHitBox(partialTicks, this, entityItem);
             this.getUtils().enableMsaa();
-            if (entityItem.isVisible()) {
-                if (entityItem.isHasRender()) {
-                    if (entityItem.isHasModel()) {
-                        this.performLightModelProjection(2, entityItem.getModel3D());
-                    }
+            if (entityItem.isHasRender()) {
+                if (entityItem.isHasModel()) {
+                    this.setRenderTranslation(entityItem);
+                }
+                if (entityItem.isVisible()) {
                     this.getUtils().setCubeMapTexture(2, this.getCubeEnvironmentTexture());
                     this.getUtils().setNormalMap(1, entityItem.getRenderData().getItemTexture());
                     this.getUtils().performProperties(entityItem.getRenderData().getRenderProperties());
                     entityItem.renderFabric().onRender(partialTicks, this, entityItem);
                 }
+                entityItem.updateRenderPos(partialTicks);
             }
         }
         this.unBindProgram();
     }
 
-    public CubeMapSample getCubeEnvironmentTexture() {
-        return this.cubeEnvironmentTexture;
+    private void setRenderTranslation(PhysXObject physXObject) {
+        Model3D model3D = physXObject.getModel3D();
+        model3D.setScale(physXObject.getScale());
+        model3D.setPosition(physXObject.getRenderPosition());
+        model3D.setRotation(physXObject.getRenderRotation());
     }
 
-    private void performLightModelProjection(int start, Model3D model3D) {
-        this.getUtils().performModelMatrix3d(model3D);
-        List<CascadeShadowBuilder> cascadeShadowBuilders = this.getShadowDispatcher().getCascadeShadowBuilders();
-        for (int i = 0; i < CascadeShadowBuilder.SHADOW_CASCADE_MAX; i++) {
-            CascadeShadowBuilder cascadeShadowBuilder = cascadeShadowBuilders.get(i);
-            this.performUniform("shadowMap_" + i, start + i);
-            this.performUniform("CShadows[" + i + "]" + ".projection_view_matrix", cascadeShadowBuilder.getProjectionViewMatrix());
-            this.performUniform("CShadows[" + i + "]" + ".split_distance", (float) cascadeShadowBuilder.getSplitDistance());
-        }
-        this.getShadowDispatcher().getDepthMap().bindTextures(GL30.GL_TEXTURE1);
+    public CubeMapSample getCubeEnvironmentTexture() {
+        return this.cubeEnvironmentTexture;
     }
 
     private void renderDebugSunDirection(SceneRenderBase sceneRenderBase) {

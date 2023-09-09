@@ -25,7 +25,7 @@ public class PhysicThreadManager {
 
     public boolean checkActivePhysics() {
         ThreadPoolExecutor executor = (ThreadPoolExecutor) this.getExecutorService();
-        return executor.getActiveCount() != PhysicThreadManager.PHYS_THREADS;
+        return executor.getActiveCount() > 0;
     }
 
     public static long getTicksForUpdate(int TPS) {
@@ -42,7 +42,6 @@ public class PhysicThreadManager {
     }
 
     public void destroy() {
-        this.getBulletWorldTimer().cleanResources();
         this.getExecutorService().shutdown();
     }
 

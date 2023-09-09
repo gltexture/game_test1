@@ -187,12 +187,13 @@ public class Screen {
         GLFW.glfwSetTime(0.0d);
         this.enableMSAA();
         while (!Game.getGame().isShouldBeClosed()) {
-            synchronized (PhysicThreadManager.locker) {
-                PhysicThreadManager.locker.notifyAll();
-            }
             if (GLFW.glfwWindowShouldClose(this.getWindow().getDescriptor())) {
                 Game.getGame().destroyGame();
             }
+            synchronized (PhysicThreadManager.locker) {
+                PhysicThreadManager.locker.notifyAll();
+            }
+            this.getRenderWorld().onWorldUpdate();
             this.getTimer().updateTimer();
             this.igWindow.renderIMG();
             double currentTime = Game.systemTime();
@@ -206,7 +207,6 @@ public class Screen {
                 fps = 0;
                 lastFPS = currentTime;
             }
-            this.getRenderWorld().onWorldUpdate();
             if (this.getScene().getCurrentCamera() != null) {
                 GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
                 GL30.glEnable(GL30.GL_CULL_FACE);

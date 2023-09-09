@@ -36,6 +36,7 @@ public class BulletWorldTimer implements IPhysTimer {
         this.discreteDynamicsWorld.setGravity(new Vector3f(0, -9.8f, 0));
     }
 
+    @SuppressWarnings("all")
     public void updateTimer(int TPS) {
         final DiscreteDynamicsWorld discreteDynamicsWorld1 = this.getDiscreteDynamicsWorld();
         if (discreteDynamicsWorld1 == null) {
@@ -69,6 +70,7 @@ public class BulletWorldTimer implements IPhysTimer {
         } catch (InterruptedException | GameException e) {
             throw new RuntimeException(e);
         }
+        this.cleanResources();
     }
 
     public void cleanResources() {

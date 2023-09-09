@@ -15,12 +15,9 @@ public class RenderBrushPlane implements RenderFabric {
     @Override
     public void onRender(double partialTicks, SceneRenderBase sceneRenderBase, IRenderObject renderItem) {
         BrushPlanePhysXObject entityItem = (BrushPlanePhysXObject) renderItem;
-        WorldBrush worldBrush = entityItem.getWorldBrush();
         if (entityItem.isHasModel()) {
             Model3D model3D = entityItem.getModel3D();
-            model3D.setScale(worldBrush.getScale());
-            model3D.getPosition().lerp(entityItem.getRenderPosition(), partialTicks);
-            model3D.setRotation(entityItem.getRenderRotation());
+            sceneRenderBase.getUtils().performLightModelProjection(2, entityItem.getModel3D());
             sceneRenderBase.getUtils().performModelViewMatrix3d(model3D);
             RenderData renderData = entityItem.getRenderData();
             GL30.glBindVertexArray(model3D.getVao());

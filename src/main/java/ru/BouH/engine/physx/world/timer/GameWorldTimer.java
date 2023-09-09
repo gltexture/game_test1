@@ -27,12 +27,6 @@ public class GameWorldTimer implements IPhysTimer {
                 }
                 long j = System.currentTimeMillis();
                 long k = j - i;
-                if (k >= 3000L && k % 1000 == 0) {
-                    Game.getGame().getLogManager().debug("Phys-X lags!");
-                }
-                if (k < 0) {
-                    throw new GameException("Phys-X time error!");
-                }
                 l += k;
                 i = j;
                 while (l > PhysicThreadManager.getTicksForUpdate(TPS)) {

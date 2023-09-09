@@ -46,6 +46,7 @@ public class Game {
         return Game.startScreen;
     }
 
+    @SuppressWarnings("all")
     public static void main(String[] args) throws InterruptedException {
         Thread mainThread = new Thread(() -> {
             try {
@@ -56,10 +57,19 @@ public class Game {
                 Game.getGame().getScreen().init();
                 Game.getGame().getScreen().startScreen();
             } finally {
-                Game.getGame().getPhysicThreadManager().destroy();
-                Game.getGame().getProfiler().endSection(SectionManager.game);
-                Game.getGame().getProfiler().stopAllSections();
-                Game.getGame().displayProfilerResult(Game.getGame().getProfiler());
+                try {
+                    Game.getGame().getPhysicThreadManager().destroy();
+                    synchronized (PhysicThreadManager.locker) {
+                        PhysicThreadManager.locker.notifyAll();
+                    }
+                    while (Game.getGame().getPhysicThreadManager().checkActivePhysics()) {
+                        Thread.sleep(25);
+                    }
+                    Game.getGame().getProfiler().endSection(SectionManager.game);
+                    Game.getGame().getProfiler().stopAllSections();
+                    Game.getGame().displayProfilerResult(Game.getGame().getProfiler());
+                } catch (InterruptedException ignored) {
+                }
             }
         });
         mainThread.setName("game");

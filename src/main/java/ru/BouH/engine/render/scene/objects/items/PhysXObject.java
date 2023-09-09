@@ -31,7 +31,6 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
     private final WorldItem worldItem;
     private final RenderData renderData;
     protected Model3D model3D;
-    private boolean blockInterpolation;
     private boolean isObjectCulled;
     private boolean isVisible;
     private boolean isDead;
@@ -109,7 +108,7 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
             BPVector3f v1 = new BPVector3f();
             BPVector3f v2 = new BPVector3f();
             jBulletPhysics.getRigidBody().getAabb(v1, v2);
-            return new Vector3d(1);
+            return new Vector3d(v2.x - v1.x, v2.y - v1.y, v2.z - v1.z);
         }
         return new Vector3d(worldItem.getScale() + 1.0d);
     }
@@ -137,12 +136,16 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
         return this.getWorldItem() instanceof WorldBrush ? null : this.renderABB;
     }
 
+    public double getScale() {
+        return this.getWorldItem().getScale();
+    }
+
     public boolean shouldInterpolatePos() {
-        return this.getRenderProperties().isLerpPosition() && !this.blockInterpolation;
+        return this.getRenderProperties().isLerpPosition();
     }
 
     public boolean shouldInterpolateRot() {
-        return this.getRenderProperties().isLerpRotation() && !this.blockInterpolation;
+        return this.getRenderProperties().isLerpRotation();
     }
 
     public RenderData.RenderProperties getRenderProperties() {
@@ -151,7 +154,6 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
 
     @Override
     public void onUpdate(IWorld iWorld) {
-        this.blockInterpolation = !this.isVisible();
         if (this.getWorldItem().hasLight() && !this.hasLight()) {
             this.addLight(this.getWorldItem().getLight());
         }

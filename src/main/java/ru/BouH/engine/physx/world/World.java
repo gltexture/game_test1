@@ -89,6 +89,9 @@ public final class World implements IWorld {
         }
         List<IDynamic> copy2 = new ArrayList<>(this.getAllDynamicItems());
         for (IDynamic iDynamic : copy2) {
+            if (Game.getGame().isShouldBeClosed()) {
+                break;
+            }
             iDynamic.onUpdate(this);
         }
         for (WorldItem worldItem : this.toCleanItems) {

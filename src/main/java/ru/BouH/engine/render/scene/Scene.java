@@ -197,11 +197,11 @@ public class Scene {
     public void renderScene(double partialTicks) {
         if (Scene.isSceneActive()) {
             if (this.getCurrentCamera() != null) {
+                this.getFrustumCulling().refreshFrustumCullingState(RenderManager.instance.getProjectionMatrix(), RenderManager.instance.getViewMatrix());
+                this.getSceneRender().onRender(partialTicks, this.sortedSceneList(this.getEntityRender(), this.getSkyRender()), this.sortedSceneList(this.getGuiRender()));
                 this.getCurrentCamera().updateCamera(partialTicks);
                 RenderManager.instance.updateViewMatrix(this.getCurrentCamera());
-                this.getFrustumCulling().refreshFrustumCullingState(RenderManager.instance.getProjectionMatrix(), RenderManager.instance.getViewMatrix());
             }
-            this.getSceneRender().onRender(partialTicks, this.sortedSceneList(this.getEntityRender(), this.getSkyRender()), this.sortedSceneList(this.getGuiRender()));
         }
     }
 
