@@ -17,7 +17,6 @@ import ru.BouH.engine.math.MathHelper;
 import ru.BouH.engine.physx.world.timer.GameWorldTimer;
 import ru.BouH.engine.physx.world.timer.BulletWorldTimer;
 import ru.BouH.engine.physx.world.timer.PhysicThreadManager;
-import ru.BouH.engine.render.imGui.IGWindow;
 import ru.BouH.engine.render.scene.Scene;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 import ru.BouH.engine.render.scene.world.camera.ICamera;
@@ -38,7 +37,6 @@ public class Screen {
     private ControllerDispatcher controllerDispatcher;
     private Scene scene;
     private Window window;
-    private IGWindow igWindow;
 
     public Screen() {
         this.timer = new Timer(PhysicThreadManager.TICKS_PER_SECOND);
@@ -75,7 +73,6 @@ public class Screen {
             this.scene.init();
             this.setWindowCallbacks();
             this.createControllerDispatcher(this.getWindow());
-            this.igWindow = new IGWindow(this.getWindow());
             game.getLogManager().log("Screen built successful");
         } else {
             game.getLogManager().error("Screen build error!");
@@ -183,19 +180,19 @@ public class Screen {
 
     private void renderLoop() throws InterruptedException {
         int fps = 0;
-        double lastFPS = GLFW.glfwGetTime();
+        double lastFPS = Game.systemTime();
         GLFW.glfwSetTime(0.0d);
         this.enableMSAA();
         while (!Game.getGame().isShouldBeClosed()) {
             if (GLFW.glfwWindowShouldClose(this.getWindow().getDescriptor())) {
                 Game.getGame().destroyGame();
+                break;
             }
             synchronized (PhysicThreadManager.locker) {
                 PhysicThreadManager.locker.notifyAll();
             }
             this.getRenderWorld().onWorldUpdate();
             this.getTimer().updateTimer();
-            this.igWindow.renderIMG();
             double currentTime = Game.systemTime();
             fps += 1;
             if (currentTime - lastFPS >= 1.0f) {

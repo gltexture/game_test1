@@ -16,7 +16,6 @@ uniform vec2 dimensions;
 
 uniform vec3 quads_c1;
 uniform vec3 quads_c2;
-uniform int quads_scaling;
 
 uniform vec4 object_rgb;
 uniform sampler2D texture_sampler;
@@ -24,6 +23,7 @@ uniform sampler2D normal_map;
 uniform samplerCube cube_map_sampler;
 uniform sampler2D shadow_map_sampler;
 
+uniform vec2 texture_scaling;
 uniform int use_texture;
 uniform int use_normal_map;
 uniform int enable_light;
@@ -56,7 +56,7 @@ layout (std140, binding = 3) uniform Misc {
 };
 
 vec4 get_quads(vec2);
-vec4 setup_colors(vec2);
+vec4 setup_colors();
 vec4 calc_sun_light(vec3, vec3, vec3);
 vec4 calc_point_light(PointLight, vec3, vec3);
 vec4 calc_light_factor(vec3, float, vec3, vec3, vec3);
@@ -78,10 +78,14 @@ uniform sampler2D shadowMap_0;
 uniform sampler2D shadowMap_1;
 uniform sampler2D shadowMap_2;
 
+vec2 getVecTC() {
+    return out_texture * texture_scaling;
+}
+
 void main()
 {
     vec4 lightFactor = enable_light == 1 ? calc_light() : vec4(1.);
-    vec4 fin_col = setup_colors(out_texture) * lightFactor;
+    vec4 fin_col = setup_colors() * lightFactor;
     frag_color = fin_col;
 
     float brightness = frag_color.r + frag_color.g + frag_color.b;
@@ -105,7 +109,7 @@ vec4 calc_light() {
 }
 
 vec3 calc_normal_map(vec3 vNorm, vec2 text_c, mat4 mvm) {
-    vec3 normalMap = texture2D(normal_map, text_c).rgb * 2.0 - 1.0;
+    vec3 normalMap = texture2D(normal_map, getVecTC()).rgb * 2.0 - 1.0;
     vec4 transformedNormal = mvm * vec4(normalMap, 0.0);
     vec3 correctedNormal = normalize(transformedNormal.xyz) + vNorm;
     return normalize(correctedNormal + vNorm);
@@ -138,9 +142,9 @@ float calc_shadows(vec4 world_pos, int idx) {
     return shadow;
 }
 
-vec4 setup_colors(vec2 texture_c) {
+vec4 setup_colors() {
     int i1 = use_texture;
-    return i1 == 0 ? texture(texture_sampler, texture_c) : i1 == 1 ? object_rgb : i1 == 2 ? get_quads(texture_c) : vec4(1., 0., 0., 1.);
+    return i1 == 0 ? texture(texture_sampler, getVecTC()) : i1 == 1 ? object_rgb : i1 == 2 ? get_quads(getVecTC()) : vec4(1., 0., 0., 1.);
 }
 
 vec4 calc_light_factor(vec3 colors, float brightness, vec3 vPos, vec3 light_dir, vec3 vNormal) {
@@ -187,7 +191,7 @@ vec4 get_quads(vec2 texture_c) {
     vec4 c1 = vec4(quads_c1, 1);
     vec4 c2 = vec4(quads_c2, 1);
     vec2 v2 = texture_c;
-    int i = int(v2.x * quads_scaling);
-    int j = int(v2.y * quads_scaling);
+    int i = int(v2.x * 2);
+    int j = int(v2.y * 2);
     return ((i % 2 == 0) != (j % 2 == 0)) ? c1 : c2;
 }

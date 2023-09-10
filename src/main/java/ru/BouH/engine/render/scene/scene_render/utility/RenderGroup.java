@@ -1,4 +1,4 @@
-package ru.BouH.engine.render.scene;
+package ru.BouH.engine.render.scene.scene_render.utility;
 
 public enum RenderGroup {
     GUI("gui"),

@@ -1,6 +1,7 @@
 package ru.BouH.engine.render.scene.objects.data;
 
 import org.jetbrains.annotations.NotNull;
+import org.joml.Vector2d;
 import ru.BouH.engine.physx.world.object.WorldItem;
 import ru.BouH.engine.render.scene.fabric.RenderFabric;
 import ru.BouH.engine.render.scene.objects.items.PhysXObject;
@@ -28,12 +29,23 @@ public abstract class RenderData {
         this.aClass = clazz;
     }
 
-    public void attachNormalMap(String mapPath) {
+    public RenderData attachNormalMap(String mapPath) {
         this.getItemTexture().setNormalMap(mapPath);
+        return this;
     }
 
-    public void attachNormalMap(PNGTexture pngTexture) {
+    public RenderData setTextureScaling(Vector2d textureScaling) {
+        this.getRenderProperties().setTextureScaling(textureScaling);
+        return this;
+    }
+
+    public Vector2d getTextureScaling() {
+        return this.getRenderProperties().getTextureScaling();
+    }
+
+    public RenderData attachNormalMap(PNGTexture pngTexture) {
         this.getItemTexture().setNormalMap(pngTexture);
+        return this;
     }
 
     public boolean hasNormalMap() {
@@ -87,18 +99,36 @@ public abstract class RenderData {
     }
 
     public static class RenderProperties {
+        private Vector2d textureScaling;
         private boolean lightExposed;
         private boolean lerpPosition;
         private boolean lerpRotation;
 
         public RenderProperties(boolean lightExposed, boolean lerpPosition, boolean lerpRotation) {
+            this(new Vector2d(1.0d), lightExposed, lerpPosition, lerpRotation);
+        }
+
+        public RenderProperties(Vector2d textureScaling, boolean lightExposed, boolean lerpPosition, boolean lerpRotation) {
             this.lightExposed = lightExposed;
             this.lerpPosition = lerpPosition;
             this.lerpRotation = lerpRotation;
+            this.textureScaling = textureScaling;
+        }
+
+        public RenderProperties copyRP() {
+            return new RenderProperties(this.getTextureScaling(), this.isLightExposed(), this.isLerpPosition(), this.isLerpRotation());
         }
 
         public static RenderProperties defaultRenderProperties() {
             return new RenderProperties(true, true, true);
+        }
+
+        public void setTextureScaling(Vector2d textureScaling) {
+            this.textureScaling = textureScaling;
+        }
+
+        public Vector2d getTextureScaling() {
+            return this.textureScaling;
         }
 
         public boolean isLerpPosition() {

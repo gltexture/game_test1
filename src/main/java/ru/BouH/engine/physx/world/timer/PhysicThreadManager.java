@@ -34,10 +34,10 @@ public class PhysicThreadManager {
 
     public void initService() {
         this.getExecutorService().execute(() -> {
-            this.getGameWorldTimer().updateTimer(this.getTps());
+            this.getBulletWorldTimer().updateTimer(this.getTps());
         });
         this.getExecutorService().execute(() -> {
-            this.getBulletWorldTimer().updateTimer(this.getTps());
+            this.getGameWorldTimer().updateTimer(this.getTps());
         });
     }
 

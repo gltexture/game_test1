@@ -5,7 +5,7 @@ import ru.BouH.engine.render.scene.objects.texture.samples.DefaultSample;
 import ru.BouH.engine.render.scene.objects.texture.samples.PNGTexture;
 
 public class WorldItemTexture {
-    public static final WorldItemTexture standardError = new WorldItemTexture(new DefaultSample(new Vector3d(0.0f, 0.0f, 0.0f), new Vector3d(1.0f, 0.0f, 1.0f), 32));
+    public static final WorldItemTexture standardError = new WorldItemTexture(new DefaultSample(new Vector3d(0.0f, 0.0f, 0.0f), new Vector3d(1.0f, 0.0f, 1.0f)));
     private PNGTexture normalMap;
 
     private Sample sample;

@@ -2,7 +2,7 @@ package ru.BouH.engine.render.scene.programs;
 
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.math.IntPair;
-import ru.BouH.engine.render.scene.RenderGroup;
+import ru.BouH.engine.render.scene.scene_render.utility.RenderGroup;
 import ru.BouH.engine.render.utils.Utils;
 
 import java.nio.ByteBuffer;

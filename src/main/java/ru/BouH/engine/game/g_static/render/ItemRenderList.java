@@ -1,5 +1,6 @@
 package ru.BouH.engine.game.g_static.render;
 
+import org.joml.Vector2d;
 import org.joml.Vector3d;
 import ru.BouH.engine.render.scene.fabric.RenderBrushPlane;
 import ru.BouH.engine.render.scene.fabric.RenderEntity;
@@ -14,21 +15,22 @@ import ru.BouH.engine.render.scene.objects.texture.samples.PNGTexture;
 import ru.BouH.engine.render.utils.Utils;
 
 public class ItemRenderList {
-    public static RenderModeledData entityTest;
     public static RenderModeledData entityCube;
     public static RenderModeledData entityLamp;
     public static StandardRenderData player;
     public static StandardRenderData plane;
+    public static StandardRenderData planeBrick;
     public static PictureSample pictureSample = PNGTexture.createTexture("props/bricks.png");
+    public static PictureSample pictureSample2 = PNGTexture.createTexture("terrain/grass.png");
 
     public static void init() {
-        DefaultSample defaultSample = new DefaultSample(new Vector3d(0.75f, 0.75f, 0.75f), new Vector3d(0.3f, 0.3f, 0.3f), 16);
-        DefaultSample defaultSample2 = new DefaultSample(new Vector3d(0.85f, 0.32f, 0.11f), new Vector3d(0.55f, 0.1f, 0.55f), 16);
+        DefaultSample defaultSample = new DefaultSample(new Vector3d(0.75f, 0.75f, 0.75f), new Vector3d(0.3f, 0.3f, 0.3f));
+        DefaultSample defaultSample2 = new DefaultSample(new Vector3d(0.85f, 0.32f, 0.11f), new Vector3d(0.55f, 0.1f, 0.55f));
 
-        ItemRenderList.entityCube = new RenderModeledData(new RenderEntity(), pictureSample, EntityPhysicsObject.class, Utils.loadMesh("prop/cube.obj"));
-        ItemRenderList.entityCube.attachNormalMap("bricks.png");
+        ItemRenderList.entityCube = (RenderModeledData) new RenderModeledData(new RenderEntity(), pictureSample, EntityPhysicsObject.class, Utils.loadMesh("prop/cube.obj")).attachNormalMap("bricks.png");
         ItemRenderList.entityLamp = new RenderModeledData(new RenderEntity(), new Color3FA(0xffffff), PhysicsColoredLamp.class, Utils.loadMesh("prop/cube.obj"));
         ItemRenderList.player = new StandardRenderData(new RenderNull(), EntityPhysicsObject.class);
-        ItemRenderList.plane = new StandardRenderData(new RenderBrushPlane(), defaultSample, BrushPlanePhysXObject.class);
+        ItemRenderList.plane = (StandardRenderData) new StandardRenderData(new RenderBrushPlane(), pictureSample, BrushPlanePhysXObject.class).setTextureScaling(new Vector2d(32.0f, 4.0f)).attachNormalMap("bricks.png");
+        ItemRenderList.planeBrick = (StandardRenderData) new StandardRenderData(new RenderBrushPlane(), pictureSample2, BrushPlanePhysXObject.class).setTextureScaling(new Vector2d(32.0f, 32.0f));
     }
 }

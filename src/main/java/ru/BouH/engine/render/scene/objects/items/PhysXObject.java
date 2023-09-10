@@ -1,6 +1,7 @@
 package ru.BouH.engine.render.scene.objects.items;
 
 import org.jetbrains.annotations.NotNull;
+import org.joml.Vector2d;
 import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.math.BPVector3f;

@@ -18,13 +18,22 @@ public class WorldEvents {
     }
 
     public static void addBrushes(World world) {
-        Plane4dBrush plane4dBrush = new Plane4dBrush(world, new Vector3d[]{new Vector3d(-150, 0, -150), new Vector3d(1350, 0, -150), new Vector3d(-150, 0, 1350), new Vector3d(1350, 0, 1350)});
-        Game.getGame().getProxy().addItemInWorlds(plane4dBrush, ItemRenderList.plane);
+        final int size = 500;
+        final int wallH = 100;
+        
+        Plane4dBrush plane4dBrush = new Plane4dBrush(world, new Vector3d[]{new Vector3d(-size, 0, -size), new Vector3d(-size, 0, size), new Vector3d(size, 0, -size), new Vector3d(size, 0, size)});
+        Game.getGame().getProxy().addItemInWorlds(plane4dBrush, ItemRenderList.planeBrick);
 
-        Plane4dBrush plane4dBrush2 = new Plane4dBrush(world, new Vector3d[]{new Vector3d(-150, 0, -150), new Vector3d(-150, 0, 150), new Vector3d(-150, 20, -150), new Vector3d(-150, 20, 150)});
+        Plane4dBrush plane4dBrush2 = new Plane4dBrush(world, new Vector3d[]{new Vector3d(-size, 0, size), new Vector3d(-size, wallH, size), new Vector3d(-size, 0, -size), new Vector3d(-size, wallH, -size)});
         Game.getGame().getProxy().addItemInWorlds(plane4dBrush2, ItemRenderList.plane);
 
-        Plane4dBrush plane4dBrush3 = new Plane4dBrush(world, new Vector3d[]{new Vector3d(-150, 0, -150), new Vector3d(150, 0, -150), new Vector3d(-150, 20, -150), new Vector3d(150, 20, -150)});
+        Plane4dBrush plane4dBrush3 = new Plane4dBrush(world, new Vector3d[]{new Vector3d(-size, 0, -size), new Vector3d(size, 0, -size), new Vector3d(size, wallH, -size), new Vector3d(-size, wallH, -size)});
         Game.getGame().getProxy().addItemInWorlds(plane4dBrush3, ItemRenderList.plane);
+
+        Plane4dBrush plane4dBrush4 = new Plane4dBrush(world, new Vector3d[]{new Vector3d(size, 0, size), new Vector3d(size, wallH, size), new Vector3d(-size, 0, size), new Vector3d(-size, wallH, size)});
+        Game.getGame().getProxy().addItemInWorlds(plane4dBrush4, ItemRenderList.plane);
+
+        Plane4dBrush plane4dBrush5 = new Plane4dBrush(world, new Vector3d[]{new Vector3d(size, 0, size), new Vector3d(size, wallH, size), new Vector3d(size, 0, -size), new Vector3d(size, wallH, -size)});
+        Game.getGame().getProxy().addItemInWorlds(plane4dBrush5, ItemRenderList.plane);
     }
 }

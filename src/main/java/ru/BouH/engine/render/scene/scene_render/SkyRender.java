@@ -2,20 +2,20 @@ package ru.BouH.engine.render.scene.scene_render;
 
 import org.joml.Matrix4d;
 import org.lwjgl.opengl.GL30;
-import ru.BouH.engine.game.Game;
 import ru.BouH.engine.render.RenderManager;
 import ru.BouH.engine.render.environment.sky.SkyBox;
-import ru.BouH.engine.render.scene.RenderGroup;
 import ru.BouH.engine.render.scene.Scene;
 import ru.BouH.engine.render.scene.SceneRenderBase;
 import ru.BouH.engine.render.scene.programs.UniformBufferUtils;
+import ru.BouH.engine.render.scene.scene_render.utility.RenderGroup;
+import ru.BouH.engine.render.scene.scene_render.utility.UniformConstants;
 
 public class SkyRender extends SceneRenderBase {
     public SkyRender(Scene.SceneRenderConveyor sceneRenderConveyor) {
         super(0, sceneRenderConveyor, RenderGroup.SKYBOX);
-        this.addUniform("projection_matrix");
-        this.addUniform("model_view_matrix");
-        this.addUniform("cube_map_sampler");
+        this.addUniform(UniformConstants.projection_matrix);
+        this.addUniform(UniformConstants.model_view_matrix);
+        this.addUniform(UniformConstants.cube_map_sampler);
         this.addUniformBuffer(UniformBufferUtils.UBO_SUN);
     }
 

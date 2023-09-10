@@ -4,7 +4,6 @@ import org.joml.Matrix4d;
 import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.math.IntPair;
-import ru.BouH.engine.physx.world.object.WorldItem;
 import ru.BouH.engine.render.RenderManager;
 import ru.BouH.engine.render.environment.shadows.CascadeShadowBuilder;
 import ru.BouH.engine.render.scene.components.Model3D;
@@ -16,6 +15,8 @@ import ru.BouH.engine.render.scene.programs.CubeMapSample;
 import ru.BouH.engine.render.scene.programs.ShaderManager;
 import ru.BouH.engine.render.scene.programs.UniformBufferProgram;
 import ru.BouH.engine.render.scene.programs.UniformBufferUtils;
+import ru.BouH.engine.render.scene.scene_render.utility.RenderGroup;
+import ru.BouH.engine.render.scene.scene_render.utility.UniformConstants;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 import ru.BouH.engine.render.scene.world.camera.ICamera;
 
@@ -174,31 +175,31 @@ public abstract class SceneRenderBase {
         }
 
         public void disableLight() {
-            SceneRenderBase.this.performUniform("enable_light", 0);
+            SceneRenderBase.this.performUniform(UniformConstants.enable_light, 0);
         }
 
         public void enableLight() {
-            SceneRenderBase.this.performUniform("enable_light", 1);
+            SceneRenderBase.this.performUniform(UniformConstants.enable_light, 1);
         }
 
         public void performProjectionMatrix() {
-            SceneRenderBase.this.performUniform("projection_matrix", RenderManager.instance.getProjectionMatrix());
+            SceneRenderBase.this.performUniform(UniformConstants.projection_matrix, RenderManager.instance.getProjectionMatrix());
         }
 
         public void performModelViewMatrix3d(Model3D model3D) {
-            SceneRenderBase.this.performUniform("model_view_matrix", RenderManager.instance.getModelViewMatrix(model3D));
+            SceneRenderBase.this.performUniform(UniformConstants.model_view_matrix, RenderManager.instance.getModelViewMatrix(model3D));
         }
 
         public void performModelViewMatrix3d(Matrix4d matrix4d) {
-            SceneRenderBase.this.performUniform("model_view_matrix", matrix4d);
+            SceneRenderBase.this.performUniform(UniformConstants.model_view_matrix, matrix4d);
         }
 
         public void performViewMatrix3d(Matrix4d matrix4d) {
-            SceneRenderBase.this.performUniform("view_matrix", matrix4d);
+            SceneRenderBase.this.performUniform(UniformConstants.view_matrix, matrix4d);
         }
 
         public void performModelMatrix3d(Model3D model3D) {
-            SceneRenderBase.this.performUniform("model_matrix", RenderManager.instance.getModelMatrix(model3D));
+            SceneRenderBase.this.performUniform(UniformConstants.model_matrix, RenderManager.instance.getModelMatrix(model3D));
         }
 
         public void performLightModelProjection(int start, Model3D model3D) {
@@ -215,6 +216,7 @@ public abstract class SceneRenderBase {
         }
 
         public void performProperties(RenderData.RenderProperties renderProperties) {
+            SceneRenderBase.this.performUniform(UniformConstants.texture_scaling, renderProperties.getTextureScaling());
             if (renderProperties.isLightExposed()) {
                 this.enableLight();
             } else {
@@ -229,11 +231,11 @@ public abstract class SceneRenderBase {
         public void setNormalMap(int code, WorldItemTexture worldItemTexture) {
             if (worldItemTexture != null && worldItemTexture.hasNormalMap()) {
                 PNGTexture pngTexture = worldItemTexture.getNormalMap();
-                SceneRenderBase.this.performUniform("normal_map", code);
-                SceneRenderBase.this.performUniform("use_normal_map", 1);
+                SceneRenderBase.this.performUniform(UniformConstants.normal_map, code);
+                SceneRenderBase.this.performUniform(UniformConstants.use_normal_map, 1);
                 pngTexture.performTexture(GL30.GL_TEXTURE0 + code);
             } else {
-                SceneRenderBase.this.performUniform("use_normal_map", 0);
+                SceneRenderBase.this.performUniform(UniformConstants.use_normal_map, 0);
             }
         }
 
@@ -246,7 +248,7 @@ public abstract class SceneRenderBase {
                 Game.getGame().getLogManager().warn("CubeMap is NULL!");
                 return;
             }
-            SceneRenderBase.this.performUniform("cube_map_sampler", code);
+            SceneRenderBase.this.performUniform(UniformConstants.cube_map_sampler, code);
             GL30.glActiveTexture(GL30.GL_TEXTURE0 + code);
             GL30.glBindTexture(GL30.GL_TEXTURE_CUBE_MAP, cubeMapTexture.getTextureId());
         }
@@ -256,7 +258,7 @@ public abstract class SceneRenderBase {
                 this.setPngTexture(worldItemTexture, (PictureSample) worldItemTexture.getSample());
                 return;
             }
-            SceneRenderBase.this.performUniform("use_texture", worldItemTexture.getRenderID());
+            SceneRenderBase.this.performUniform(UniformConstants.use_texture, worldItemTexture.getRenderID());
             if (worldItemTexture.hasValueToPass()) {
                 for (WorldItemTexture.PassUniValue passUniValue : worldItemTexture.getValues()) {
                     SceneRenderBase.this.performUniform(passUniValue.getName(), passUniValue.getO());
@@ -266,7 +268,7 @@ public abstract class SceneRenderBase {
 
         public void setPngTexture(WorldItemTexture worldItemTexture, PictureSample sample) {
             if (sample != null && sample.isValid()) {
-                SceneRenderBase.this.performUniform("use_texture", worldItemTexture.getRenderID());
+                SceneRenderBase.this.performUniform(UniformConstants.use_texture, worldItemTexture.getRenderID());
                 sample.performTexture(GL30.GL_TEXTURE0);
             } else {
                 this.setTexture(WorldItemTexture.standardError);

@@ -2,9 +2,7 @@ package ru.BouH.engine.render.scene.scene_render;
 
 import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.game.Game;
-import ru.BouH.engine.physx.world.object.WorldItem;
 import ru.BouH.engine.render.environment.shadows.CascadeShadowBuilder;
-import ru.BouH.engine.render.scene.RenderGroup;
 import ru.BouH.engine.render.scene.Scene;
 import ru.BouH.engine.render.scene.SceneRenderBase;
 import ru.BouH.engine.render.scene.components.Model3D;
@@ -15,8 +13,8 @@ import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.scene.objects.texture.samples.Color3FA;
 import ru.BouH.engine.render.scene.programs.CubeMapSample;
 import ru.BouH.engine.render.scene.programs.UniformBufferUtils;
-
-import java.util.List;
+import ru.BouH.engine.render.scene.scene_render.utility.RenderGroup;
+import ru.BouH.engine.render.scene.scene_render.utility.UniformConstants;
 
 public class WorldRender extends SceneRenderBase {
     private final CubeMapSample cubeEnvironmentTexture;
@@ -24,25 +22,25 @@ public class WorldRender extends SceneRenderBase {
     public WorldRender(Scene.SceneRenderConveyor sceneRenderConveyor) {
         super(1, sceneRenderConveyor, RenderGroup.WORLD);
         this.cubeEnvironmentTexture = this.getSceneWorld().getEnvironment().getSky().getSkyBox().getCubeMap();
-        this.addUniform("dimensions");
-        this.addUniform("tick");
-        this.addUniform("projection_matrix");
-        this.addUniform("model_view_matrix");
-        this.addUniform("texture_sampler");
-        this.addUniform("normal_map");
-        this.addUniform("cube_map_sampler");
-        this.addUniform("object_rgb");
-        this.addUniform("use_texture");
-        this.addUniform("enable_light");
-        this.addUniform("use_normal_map");
-        this.addUniform("quads_c1");
-        this.addUniform("quads_c2");
-        this.addUniform("quads_scaling");
+        this.addUniform(UniformConstants.dimensions);
+        this.addUniform(UniformConstants.tick);
+        this.addUniform(UniformConstants.projection_matrix);
+        this.addUniform(UniformConstants.model_view_matrix);
+        this.addUniform(UniformConstants.texture_sampler);
+        this.addUniform(UniformConstants.normal_map);
+        this.addUniform(UniformConstants.cube_map_sampler);
+        this.addUniform(UniformConstants.object_rgb);
+        this.addUniform(UniformConstants.use_texture);
+        this.addUniform(UniformConstants.enable_light);
+        this.addUniform(UniformConstants.use_normal_map);
+        this.addUniform(UniformConstants.texture_scaling);
+        this.addUniform(UniformConstants.quads_c1);
+        this.addUniform(UniformConstants.quads_c2);
         this.addUniformBuffer(UniformBufferUtils.UBO_SUN);
         this.addUniformBuffer(UniformBufferUtils.UBO_POINT_LIGHTS);
         this.addUniformBuffer(UniformBufferUtils.UBO_MISC);
 
-        this.addUniform("model_matrix");
+        this.addUniform(UniformConstants.model_matrix);
         for (int i = 0; i < CascadeShadowBuilder.SHADOW_CASCADE_MAX; i++) {
             this.addUniform("shadowMap_" + i);
             this.addUniform("CShadows[" + i + "]" + ".projection_view_matrix");

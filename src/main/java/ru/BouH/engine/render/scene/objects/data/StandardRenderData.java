@@ -7,6 +7,10 @@ import ru.BouH.engine.render.scene.objects.texture.Sample;
 import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 
 public class StandardRenderData extends RenderData {
+    public StandardRenderData(RenderFabric renderFabric, @NotNull WorldItemTexture worldItemTexture, @NotNull Class<? extends PhysXObject> clazz, RenderProperties renderProperties) {
+        super(renderFabric, worldItemTexture, clazz, renderProperties);
+    }
+
     public StandardRenderData(RenderFabric renderFabric, @NotNull WorldItemTexture worldItemTexture, @NotNull Class<? extends PhysXObject> clazz) {
         super(renderFabric, worldItemTexture, clazz);
     }
@@ -21,6 +25,6 @@ public class StandardRenderData extends RenderData {
 
     @Override
     public RenderData copyRenderData() {
-        return new StandardRenderData(this.getRenderFabric(), this.getItemTexture(), this.getPOClass());
+        return new StandardRenderData(this.getRenderFabric(), this.getItemTexture(), this.getPOClass(), this.getRenderProperties().copyRP());
     }
 }

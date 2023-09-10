@@ -10,6 +10,11 @@ import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 public class RenderModeledData extends RenderData {
     private MeshModel meshModel;
 
+    public RenderModeledData(@NotNull RenderFabric renderFabric, @NotNull WorldItemTexture worldItemTexture, @NotNull Class<? extends PhysXObject> clazz, MeshModel meshModel, RenderProperties renderProperties) {
+        super(renderFabric, worldItemTexture, clazz, renderProperties);
+        this.meshModel = meshModel;
+    }
+
     public RenderModeledData(@NotNull RenderFabric renderFabric, @NotNull WorldItemTexture worldItemTexture, @NotNull Class<? extends PhysXObject> clazz, MeshModel meshModel) {
         super(renderFabric, worldItemTexture, clazz);
         this.meshModel = meshModel;
@@ -33,6 +38,6 @@ public class RenderModeledData extends RenderData {
 
     @Override
     public RenderData copyRenderData() {
-        return new RenderModeledData(this.getRenderFabric(), this.getItemTexture(), this.getPOClass(), this.getMeshModel());
+        return new RenderModeledData(this.getRenderFabric(), this.getItemTexture(), this.getPOClass(), this.getMeshModel(), this.getRenderProperties().copyRP());
     }
 }
