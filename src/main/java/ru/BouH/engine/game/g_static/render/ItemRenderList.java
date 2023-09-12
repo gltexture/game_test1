@@ -31,6 +31,6 @@ public class ItemRenderList {
         ItemRenderList.entityLamp = new RenderModeledData(new RenderEntity(), new Color3FA(0xffffff), PhysicsColoredLamp.class, Utils.loadMesh("prop/cube.obj"));
         ItemRenderList.player = new StandardRenderData(new RenderNull(), EntityPhysicsObject.class);
         ItemRenderList.plane = (StandardRenderData) new StandardRenderData(new RenderBrushPlane(), pictureSample, BrushPlanePhysXObject.class).setTextureScaling(new Vector2d(32.0f, 4.0f)).attachNormalMap("bricks.png");
-        ItemRenderList.planeBrick = (StandardRenderData) new StandardRenderData(new RenderBrushPlane(), pictureSample2, BrushPlanePhysXObject.class).setTextureScaling(new Vector2d(32.0f, 32.0f));
+        ItemRenderList.planeBrick = (StandardRenderData) new StandardRenderData(new RenderBrushPlane(), pictureSample2, BrushPlanePhysXObject.class).setTextureScaling(new Vector2d(128.0f, 128.0f));
     }
 }

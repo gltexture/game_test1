@@ -3,8 +3,8 @@ package ru.BouH.engine.render.scene.world.camera;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
-import ru.BouH.engine.physx.entities.player.EntityPlayerSP;
-import ru.BouH.engine.physx.world.object.WorldItem;
+import ru.BouH.engine.physics.entities.player.EntityPlayerSP;
+import ru.BouH.engine.physics.world.object.WorldItem;
 
 public class AttachedCamera extends Camera {
     private WorldItem worldItem;

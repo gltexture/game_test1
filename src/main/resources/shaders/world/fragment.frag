@@ -64,7 +64,7 @@ vec4 calc_light();
 float calc_shadows(vec4, int);
 float calc_dist_proj_shadow(vec4, vec2, int);
 float texture_proj(vec4, vec2, int);
-vec3 calc_normal_map(vec3, vec2, mat4);
+vec3 calc_normal_map(vec3, mat4);
 
 int calc_cascade_index();
 
@@ -93,14 +93,13 @@ void main()
 }
 
 vec4 calc_light() {
-    vec3 new_normal = use_normal_map == 1 ? calc_normal_map(mv_vertex_normal, out_texture, out_model_view_matrix) : mv_vertex_normal;
     vec4 lightFactors = vec4(0.);
-    vec4 calcSunFactor = calc_sun_light(vec3(sunX, sunY, sunZ), mv_vert_pos, new_normal);
+    vec4 calcSunFactor = calc_sun_light(vec3(sunX, sunY, sunZ), mv_vert_pos, mv_vertex_normal);
 
     int i = 0;
     while (p_l[i].brightness > 0) {
         PointLight p = p_l[i++];
-        lightFactors += calc_point_light(p, mv_vert_pos, new_normal);
+        lightFactors += calc_point_light(p, mv_vert_pos, mv_vertex_normal);
     }
 
     lightFactors += calcSunFactor;
@@ -108,8 +107,8 @@ vec4 calc_light() {
     return lightFactors;
 }
 
-vec3 calc_normal_map(vec3 vNorm, vec2 text_c, mat4 mvm) {
-    vec3 normalMap = texture2D(normal_map, getVecTC()).rgb * 2.0 - 1.0;
+vec3 calc_normal_map(vec3 vNorm, mat4 mvm) {
+    vec3 normalMap = texture(normal_map, getVecTC()).rgb * 2.0 - 1.0;
     vec4 transformedNormal = mvm * vec4(normalMap, 0.0);
     vec3 correctedNormal = normalize(transformedNormal.xyz) + vNorm;
     return normalize(correctedNormal + vNorm);
@@ -148,23 +147,24 @@ vec4 setup_colors() {
 }
 
 vec4 calc_light_factor(vec3 colors, float brightness, vec3 vPos, vec3 light_dir, vec3 vNormal) {
+    vec3 new_normal = use_normal_map == 1 ? calc_normal_map(vNormal, out_model_view_matrix) : vNormal;
     vec4 diffuseC = vec4(0.);
     vec4 specularC = vec4(0.);
 
     float specularF = 0.;
-    float diffuseF = max(dot(vNormal, light_dir), 0.);
+    float diffuseF = max(dot(new_normal, light_dir), 0.);
     diffuseC = vec4(colors, 1.) * brightness * diffuseF;
 
     vec3 camDir = normalize(camera_pos - vPos);
     vec3 from_light = light_dir;
     vec3 reflectionF = normalize(from_light + camDir);
-    specularF = max(dot(vNormal, reflectionF), 0.);
+    specularF = max(dot(new_normal, reflectionF), 0.);
     specularF = pow(specularF, 10.0);
-    specularC = dot(vNormal, from_light) + 0.0001 >= 0 ? brightness * specularF * vec4(colors, 1.) : vec4(0.);
+    specularC = brightness * specularF * vec4(colors, 1.);
 
     vec4 reflected = texture(cube_map_sampler, reflectionF);
 
-    return diffuseC + specularC * reflected;
+    return dot(vNormal, from_light) + 0.0001 >= 0 ? (diffuseC + specularC * reflected) : vec4(0.);
 }
 
 vec4 calc_sun_light(vec3 sunPos, vec3 vPos, vec3 vNormal) {

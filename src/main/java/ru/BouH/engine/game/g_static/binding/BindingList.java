@@ -23,6 +23,8 @@ public class BindingList {
     public Key keyDown = new Key(GLFW.GLFW_KEY_LEFT_SHIFT);
     public Key keyBlock1 = new Key(GLFW.GLFW_KEY_F);
     public Key keyBlock2 = new Key(GLFW.GLFW_KEY_C);
+    public Key keyClear = new Key(GLFW.GLFW_KEY_X);
+
     public Key keySCS = new FunctionalKey(e -> {
         if (e == IKeyAction.KeyAction.CLICK) {
             Screen.takeScreenshot();
@@ -79,6 +81,7 @@ public class BindingList {
         Binding.createBinding(this.keyR, "Режим камеры");
         Binding.createBinding(this.keySCS, "Скриншот");
         Binding.createBinding(this.keyY, "Переключить пост-обработку");
+        Binding.createBinding(this.keyClear, "Очистка");
         Binding.createBinding(this.keyBlock1, "Славянский выстрел блоком");
         Binding.createBinding(this.keyBlock2, "Славянский выстрел фонариком");
     }

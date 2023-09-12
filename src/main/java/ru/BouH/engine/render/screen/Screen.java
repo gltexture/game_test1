@@ -14,9 +14,9 @@ import ru.BouH.engine.game.controller.ControllerDispatcher;
 import ru.BouH.engine.game.g_static.profiler.SectionManager;
 import ru.BouH.engine.game.g_static.render.ItemRenderList;
 import ru.BouH.engine.math.MathHelper;
-import ru.BouH.engine.physx.world.timer.GameWorldTimer;
-import ru.BouH.engine.physx.world.timer.BulletWorldTimer;
-import ru.BouH.engine.physx.world.timer.PhysicThreadManager;
+import ru.BouH.engine.physics.world.timer.GameWorldTimer;
+import ru.BouH.engine.physics.world.timer.BulletWorldTimer;
+import ru.BouH.engine.physics.world.timer.PhysicThreadManager;
 import ru.BouH.engine.render.scene.Scene;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 import ru.BouH.engine.render.scene.world.camera.ICamera;
@@ -24,6 +24,9 @@ import ru.BouH.engine.render.screen.timer.Timer;
 import ru.BouH.engine.render.screen.window.Window;
 
 import java.nio.IntBuffer;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Screen {
     public static final int defaultW = 1280;
@@ -178,21 +181,21 @@ public class Screen {
         Game.getGame().getProfiler().endSection(SectionManager.renderE);
     }
 
+    @SuppressWarnings("all")
     private void renderLoop() throws InterruptedException {
         int fps = 0;
         double lastFPS = Game.systemTime();
         GLFW.glfwSetTime(0.0d);
         this.enableMSAA();
         while (!Game.getGame().isShouldBeClosed()) {
+            this.getTimer().updateTimer();
             if (GLFW.glfwWindowShouldClose(this.getWindow().getDescriptor())) {
                 Game.getGame().destroyGame();
                 break;
             }
-            synchronized (PhysicThreadManager.locker) {
-                PhysicThreadManager.locker.notifyAll();
+            if (this.getControllerDispatcher() != null) {
+                this.getControllerDispatcher().updateController(this.isInFocus, this.getWindow());
             }
-            this.getRenderWorld().onWorldUpdate();
-            this.getTimer().updateTimer();
             double currentTime = Game.systemTime();
             fps += 1;
             if (currentTime - lastFPS >= 1.0f) {
@@ -204,14 +207,17 @@ public class Screen {
                 fps = 0;
                 lastFPS = currentTime;
             }
+            while (this.getTimer().markSyncUpdate()) {
+                Thread.sleep(0);
+            }
             if (this.getScene().getCurrentCamera() != null) {
                 GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
                 GL30.glEnable(GL30.GL_CULL_FACE);
                 GL30.glCullFace(GL30.GL_BACK);
                 this.getScene().renderScene(MathHelper.clamp(this.getTimer().getRenderPartial(), 0.0d, 1.0d));
             }
-            if (this.getControllerDispatcher() != null) {
-                this.getControllerDispatcher().updateController(this.isInFocus, this.getWindow());
+            synchronized (PhysicThreadManager.locker) {
+                PhysicThreadManager.locker.notifyAll();
             }
             GLFW.glfwSwapBuffers(this.getWindow().getDescriptor());
             GLFW.glfwSetInputMode(this.getWindow().getDescriptor(), GLFW.GLFW_CURSOR, !this.isInFocus ? GLFW.GLFW_CURSOR_NORMAL : GLFW.GLFW_CURSOR_HIDDEN);

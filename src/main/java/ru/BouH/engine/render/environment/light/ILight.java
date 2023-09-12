@@ -1,7 +1,6 @@
 package ru.BouH.engine.render.environment.light;
 
 import org.joml.Vector3d;
-import ru.BouH.engine.physx.world.object.WorldItem;
 import ru.BouH.engine.render.scene.objects.items.PhysXObject;
 
 public interface ILight {

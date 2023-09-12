@@ -38,6 +38,8 @@ public class PNGTexture implements PictureSample {
             GL20.glBindTexture(GL20.GL_TEXTURE_2D, this.textureId);
             GL20.glPixelStorei(GL20.GL_UNPACK_ALIGNMENT, 1);
             GL20.glTexImage2D(GL20.GL_TEXTURE_2D, 0, GL20.GL_RGBA, this.getWidth(), this.getHeight(), 0, GL20.GL_RGBA, GL20.GL_UNSIGNED_BYTE, this.getPNGInBuffer());
+            GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_WRAP_S, GL30.GL_REPEAT);
+            GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_WRAP_T, GL30.GL_REPEAT);
             GL30.glGenerateMipmap(GL20.GL_TEXTURE_2D);
             GL20.glBindTexture(GL20.GL_TEXTURE_2D, 0);
         } catch (IOException e) {

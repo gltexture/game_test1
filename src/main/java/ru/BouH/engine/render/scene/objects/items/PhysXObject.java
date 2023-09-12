@@ -1,18 +1,17 @@
 package ru.BouH.engine.render.scene.objects.items;
 
 import org.jetbrains.annotations.NotNull;
-import org.joml.Vector2d;
 import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.math.BPVector3f;
-import ru.BouH.engine.physx.brush.WorldBrush;
-import ru.BouH.engine.physx.collision.JBulletPhysics;
-import ru.BouH.engine.physx.collision.objects.AbstractCollision;
-import ru.BouH.engine.physx.collision.objects.ConvexShape;
-import ru.BouH.engine.physx.collision.objects.OBB;
-import ru.BouH.engine.physx.world.object.IDynamic;
-import ru.BouH.engine.physx.world.object.IWorldObject;
-import ru.BouH.engine.physx.world.object.WorldItem;
+import ru.BouH.engine.physics.brush.WorldBrush;
+import ru.BouH.engine.physics.collision.JBulletPhysics;
+import ru.BouH.engine.physics.collision.objects.AbstractCollision;
+import ru.BouH.engine.physics.collision.objects.ConvexShape;
+import ru.BouH.engine.physics.collision.objects.OBB;
+import ru.BouH.engine.physics.world.object.IDynamic;
+import ru.BouH.engine.physics.world.object.IWorldObject;
+import ru.BouH.engine.physics.world.object.WorldItem;
 import ru.BouH.engine.proxy.IWorld;
 import ru.BouH.engine.render.environment.light.ILight;
 import ru.BouH.engine.render.frustum.FrustumCulling;

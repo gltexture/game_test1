@@ -1,8 +1,8 @@
 package ru.BouH.engine.render.scene.objects.items;
 
 import org.joml.Vector3d;
-import ru.BouH.engine.physx.entities.prop.PhysLightCube;
-import ru.BouH.engine.physx.world.object.WorldItem;
+import ru.BouH.engine.physics.entities.prop.PhysLightCube;
+import ru.BouH.engine.physics.world.object.WorldItem;
 import ru.BouH.engine.proxy.IWorld;
 import ru.BouH.engine.render.environment.light.ILight;
 import ru.BouH.engine.render.scene.objects.data.RenderData;

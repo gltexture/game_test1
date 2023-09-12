@@ -3,8 +3,8 @@ package ru.BouH.engine.render.scene.world;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.exception.GameException;
 import ru.BouH.engine.game.g_static.profiler.SectionManager;
-import ru.BouH.engine.physx.world.World;
-import ru.BouH.engine.physx.world.object.WorldItem;
+import ru.BouH.engine.physics.world.World;
+import ru.BouH.engine.physics.world.object.WorldItem;
 import ru.BouH.engine.proxy.IWorld;
 import ru.BouH.engine.render.environment.Environment;
 import ru.BouH.engine.render.environment.light.ILight;
@@ -102,18 +102,23 @@ public final class SceneWorld implements IWorld {
         Game.getGame().getProfiler().startSection(SectionManager.renderWorld);
     }
 
-    public void onWorldUpdate() {
-        SceneWorld.elapsedRenderTicks += 0.01f;
+    public void onWorldEntityUpdate(double partialTicks) {
+        this.onWorldUpdate();
         Iterator<PhysXObject> iterator = this.getEntityList().iterator();
         while (iterator.hasNext()) {
             PhysXObject physXObject = iterator.next();
             physXObject.onUpdate(this);
+            physXObject.updateRenderPos(partialTicks);
             physXObject.checkCulling(this.getFrustumCulling());
             if (physXObject.isDead()) {
                 physXObject.onDestroy(this);
                 iterator.remove();
             }
         }
+    }
+
+    public void onWorldUpdate() {
+        SceneWorld.elapsedRenderTicks += 0.01f;
         this.getEnvironment().updateEnvironment();
     }
 

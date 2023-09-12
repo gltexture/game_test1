@@ -2,7 +2,7 @@ package ru.BouH.engine.render.scene.mesh_forms.collision_wire;
 
 import org.joml.Vector3d;
 import ru.BouH.engine.game.exception.GameException;
-import ru.BouH.engine.physx.collision.objects.OBB;
+import ru.BouH.engine.physics.collision.objects.OBB;
 import ru.BouH.engine.render.scene.mesh_forms.AbstractMeshForm;
 
 import java.util.ArrayList;

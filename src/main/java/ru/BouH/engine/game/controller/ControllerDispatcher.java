@@ -6,8 +6,8 @@ import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.controller.input.MouseKeyboardController;
 import ru.BouH.engine.game.g_static.binding.BindingList;
-import ru.BouH.engine.physx.entities.IRemoteController;
-import ru.BouH.engine.physx.world.object.WorldItem;
+import ru.BouH.engine.physics.entities.IRemoteController;
+import ru.BouH.engine.physics.world.object.WorldItem;
 import ru.BouH.engine.render.screen.window.Window;
 
 public class ControllerDispatcher {

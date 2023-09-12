@@ -5,14 +5,12 @@ import ru.BouH.engine.game.g_static.profiler.SectionManager;
 import ru.BouH.engine.game.logger.GameLogging;
 import ru.BouH.engine.game.profiler.Profiler;
 import ru.BouH.engine.game.profiler.Section;
-import ru.BouH.engine.physx.world.World;
-import ru.BouH.engine.physx.world.timer.GameWorldTimer;
-import ru.BouH.engine.physx.entities.player.EntityPlayerSP;
-import ru.BouH.engine.physx.world.timer.PhysicThreadManager;
+import ru.BouH.engine.physics.world.World;
+import ru.BouH.engine.physics.entities.player.EntityPlayerSP;
+import ru.BouH.engine.physics.world.timer.PhysicThreadManager;
 import ru.BouH.engine.proxy.Proxy;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 import ru.BouH.engine.render.screen.Screen;
-import ru.BouH.engine.render.screen.window.Window;
 
 import java.util.Random;
 

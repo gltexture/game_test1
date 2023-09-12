@@ -6,7 +6,7 @@ import org.lwjgl.glfw.GLFW;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.controller.Binding;
 import ru.BouH.engine.game.controller.input.Keyboard;
-import ru.BouH.engine.physx.entities.player.EntityPlayerSP;
+import ru.BouH.engine.physics.entities.player.EntityPlayerSP;
 import ru.BouH.engine.render.RenderManager;
 import ru.BouH.engine.render.scene.SceneRenderBase;
 import ru.BouH.engine.render.scene.components.Model2D;

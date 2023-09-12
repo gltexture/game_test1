@@ -1,12 +1,8 @@
 package ru.BouH.engine.render.scene.objects.items;
 
-import ru.BouH.engine.physx.entities.PhysEntity;
-import ru.BouH.engine.physx.world.object.WorldItem;
-import ru.BouH.engine.proxy.IWorld;
-import ru.BouH.engine.render.scene.components.MeshModel;
-import ru.BouH.engine.render.scene.components.Model3D;
+import ru.BouH.engine.physics.entities.PhysEntity;
+import ru.BouH.engine.physics.world.object.WorldItem;
 import ru.BouH.engine.render.scene.objects.data.RenderData;
-import ru.BouH.engine.render.scene.objects.data.RenderModeledData;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 
 public class EntityPhysicsObject extends WorldObject {

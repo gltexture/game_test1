@@ -1,6 +1,6 @@
 package ru.BouH.engine.render.scene.objects.items;
 
-import ru.BouH.engine.physx.world.object.WorldItem;
+import ru.BouH.engine.physics.world.object.WorldItem;
 import ru.BouH.engine.proxy.IWorld;
 import ru.BouH.engine.render.scene.components.MeshModel;
 import ru.BouH.engine.render.scene.components.Model3D;

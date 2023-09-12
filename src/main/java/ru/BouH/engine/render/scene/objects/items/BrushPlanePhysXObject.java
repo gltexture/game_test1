@@ -1,8 +1,8 @@
 package ru.BouH.engine.render.scene.objects.items;
 
-import ru.BouH.engine.physx.brush.Plane4dBrush;
-import ru.BouH.engine.physx.brush.WorldBrush;
-import ru.BouH.engine.physx.world.object.WorldItem;
+import ru.BouH.engine.physics.brush.Plane4dBrush;
+import ru.BouH.engine.physics.brush.WorldBrush;
+import ru.BouH.engine.physics.world.object.WorldItem;
 import ru.BouH.engine.proxy.IWorld;
 import ru.BouH.engine.render.scene.mesh_forms.PlaneForm;
 import ru.BouH.engine.render.scene.objects.data.RenderData;

@@ -2,7 +2,7 @@ package ru.BouH.engine.render.scene.objects.data;
 
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2d;
-import ru.BouH.engine.physx.world.object.WorldItem;
+import ru.BouH.engine.physics.world.object.WorldItem;
 import ru.BouH.engine.render.scene.fabric.RenderFabric;
 import ru.BouH.engine.render.scene.objects.items.PhysXObject;
 import ru.BouH.engine.render.scene.objects.texture.Sample;

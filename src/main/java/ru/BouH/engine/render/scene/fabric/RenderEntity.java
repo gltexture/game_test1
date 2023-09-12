@@ -1,13 +1,11 @@
 package ru.BouH.engine.render.scene.fabric;
 
 import org.lwjgl.opengl.GL30;
-import ru.BouH.engine.physx.entities.PhysEntity;
-import ru.BouH.engine.physx.world.object.WorldItem;
+import ru.BouH.engine.physics.world.object.WorldItem;
 import ru.BouH.engine.render.scene.SceneRenderBase;
 import ru.BouH.engine.render.scene.components.Model3D;
 import ru.BouH.engine.render.scene.objects.IRenderObject;
 import ru.BouH.engine.render.scene.objects.data.RenderData;
-import ru.BouH.engine.render.scene.objects.items.EntityPhysicsObject;
 import ru.BouH.engine.render.scene.objects.items.WorldObject;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 

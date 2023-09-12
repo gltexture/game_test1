@@ -15,6 +15,7 @@ import ru.BouH.engine.render.scene.programs.CubeMapSample;
 import ru.BouH.engine.render.scene.programs.UniformBufferUtils;
 import ru.BouH.engine.render.scene.scene_render.utility.RenderGroup;
 import ru.BouH.engine.render.scene.scene_render.utility.UniformConstants;
+import ru.BouH.engine.render.screen.Screen;
 
 public class WorldRender extends SceneRenderBase {
     private final CubeMapSample cubeEnvironmentTexture;
@@ -51,12 +52,12 @@ public class WorldRender extends SceneRenderBase {
     public void onRender(double partialTicks) {
         this.bindProgram();
         UniformBufferUtils.updateLightBuffers(this);
-        this.performUniform("dimensions", Game.getGame().getScreen().getWindow().getWindowDimensions());
+        this.performUniform(UniformConstants.dimensions, Game.getGame().getScreen().getWindow().getWindowDimensions());
         this.getUtils().performProjectionMatrix();
         this.getUtils().disableMsaa();
         this.renderDebugSunDirection(this);
         this.getUtils().enableMsaa();
-        for (PhysXObject entityItem : this.getSceneWorld().getEntityList()) {
+        for (PhysXObject entityItem : this.getSceneWorld().getFilteredEntityList()) {
             this.getUtils().disableMsaa();
             this.renderHitBox(partialTicks, this, entityItem);
             this.getUtils().enableMsaa();
@@ -65,12 +66,10 @@ public class WorldRender extends SceneRenderBase {
                     this.setRenderTranslation(entityItem);
                 }
                 if (entityItem.isVisible()) {
-                    this.getUtils().setCubeMapTexture(2, this.getCubeEnvironmentTexture());
-                    this.getUtils().setNormalMap(1, entityItem.getRenderData().getItemTexture());
                     this.getUtils().performProperties(entityItem.getRenderData().getRenderProperties());
+                    this.getUtils().setCubeMapTexture(2, this.getCubeEnvironmentTexture());
                     entityItem.renderFabric().onRender(partialTicks, this, entityItem);
                 }
-                entityItem.updateRenderPos(partialTicks);
             }
         }
         this.unBindProgram();

@@ -254,6 +254,7 @@ public abstract class SceneRenderBase {
         }
 
         public void setTexture(WorldItemTexture worldItemTexture) {
+            this.setNormalMap(1, worldItemTexture);
             if (worldItemTexture.getSample() instanceof PictureSample) {
                 this.setPngTexture(worldItemTexture, (PictureSample) worldItemTexture.getSample());
                 return;
