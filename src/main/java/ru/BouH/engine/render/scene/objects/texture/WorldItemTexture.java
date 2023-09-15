@@ -6,13 +6,13 @@ import ru.BouH.engine.render.scene.objects.texture.samples.PNGTexture;
 
 public class WorldItemTexture {
     public static final WorldItemTexture standardError = new WorldItemTexture(new DefaultSample(new Vector3d(0.0f, 0.0f, 0.0f), new Vector3d(1.0f, 0.0f, 1.0f)));
-    private PNGTexture normalMap;
+    private PictureSample normalMap;
 
     private Sample sample;
 
     public WorldItemTexture(Sample sample) {
         this.sample = sample == null ? WorldItemTexture.standardError.getSample() : sample;
-        this.setNormalMap((PNGTexture) null);
+        this.setNormalMap((PictureSample) null);
     }
 
     public WorldItemTexture(Sample sample, String normalMapPath) {
@@ -36,12 +36,16 @@ public class WorldItemTexture {
         return this.getNormalMap() != null;
     }
 
-    public PNGTexture getNormalMap() {
+    public PictureSample getNormalMap() {
         return this.normalMap;
     }
 
     public void setNormalMap(String normalMapPath) {
         this.setNormalMap(PNGTexture.createTexture("normals/" + normalMapPath));
+    }
+
+    public void setNormalMap(PictureSample pictureSample) {
+        this.normalMap = pictureSample;
     }
 
     public void setNormalMap(PNGTexture normalMap) {

@@ -1,32 +1,32 @@
 package ru.BouH.engine.physics.collision;
 
-import com.bulletphysics.dynamics.RigidBody;
-import com.bulletphysics.linearmath.Transform;
+import org.bytedeco.bullet.BulletDynamics.btRigidBody;
+import org.bytedeco.bullet.LinearMath.btQuaternion;
+import org.bytedeco.bullet.LinearMath.btTransform;
 import org.joml.Vector3d;
-import ru.BouH.engine.math.MathHelper;
 import ru.BouH.engine.physics.collision.objects.AbstractCollision;
-
-import javax.vecmath.Quat4f;
 
 public interface JBulletPhysics {
     AbstractCollision getCollision();
 
-    RigidBody getRigidBody();
+    btRigidBody getRigidBody();
 
     void onJBUpdate();
 
     default Vector3d getRigidBodyRot() {
-        Transform transform = new Transform();
-        this.getRigidBody().getWorldTransform(transform);
-        Quat4f r = new Quat4f();
-        MathHelper.getRotation(transform.basis, r);
-        return MathHelper.toDegrees(r);
+        btTransform transform = this.getRigidBody().getWorldTransform();
+        try (btQuaternion r = transform.getRotation()) {
+            double[] x = new double[1];
+            double[] y = new double[1];
+            double[] z = new double[1];
+            r.getEulerZYX(z, y, x);
+            return new Vector3d(Math.toDegrees(z[0]), Math.toDegrees(y[0]), Math.toDegrees(x[0]));
+        }
     }
 
     default Vector3d getRigidBodyPos() {
-        Transform transform = new Transform();
-        this.getRigidBody().getWorldTransform(transform);
-        return new Vector3d(transform.origin.x, transform.origin.y, transform.origin.z);
+        btTransform transform = this.getRigidBody().getWorldTransform();
+        return new Vector3d(transform.getOrigin().getX(), transform.getOrigin().getY(), transform.getOrigin().getZ());
     }
 
     default boolean hasCollision() {

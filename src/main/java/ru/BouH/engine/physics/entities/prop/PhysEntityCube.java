@@ -1,9 +1,9 @@
 package ru.BouH.engine.physics.entities.prop;
 
-import com.bulletphysics.collision.shapes.CollisionShape;
-import com.bulletphysics.dynamics.RigidBody;
+import org.bytedeco.bullet.BulletCollision.btCollisionShape;
+import org.bytedeco.bullet.BulletDynamics.btRigidBody;
+import org.bytedeco.bullet.LinearMath.btVector3;
 import org.joml.Vector3d;
-import ru.BouH.engine.math.BPVector3f;
 import ru.BouH.engine.physics.collision.objects.AbstractCollision;
 import ru.BouH.engine.physics.collision.objects.OBB;
 import ru.BouH.engine.physics.entities.PhysEntity;
@@ -30,18 +30,18 @@ public class PhysEntityCube extends PhysEntity {
         super.onUpdate(iWorld);
     }
 
-    protected void onRigidBodyCreated(RigidBody rigidBody) {
+    protected void onRigidBodyCreated(btRigidBody rigidBody) {
         super.onRigidBodyCreated(rigidBody);
         this.getPhysicsProperties().setFriction(3.0f);
         this.getPhysicsProperties().setWeight(0.1f);
-        CollisionShape collisionShape = rigidBody.getCollisionShape();
-        BPVector3f bpVector3f = new BPVector3f(0);
+        btCollisionShape collisionShape = rigidBody.getCollisionShape();
+        btVector3 bpVector3f = new btVector3();
         collisionShape.calculateLocalInertia(this.getPhysicsProperties().getWeight(), bpVector3f);
-        this.getPhysicsProperties().setInertia(new Vector3d(0));
+        this.getPhysicsProperties().setInertia(new Vector3d(0));//bpVector3f.getX(), bpVector3f.getY(), bpVector3f.getZ()
     }
 
     @Override
     protected AbstractCollision constructCollision(double scale) {
-        return new OBB(this.getScale(), new Vector3d(this.getSize().x, this.getSize().y, this.getSize().z), 1.0f, this.defaultMotionState, new BPVector3f(0.0f, 0.0f, 0.0f));
+        return new OBB(this.getScale(), new Vector3d(this.getSize().x, this.getSize().y, this.getSize().z), 1.0f, this.defaultMotionState, new btVector3(0.0f, 0.0f, 0.0f));
     }
 }

@@ -103,7 +103,6 @@ public final class SceneWorld implements IWorld {
     }
 
     public void onWorldEntityUpdate(double partialTicks) {
-        this.onWorldUpdate();
         Iterator<PhysXObject> iterator = this.getEntityList().iterator();
         while (iterator.hasNext()) {
             PhysXObject physXObject = iterator.next();
@@ -115,17 +114,19 @@ public final class SceneWorld implements IWorld {
                 iterator.remove();
             }
         }
+        this.onWorldUpdate();
     }
 
     public void onWorldUpdate() {
-        SceneWorld.elapsedRenderTicks += 0.01f;
         this.getEnvironment().updateEnvironment();
+        SceneWorld.elapsedRenderTicks += 0.01f;
     }
 
     @Override
     public void onWorldEnd() {
         Game.getGame().getProfiler().endSection(SectionManager.renderWorld);
         Game.getGame().getLogManager().log("Cleaning meshes!");
+        this.removeAllEntities();
         SceneWorld.toCleanSet.forEach(IMesh::cleanMesh);
         Game.getGame().getLogManager().log("Successfully cleaned meshes!");
     }

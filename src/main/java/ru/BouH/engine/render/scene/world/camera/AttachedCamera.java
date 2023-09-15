@@ -32,22 +32,22 @@ public class AttachedCamera extends Camera {
         if (worldItem1 != null) {
             boolean flag1 = this.interpolatePos;
             boolean flag2 = !worldItem1.isRemoteControlled() && this.interpolateRot;
-            Vector3d pos = worldItem1.getPosition();
-            Vector3d rot = worldItem1.getRotation();
+            Vector3d pos = new Vector3d(worldItem1.getPosition()).add(this.cameraOffset());
+            Vector3d rot = new Vector3d(worldItem1.getRotation());
             this.setCameraPos(flag1 ? this.getCamPosition().lerp(pos, partialTicks) : pos);
             this.setCameraRot(flag2 ? this.getCamRotation().lerp(rot, partialTicks) : rot);
         }
     }
 
     public Vector3d getCamPosition() {
-        return super.getCamPosition().add(this.cameraOffset());
+        return super.getCamPosition();
     }
 
     private Vector3d cameraOffset() {
         Vector3d vector3d = new Vector3d(0.0d);
         if (this.getWorldItem() != null && this.getWorldItem() instanceof EntityPlayerSP) {
             EntityPlayerSP entityPlayerSP = (EntityPlayerSP) this.getWorldItem();
-            //vector3d.add(0, entityPlayerSP.getEyeHeight(), 0);
+            vector3d.add(0, entityPlayerSP.getEyeHeight(), 0);
         }
         return vector3d;
     }

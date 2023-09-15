@@ -1,6 +1,6 @@
 package ru.BouH.engine.physics.entities.prop;
 
-import com.bulletphysics.dynamics.RigidBody;
+import org.bytedeco.bullet.BulletDynamics.btRigidBody;
 import org.joml.Vector3d;
 import ru.BouH.engine.physics.world.World;
 
@@ -13,7 +13,7 @@ public class PhysLightCube extends PhysEntityCube {
         this(world, size, pos, new Vector3d(0.0d));
     }
 
-    protected void onRigidBodyCreated(RigidBody rigidBody) {
+    protected void onRigidBodyCreated(btRigidBody rigidBody) {
         super.onRigidBodyCreated(rigidBody);
         this.getPhysicsProperties().setWeight(0.01f);
     }

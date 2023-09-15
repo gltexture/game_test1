@@ -195,14 +195,21 @@ public class Scene {
         return this.getCurrentCamera() instanceof AttachedCamera && ((AttachedCamera) this.getCurrentCamera()).getWorldItem() == worldItem;
     }
 
-    public void renderScene(double partialTicks) {
-        this.getRenderWorld().onWorldEntityUpdate(partialTicks);
+    @SuppressWarnings("all")
+    public void renderScene(double partialTicks) throws InterruptedException {
         if (Scene.isSceneActive()) {
             if (this.getCurrentCamera() != null) {
                 this.getFrustumCulling().refreshFrustumCullingState(RenderManager.instance.getProjectionMatrix(), RenderManager.instance.getViewMatrix());
+                while (Game.getGame().getScreen().getTimer().markSyncUpdate()) {
+                    Thread.sleep(0);
+                }
+                this.getSceneRender().onRender(partialTicks, this.sortedSceneList(this.getEntityRender(), this.getSkyRender()), this.sortedSceneList(this.getGuiRender()));
                 this.getCurrentCamera().updateCamera(partialTicks);
                 RenderManager.instance.updateViewMatrix(this.getCurrentCamera());
-                this.getSceneRender().onRender(partialTicks, this.sortedSceneList(this.getEntityRender(), this.getSkyRender()), this.sortedSceneList(this.getGuiRender()));
+                this.getRenderWorld().onWorldEntityUpdate(partialTicks);
+                synchronized (PhysicThreadManager.locker) {
+                    PhysicThreadManager.locker.notifyAll();
+                }
             }
         }
     }

@@ -1,20 +1,20 @@
 package ru.BouH.engine.physics.collision.objects;
 
-import com.bulletphysics.collision.shapes.BoxShape;
-import com.bulletphysics.collision.shapes.CollisionShape;
-import com.bulletphysics.linearmath.MotionState;
+import org.bytedeco.bullet.BulletCollision.btBoxShape;
+import org.bytedeco.bullet.BulletCollision.btCollisionShape;
+import org.bytedeco.bullet.LinearMath.btMotionState;
+import org.bytedeco.bullet.LinearMath.btVector3;
 import org.joml.Vector3d;
-import ru.BouH.engine.math.BPVector3f;
 
 public class OBB extends AbstractCollision {
     private final Vector3d size;
 
-    public OBB(double scale, Vector3d size, float weight, MotionState motionState, BPVector3f inertia) {
+    public OBB(double scale, Vector3d size, float weight, btMotionState motionState, btVector3 inertia) {
         super(scale, weight, motionState, inertia);
         this.size = size;
     }
 
-    public OBB(float weight, Vector3d size, MotionState motionState, BPVector3f inertia) {
+    public OBB(float weight, Vector3d size, btMotionState motionState, btVector3 inertia) {
         this(1.0d, size, weight, motionState, inertia);
     }
 
@@ -23,8 +23,8 @@ public class OBB extends AbstractCollision {
     }
 
     @Override
-    protected CollisionShape buildCollisionShape(double scale) {
+    protected btCollisionShape buildCollisionShape(double scale) {
         Vector3d vector3d = this.getSize();
-        return new BoxShape(new BPVector3f((float) (vector3d.x / 2.0f), (float) (vector3d.y / 2.0f), (float) (vector3d.z / 2.0f)));
+        return new btBoxShape(new btVector3(vector3d.x / 2.0f, vector3d.y / 2.0f, vector3d.z / 2.0f));
     }
 }

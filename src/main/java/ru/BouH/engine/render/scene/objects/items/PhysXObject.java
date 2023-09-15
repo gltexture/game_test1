@@ -1,9 +1,9 @@
 package ru.BouH.engine.render.scene.objects.items;
 
+import org.bytedeco.bullet.LinearMath.btVector3;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
-import ru.BouH.engine.math.BPVector3f;
 import ru.BouH.engine.physics.brush.WorldBrush;
 import ru.BouH.engine.physics.collision.JBulletPhysics;
 import ru.BouH.engine.physics.collision.objects.AbstractCollision;
@@ -105,10 +105,10 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
         }
         if (this.getWorldItem() instanceof JBulletPhysics && ((JBulletPhysics) this.getWorldItem()).getRigidBody() != null) {
             JBulletPhysics jBulletPhysics = (JBulletPhysics) this.getWorldItem();
-            BPVector3f v1 = new BPVector3f();
-            BPVector3f v2 = new BPVector3f();
+            btVector3 v1 = new btVector3();
+            btVector3 v2 = new btVector3();
             jBulletPhysics.getRigidBody().getAabb(v1, v2);
-            return new Vector3d(v2.x - v1.x, v2.y - v1.y, v2.z - v1.z);
+            return new Vector3d(v2.getX() - v1.getX(), v2.getY() - v1.getY(), v2.getZ() - v1.getZ());
         }
         return new Vector3d(worldItem.getScale() + 1.0d);
     }

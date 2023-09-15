@@ -20,6 +20,10 @@ public class RenderModeledData extends RenderData {
         this.meshModel = meshModel;
     }
 
+    public RenderModeledData(@NotNull RenderFabric renderFabric, @NotNull Sample sample, @NotNull Class<? extends PhysXObject> clazz, MeshModel meshModel, RenderProperties renderProperties) {
+        this(renderFabric, new WorldItemTexture(sample), clazz, meshModel, renderProperties);
+    }
+
     public RenderModeledData(@NotNull RenderFabric renderFabric, @NotNull Sample sample, @NotNull Class<? extends PhysXObject> clazz, MeshModel meshModel) {
         this(renderFabric, new WorldItemTexture(sample), clazz, meshModel);
     }

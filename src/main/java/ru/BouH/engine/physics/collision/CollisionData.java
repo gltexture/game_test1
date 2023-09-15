@@ -1,35 +1,35 @@
 package ru.BouH.engine.physics.collision;
 
-import com.bulletphysics.collision.shapes.CollisionShape;
-import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
-import com.bulletphysics.linearmath.MotionState;
-import ru.BouH.engine.math.BPVector3f;
+import org.bytedeco.bullet.BulletCollision.btCollisionShape;
+import org.bytedeco.bullet.BulletDynamics.btRigidBody;
+import org.bytedeco.bullet.LinearMath.btMotionState;
+import org.bytedeco.bullet.LinearMath.btVector3;
 
 public class CollisionData {
-    private final MotionState motionState;
-    private RigidBodyConstructionInfo rigidBodyConstructionInfo;
-    private CollisionShape collisionShape;
+    private final btMotionState motionState;
+    private btRigidBody.btRigidBodyConstructionInfo rigidBodyConstructionInfo;
+    private btCollisionShape collisionShape;
 
-    public CollisionData(float weight, CollisionShape collisionShape, MotionState motionState, BPVector3f inertia) {
-        this.rigidBodyConstructionInfo = new RigidBodyConstructionInfo(weight, motionState, collisionShape, inertia);
+    public CollisionData(float weight, btCollisionShape collisionShape, btMotionState motionState, btVector3 inertia) {
+        this.rigidBodyConstructionInfo = new btRigidBody.btRigidBodyConstructionInfo(weight, motionState, collisionShape, inertia);
         this.collisionShape = collisionShape;
         this.motionState = motionState;
     }
 
-    public MotionState getMotionState() {
+    public btMotionState getMotionState() {
         return this.motionState;
     }
 
-    public CollisionShape getCollisionShape() {
+    public btCollisionShape getCollisionShape() {
         return this.collisionShape;
     }
 
-    public void setCollisionShape(CollisionShape collisionShape) {
+    public void setCollisionShape(btCollisionShape collisionShape) {
         this.collisionShape = collisionShape;
-        this.rigidBodyConstructionInfo = new RigidBodyConstructionInfo(this.getRigidBodyConstructionInfo().mass, this.getRigidBodyConstructionInfo().motionState, collisionShape, this.getRigidBodyConstructionInfo().localInertia);
+        this.rigidBodyConstructionInfo = new btRigidBody.btRigidBodyConstructionInfo(this.getRigidBodyConstructionInfo().m_mass(), this.getRigidBodyConstructionInfo().m_motionState(), collisionShape, this.getRigidBodyConstructionInfo().m_localInertia());
     }
 
-    public RigidBodyConstructionInfo getRigidBodyConstructionInfo() {
+    public btRigidBody.btRigidBodyConstructionInfo getRigidBodyConstructionInfo() {
         return this.rigidBodyConstructionInfo;
     }
 }

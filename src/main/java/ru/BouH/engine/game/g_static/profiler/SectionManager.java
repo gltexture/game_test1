@@ -10,4 +10,5 @@ public class SectionManager {
     public static Section renderE = Section.constructNewSection("renderE", game);
     public static Section renderWorld = Section.constructNewSection("renderWorld", renderE);
     public static Section startSystem = Section.constructNewSection("startSystem", game);
+    public static Section preLoading = Section.constructNewSection("preLoading", null);
 }

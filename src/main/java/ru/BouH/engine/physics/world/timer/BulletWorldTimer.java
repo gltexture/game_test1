@@ -1,71 +1,70 @@
 package ru.BouH.engine.physics.world.timer;
 
-import com.bulletphysics.collision.broadphase.DbvtBroadphase;
-import com.bulletphysics.collision.dispatch.*;
-import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
-import com.bulletphysics.dynamics.DynamicsWorld;
-import com.bulletphysics.dynamics.RigidBody;
-import com.bulletphysics.dynamics.constraintsolver.ConstraintSolver;
-import com.bulletphysics.dynamics.constraintsolver.SequentialImpulseConstraintSolver;
+import org.bytedeco.bullet.BulletCollision.*;
+import org.bytedeco.bullet.BulletDynamics.*;
+import org.bytedeco.bullet.LinearMath.btVector3;
 import org.jetbrains.annotations.NotNull;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.exception.GameException;
 import ru.BouH.engine.game.g_static.profiler.SectionManager;
-import ru.BouH.engine.physics.world.World;
 import ru.BouH.engine.physics.collision.JBulletPhysics;
+import ru.BouH.engine.physics.world.World;
 import ru.BouH.engine.render.screen.Screen;
 import ru.BouH.engine.render.screen.timer.Timer;
-
-import javax.vecmath.Vector3f;
 
 public class BulletWorldTimer implements IPhysTimer {
     public static final Object lock = new Object();
     public static int TPS;
     private final World world;
-    private final DbvtBroadphase broadcaster;
-    private final CollisionConfiguration collisionConfiguration;
-    private final CollisionDispatcher collisionDispatcher;
-    private final DiscreteDynamicsWorld discreteDynamicsWorld;
-    private final ConstraintSolver constraintSolve;
+    private final btDbvtBroadphase broadcaster;
+    private final btCollisionConfiguration collisionConfiguration;
+    private final btCollisionDispatcher collisionDispatcher;
+    private final btDiscreteDynamicsWorld discreteDynamicsWorld;
+    private final btConstraintSolver constraintSolve;
 
     public BulletWorldTimer(World world) {
         this.world = world;
-        this.broadcaster = new DbvtBroadphase();
-        this.collisionConfiguration = new DefaultCollisionConfiguration();
-        this.collisionDispatcher = new CollisionDispatcher(collisionConfiguration);
-        this.constraintSolve = new SequentialImpulseConstraintSolver();
-        this.discreteDynamicsWorld = new DiscreteDynamicsWorld(this.getCollisionDispatcher(), this.getBroadcaster(), this.getConstraintSolver(), this.getCollisionConfiguration());
-        this.discreteDynamicsWorld.setGravity(new Vector3f(0, -10.0f, 0));
+        this.broadcaster = new btDbvtBroadphase();
+        this.collisionConfiguration = new btDefaultCollisionConfiguration();
+        this.collisionDispatcher = new btCollisionDispatcher(collisionConfiguration);
+        this.constraintSolve = new btSequentialImpulseConstraintSolver();
+        this.discreteDynamicsWorld = new btDiscreteDynamicsWorld(this.getCollisionDispatcher(), this.getBroadcaster(), this.getConstraintSolver(), this.getCollisionConfiguration());
+        this.discreteDynamicsWorld.setGravity(new btVector3(0, -10.0f, 0));
     }
 
     @SuppressWarnings("all")
-    public void updateTimer(int TPS) {
-        final DiscreteDynamicsWorld discreteDynamicsWorld1 = this.getDiscreteDynamicsWorld();
+    public void updateTimer(int TPS)  {
+        final btDiscreteDynamicsWorld discreteDynamicsWorld1 = this.getDiscreteDynamicsWorld();
         if (discreteDynamicsWorld1 == null) {
             throw new GameException("Current Dynamics World is NULL!");
         }
         try {
+            Game.getGame().getProfiler().startSection(SectionManager.bulletPhysWorld);
+            synchronized (Game.EngineSystem.logicLocker) {
+                Game.EngineSystem.logicLocker.wait();
+            }
             long i = System.currentTimeMillis();
             long l = 0L;
-            Game.getGame().getProfiler().startSection(SectionManager.bulletPhysWorld);
             while (!Game.getGame().isShouldBeClosed()) {
-                synchronized (PhysicThreadManager.locker) {
-                    PhysicThreadManager.locker.wait();
-                }
                 long j = System.currentTimeMillis();
                 long k = j - i;
                 l += k;
                 i = j;
                 while (l > PhysicThreadManager.getTicksForUpdate(TPS)) {
+                    synchronized (PhysicThreadManager.locker) {
+                        PhysicThreadManager.locker.wait();
+                    }
                     l -= PhysicThreadManager.getTicksForUpdate(TPS);
                     synchronized (BulletWorldTimer.lock) {
+                        Timer.syncUp();
                         for (JBulletPhysics worldItem : this.world.getAllJBItems()) {
                             worldItem.onJBUpdate();
                         }
-                        Timer.syncUp();
-                        discreteDynamicsWorld1.stepSimulation(1f / TPS, 20);
+
+                        discreteDynamicsWorld1.stepSimulation(1.0f / TPS);
                         Timer.syncDown();
                     }
+
                     BulletWorldTimer.TPS += 1;
                 }
                 Thread.sleep(Math.max(1L, PhysicThreadManager.getTicksForUpdate(TPS) - l));
@@ -73,70 +72,71 @@ public class BulletWorldTimer implements IPhysTimer {
             Game.getGame().getProfiler().endSection(SectionManager.bulletPhysWorld);
         } catch (InterruptedException | GameException e) {
             throw new RuntimeException(e);
+        } finally {
+            this.cleanResources();
         }
-        this.cleanResources();
     }
 
     public void cleanResources() {
         Game.getGame().getLogManager().log("Cleaning physics world resources...");
-        this.getDiscreteDynamicsWorld().destroy();
+        this.getDiscreteDynamicsWorld().deallocate();
     }
 
-    public synchronized final DynamicsWorld dynamicsWorld() {
+    public synchronized final btDynamicsWorld dynamicsWorld() {
         return this.getDiscreteDynamicsWorld();
     }
 
-    public synchronized final CollisionWorld collisionWorld() {
+    public synchronized final btCollisionWorld collisionWorld() {
         return this.getDiscreteDynamicsWorld().getCollisionWorld();
     }
 
-    public void addRigidBodyInWorld(@NotNull RigidBody rigidBody) {
+    public void addRigidBodyInWorld(@NotNull btRigidBody rigidBody) {
         synchronized (BulletWorldTimer.lock) {
             this.getDiscreteDynamicsWorld().addRigidBody(rigidBody);
         }
     }
 
-    public void addCollisionObjectInWorld(@NotNull CollisionObject collisionObject) {
+    public void addCollisionObjectInWorld(@NotNull btCollisionObject collisionObject) {
         synchronized (BulletWorldTimer.lock) {
             this.getDiscreteDynamicsWorld().addCollisionObject(collisionObject);
         }
     }
 
-    public void removeRigidBodyFromWorld(@NotNull RigidBody rigidBody) {
+    public void removeRigidBodyFromWorld(@NotNull btRigidBody rigidBody) {
         synchronized (BulletWorldTimer.lock) {
             this.getDiscreteDynamicsWorld().removeRigidBody(rigidBody);
         }
     }
 
-    public void removeCollisionObjectFromWorld(@NotNull CollisionObject collisionObject) {
+    public void removeCollisionObjectFromWorld(@NotNull btCollisionObject collisionObject) {
         synchronized (BulletWorldTimer.lock) {
             this.getDiscreteDynamicsWorld().removeCollisionObject(collisionObject);
         }
     }
 
-    public void updateRigidBodyAabb(@NotNull RigidBody rigidBody) {
+    public void updateRigidBodyAabb(@NotNull btRigidBody rigidBody) {
         synchronized (BulletWorldTimer.lock) {
             this.getDiscreteDynamicsWorld().updateSingleAabb(rigidBody);
         }
     }
 
-    private synchronized DiscreteDynamicsWorld getDiscreteDynamicsWorld() {
+    private synchronized btDiscreteDynamicsWorld getDiscreteDynamicsWorld() {
         return this.discreteDynamicsWorld;
     }
 
-    public ConstraintSolver getConstraintSolver() {
+    public btConstraintSolver getConstraintSolver() {
         return this.constraintSolve;
     }
 
-    public DbvtBroadphase getBroadcaster() {
+    public btDbvtBroadphase getBroadcaster() {
         return this.broadcaster;
     }
 
-    public CollisionConfiguration getCollisionConfiguration() {
+    public btCollisionConfiguration getCollisionConfiguration() {
         return this.collisionConfiguration;
     }
 
-    public CollisionDispatcher getCollisionDispatcher() {
+    public btCollisionDispatcher getCollisionDispatcher() {
         return this.collisionDispatcher;
     }
 }

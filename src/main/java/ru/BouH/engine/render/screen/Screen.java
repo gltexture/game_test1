@@ -12,7 +12,6 @@ import org.lwjgl.system.MemoryUtil;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.controller.ControllerDispatcher;
 import ru.BouH.engine.game.g_static.profiler.SectionManager;
-import ru.BouH.engine.game.g_static.render.ItemRenderList;
 import ru.BouH.engine.math.MathHelper;
 import ru.BouH.engine.physics.world.timer.GameWorldTimer;
 import ru.BouH.engine.physics.world.timer.BulletWorldTimer;
@@ -24,9 +23,6 @@ import ru.BouH.engine.render.screen.timer.Timer;
 import ru.BouH.engine.render.screen.window.Window;
 
 import java.nio.IntBuffer;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class Screen {
     public static final int defaultW = 1280;
@@ -65,20 +61,20 @@ public class Screen {
         GL30.glViewport(0, 0, dim.x, dim.y);
     }
 
-    public void init() {
-        Game game = Game.getGame();
+    public void initScreen() {
         this.isInFocus = true;
-        game.getLogManager().log("Starting screen!");
+        this.scene = new Scene(this, new SceneWorld(Game.getGame().getPhysicsWorld()));
+        this.scene.init();
+        this.setWindowCallbacks();
+        this.createControllerDispatcher(this.getWindow());
+    }
+
+    public void buildScreen() {
         if (this.tryToBuildScreen()) {
             GL.createCapabilities();
-            ItemRenderList.init();
-            this.scene = new Scene(this, new SceneWorld(game.getPhysicsWorld()));
-            this.scene.init();
-            this.setWindowCallbacks();
-            this.createControllerDispatcher(this.getWindow());
-            game.getLogManager().log("Screen built successful");
+            Game.getGame().getLogManager().log("Screen built successful");
         } else {
-            game.getLogManager().error("Screen build error!");
+            Game.getGame().getLogManager().error("Screen build error!");
         }
     }
 
@@ -120,27 +116,36 @@ public class Screen {
         GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT, GL20.GL_TRUE);
         GLFW.glfwWindowHint(GLFW.GLFW_DOUBLEBUFFER, GLFW.GLFW_TRUE);
         this.window = new Window(new Window.WindowProperties(Screen.defaultW, Screen.defaultH, "Build " + Game.build));
-        if (this.getWindow().getDescriptor() == MemoryUtil.NULL) {
+        long window = this.getWindow().getDescriptor();
+        if (window == MemoryUtil.NULL) {
             Game.getGame().getLogManager().error("Failed to create the GLFW window");
             return false;
         }
         try (MemoryStack stack = MemoryStack.stackPush()) {
             IntBuffer width = stack.mallocInt(1);
             IntBuffer height = stack.mallocInt(1);
-            GLFW.glfwGetWindowSize(this.getWindow().getDescriptor(), width, height);
+            GLFW.glfwGetWindowSize(window, width, height);
             GLFWVidMode vidMode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
             if (vidMode != null) {
                 int x = (vidMode.width() - width.get(0)) / 2;
                 int y = (vidMode.height() - height.get(0)) / 2;
-                GLFW.glfwSetWindowPos(this.getWindow().getDescriptor(), x, y);
+                GLFW.glfwSetWindowPos(window, x, y);
             } else {
                 return false;
             }
         }
-        GLFW.glfwMakeContextCurrent(this.getWindow().getDescriptor());
+        GLFW.glfwMakeContextCurrent(window);
         GLFW.glfwSwapInterval(1);
-        GLFW.glfwShowWindow(this.getWindow().getDescriptor());
         return true;
+    }
+
+    public void hideWindow() {
+        GLFW.glfwHideWindow(this.getWindow().getDescriptor());
+    }
+
+    public void showWindow() {
+        GLFW.glfwShowWindow(this.getWindow().getDescriptor());
+        GLFW.glfwFocusWindow(this.getWindow().getDescriptor());
     }
 
     public Timer getTimer() {
@@ -164,9 +169,6 @@ public class Screen {
 
     private void updateScreen() {
         GL11.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        Game.getGame().getProfiler().startSection(SectionManager.startSystem);
-        Game.getGame().getProxy().onSystemStarted();
-        Game.getGame().getProfiler().endSection(SectionManager.startSystem);
         Game.getGame().getProfiler().startSection(SectionManager.renderE);
         this.getRenderWorld().onWorldStart();
         this.getScene().preRender();
@@ -194,6 +196,9 @@ public class Screen {
                 break;
             }
             if (this.getControllerDispatcher() != null) {
+                if (!this.isScreenActive()) {
+                    this.isInFocus = false;
+                }
                 this.getControllerDispatcher().updateController(this.isInFocus, this.getWindow());
             }
             double currentTime = Game.systemTime();
@@ -207,17 +212,11 @@ public class Screen {
                 fps = 0;
                 lastFPS = currentTime;
             }
-            while (this.getTimer().markSyncUpdate()) {
-                Thread.sleep(0);
-            }
             if (this.getScene().getCurrentCamera() != null) {
                 GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
                 GL30.glEnable(GL30.GL_CULL_FACE);
                 GL30.glCullFace(GL30.GL_BACK);
                 this.getScene().renderScene(MathHelper.clamp(this.getTimer().getRenderPartial(), 0.0d, 1.0d));
-            }
-            synchronized (PhysicThreadManager.locker) {
-                PhysicThreadManager.locker.notifyAll();
             }
             GLFW.glfwSwapBuffers(this.getWindow().getDescriptor());
             GLFW.glfwSetInputMode(this.getWindow().getDescriptor(), GLFW.GLFW_CURSOR, !this.isInFocus ? GLFW.GLFW_CURSOR_NORMAL : GLFW.GLFW_CURSOR_HIDDEN);

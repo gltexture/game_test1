@@ -5,6 +5,7 @@ import org.joml.Vector2d;
 import ru.BouH.engine.physics.world.object.WorldItem;
 import ru.BouH.engine.render.scene.fabric.RenderFabric;
 import ru.BouH.engine.render.scene.objects.items.PhysXObject;
+import ru.BouH.engine.render.scene.objects.texture.PictureSample;
 import ru.BouH.engine.render.scene.objects.texture.Sample;
 import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.scene.objects.texture.samples.PNGTexture;
@@ -41,6 +42,11 @@ public abstract class RenderData {
 
     public Vector2d getTextureScaling() {
         return this.getRenderProperties().getTextureScaling();
+    }
+
+    public RenderData attachNormalMap(PictureSample pictureSample) {
+        this.getItemTexture().setNormalMap(pictureSample);
+        return this;
     }
 
     public RenderData attachNormalMap(PNGTexture pngTexture) {

@@ -1,8 +1,7 @@
 package ru.BouH.engine.physics.brush;
 
-import com.bulletphysics.collision.dispatch.CollisionFlags;
-import com.bulletphysics.dynamics.RigidBody;
-import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
+import org.bytedeco.bullet.BulletCollision.btCollisionObject;
+import org.bytedeco.bullet.BulletDynamics.btRigidBody;
 import org.joml.Vector3d;
 import ru.BouH.engine.physics.world.World;
 import ru.BouH.engine.physics.world.object.CollidableWorldItem;
@@ -23,9 +22,9 @@ public abstract class WorldBrush extends CollidableWorldItem {
         this(world, new Vector3d(0.0d), itemName);
     }
 
-    protected RigidBody createRigidBody(RigidBodyConstructionInfo rigidBodyConstructionInfo) {
-        RigidBody rigidBody = super.createRigidBody(rigidBodyConstructionInfo);
-        rigidBody.setCollisionFlags(CollisionFlags.STATIC_OBJECT);
+    protected btRigidBody createRigidBody(btRigidBody.btRigidBodyConstructionInfo rigidBodyConstructionInfo) {
+        btRigidBody rigidBody = super.createRigidBody(rigidBodyConstructionInfo);
+        rigidBody.setCollisionFlags(btCollisionObject.CF_STATIC_OBJECT);
         return rigidBody;
     }
 

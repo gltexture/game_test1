@@ -62,6 +62,8 @@ public class PNGTexture implements PictureSample {
         }
         if (PNGTexture != null && PNGTexture.isValid()) {
             Game.getGame().getLogManager().log("Texture " + textureName + " loaded");
+        } else {
+            Game.getGame().getLogManager().warn("Texture " + textureName + "not loaded");
         }
         return PNGTexture;
     }

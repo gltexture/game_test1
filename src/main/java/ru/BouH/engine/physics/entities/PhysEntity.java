@@ -1,23 +1,22 @@
 package ru.BouH.engine.physics.entities;
 
-import com.bulletphysics.collision.dispatch.CollisionWorld;
-import com.bulletphysics.collision.narrowphase.PersistentManifold;
-import com.bulletphysics.collision.shapes.BoxShape;
-import com.bulletphysics.collision.shapes.ConvexShape;
-import com.bulletphysics.dynamics.RigidBody;
-import com.bulletphysics.linearmath.Transform;
+import org.bytedeco.bullet.BulletCollision.btBoxShape;
+import org.bytedeco.bullet.BulletCollision.btCollisionWorld;
+import org.bytedeco.bullet.BulletCollision.btConvexShape;
+import org.bytedeco.bullet.BulletCollision.btPersistentManifold;
+import org.bytedeco.bullet.BulletDynamics.btRigidBody;
+import org.bytedeco.bullet.LinearMath.btMatrix3x3;
+import org.bytedeco.bullet.LinearMath.btQuaternion;
+import org.bytedeco.bullet.LinearMath.btTransform;
+import org.bytedeco.bullet.LinearMath.btVector3;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
-import ru.BouH.engine.math.BPVector3f;
 import ru.BouH.engine.math.MathHelper;
-import ru.BouH.engine.math.jbullet.JBUtils;
 import ru.BouH.engine.physics.world.World;
 import ru.BouH.engine.physics.world.object.CollidableWorldItem;
 import ru.BouH.engine.physics.world.object.IDynamic;
 import ru.BouH.engine.proxy.IWorld;
-
-import javax.vecmath.Matrix3f;
 
 public abstract class PhysEntity extends CollidableWorldItem implements IDynamic {
     public static final float DEFAULT_SPEED = 1.0f;
@@ -31,13 +30,12 @@ public abstract class PhysEntity extends CollidableWorldItem implements IDynamic
     private float frictionalForce;
     private boolean isOnGround;
     private int ticksBeforeCanJump;
-    private boolean activationRecheck;
 
     public PhysEntity(World world, Vector3d pos, Vector3d rot, String name) {
         super(world, pos, rot, name);
         this.physicsProperties = new PhysicsProperties();
-        this.defaultCCDParams = new Vector2d(2.5e-2f, 0.5f);
-        this.explicitCCDParams = new Vector2d(1.0e-3d, 0.2f);
+        this.defaultCCDParams = new Vector2d(3.5e-2d, 0.05d);
+        this.explicitCCDParams = new Vector2d(1.0e-4d, 0.01d);
         this.velocityVector = new Vector3d(0.0d);
         this.speed = PhysEntity.DEFAULT_SPEED;
         this.frictionalForce = PhysEntity.DEFAULT_FRICTIONAL_FORCE;
@@ -63,7 +61,7 @@ public abstract class PhysEntity extends CollidableWorldItem implements IDynamic
     public void onJBUpdate() {
         if (this.getRigidBody() != null) {
             this.addObjectVelocity(this.getVelocityVector());
-            if (this.getObjectSpeed() >= 20.0f) {
+            if (this.getObjectSpeed() >= 10.0f) {
                 this.enableExplicitCollisionDetection(this.getRigidBody());
             } else {
                 this.disableExplicitCollisionDetection(this.getRigidBody());
@@ -87,20 +85,9 @@ public abstract class PhysEntity extends CollidableWorldItem implements IDynamic
             this.canJump = false;
         }
         if (this.getRigidBody() != null) {
-            if (this.getPosition().y <= -100 || this.getPosition().y >= 500) {
+            if (this.getPosition().y <= -10 || this.getPosition().y >= 500) {
                 this.setPosition(new Vector3d(0, 5, 0));
                 this.setObjectVelocity(new Vector3d(0.0d));
-            }
-            if (this.activationRecheck) {
-                this.checkCollisionAndActivate(this.getWorld().getBulletTimer().collisionWorld());
-            } else {
-                if (!this.getRigidBody().isActive()) {
-                    if (!this.isOnGround()) {
-                        this.getRigidBody().activate();
-                    } else {
-                        this.activationRecheck = true;
-                    }
-                }
             }
         }
         this.getPrevPosition().set(this.getPosition());
@@ -124,37 +111,20 @@ public abstract class PhysEntity extends CollidableWorldItem implements IDynamic
     }
 
     public Vector3d getObjectVelocity() {
-        BPVector3f vector3f = new BPVector3f();
-        this.getRigidBody().getLinearVelocity(vector3f);
-        return new Vector3d(vector3f.x, vector3f.y, vector3f.z);
+        btVector3 vector3f = this.getRigidBody().getLinearVelocity();
+        return new Vector3d(vector3f.getX(), vector3f.getY(), vector3f.getZ());
     }
 
     public void setObjectVelocity(Vector3d vector3d) {
-        this.getRigidBody().setLinearVelocity(new BPVector3f(vector3d));
+        this.getRigidBody().setLinearVelocity(new btVector3(vector3d.x, vector3d.y, vector3d.z));
         this.updateCollisionObjectState(this.getRigidBody());
     }
 
     public void addObjectVelocity(Vector3d vector3d) {
         Vector3d vel = this.getObjectVelocity();
         vel.add(vector3d);
-        this.getRigidBody().setLinearVelocity(new BPVector3f(vel));
+        this.getRigidBody().setLinearVelocity(new btVector3(vel.x, vel.y, vel.z));
         this.updateCollisionObjectState(this.getRigidBody());
-    }
-
-    public void checkCollisionAndActivate(CollisionWorld collisionWorld) {
-        int numManifolds = collisionWorld.getDispatcher().getNumManifolds();
-        for (int i = 0; i < numManifolds; i++) {
-            PersistentManifold contactManifold = collisionWorld.getDispatcher().getManifoldByIndexInternal(i);
-            if (contactManifold != null && contactManifold.getNumContacts() > 0) {
-                RigidBody obj0 = (RigidBody) contactManifold.getBody0();
-                RigidBody obj1 = (RigidBody) contactManifold.getBody1();
-                if (obj0 == this.getRigidBody() && !obj1.isStaticObject() && obj1.isActive()) {
-                    this.getRigidBody().activate();
-                    this.activationRecheck = false;
-                    break;
-                }
-            }
-        }
     }
 
     public PhysicsProperties getPhysicsProperties() {
@@ -166,7 +136,7 @@ public abstract class PhysEntity extends CollidableWorldItem implements IDynamic
         this.refreshObjectProperties(physicsProperties);
     }
 
-    protected void onRigidBodyCreated(RigidBody rigidBody) {
+    protected void onRigidBodyCreated(btRigidBody rigidBody) {
         this.setRigidBodyProperties(this.getPhysicsProperties(), rigidBody);
     }
 
@@ -174,28 +144,28 @@ public abstract class PhysEntity extends CollidableWorldItem implements IDynamic
         return this.isOnGround;
     }
 
-    public void setRigidBodyProperties(PhysicsProperties physicsProperties, @NotNull RigidBody rigidBody) {
+    public void setRigidBodyProperties(PhysicsProperties physicsProperties, @NotNull btRigidBody rigidBody) {
         rigidBody.setFriction(physicsProperties.getFriction());
         rigidBody.setDamping(physicsProperties.getLDamping(), physicsProperties.getADamping());
         rigidBody.setRestitution(physicsProperties.getRestitution());
-        rigidBody.setMassProps(physicsProperties.getWeight(), new BPVector3f(physicsProperties.getInertia()));
+        rigidBody.setMassProps(physicsProperties.getWeight(), new btVector3(physicsProperties.getInertia()));
         rigidBody.updateInertiaTensor();
     }
 
-    public void enableExplicitCollisionDetection(RigidBody rigidBody) {
+    public void enableExplicitCollisionDetection(btRigidBody rigidBody) {
         this.enableCCD(rigidBody);
     }
 
-    public void disableExplicitCollisionDetection(RigidBody rigidBody) {
+    public void disableExplicitCollisionDetection(btRigidBody rigidBody) {
         this.disableCCD(rigidBody);
     }
 
-    protected void enableCCD(RigidBody rigidBody) {
+    protected void enableCCD(btRigidBody rigidBody) {
         rigidBody.setCcdMotionThreshold((float) this.explicitCCDParams.x);
         rigidBody.setCcdSweptSphereRadius((float) this.explicitCCDParams.y);
     }
 
-    protected void disableCCD(RigidBody rigidBody) {
+    protected void disableCCD(btRigidBody rigidBody) {
         rigidBody.setCcdMotionThreshold((float) this.defaultCCDParams.x);
         rigidBody.setCcdSweptSphereRadius((float) this.defaultCCDParams.y);
     }
@@ -211,28 +181,30 @@ public abstract class PhysEntity extends CollidableWorldItem implements IDynamic
             this.isOnGround = false;
             return;
         }
-        BPVector3f v1 = new BPVector3f();
-        BPVector3f v2 = new BPVector3f();
+
+        btVector3 v1 = new btVector3();
+        btVector3 v2 = new btVector3();
         this.getRigidBody().getAabb(v1, v2);
 
-        Transform transform_m = new Transform();
-        this.getRigidBody().getWorldTransform(transform_m);
-        Matrix3f bs = transform_m.basis;
+        btTransform transform_m = this.getRigidBody().getWorldTransform();
+        btTransform transform1 = new btTransform();
+        btTransform transform2 = new btTransform();
 
-        final float f1 = Math.min(v2.y - v1.y, 0.03f);
-        Transform transform1 = new Transform();
-        transform1.origin.set((float) this.getPosition().x, v1.y + f1 * 2, (float) this.getPosition().z);
-        transform1.basis.set(bs);
+        final double f1 = Math.min(v2.getY() - v1.getY(), 0.03f);
 
-        Transform transform2 = new Transform();
-        transform2.origin.set((float) this.getPosition().x, v1.y, (float) this.getPosition().z);
-        transform2.basis.set(bs);
+        transform1.setIdentity();
+        transform1.getOrigin().setValue(this.getPosition().x, v1.getY() + f1 * 2, this.getPosition().z);
+        transform1.setRotation(new btQuaternion(transform_m.getRotation()));
 
-        ConvexShape convexShape = new BoxShape(new BPVector3f(Math.abs(v2.x - v1.x) * 0.5f, f1, Math.abs(v2.z - v1.z) * 0.5f));
-        CollisionWorld.ClosestConvexResultCallback closestConvexResultCallback = new CollisionWorld.ClosestConvexResultCallback(transform1.origin, transform2.origin);
-        JBUtils.convexSweepTest(this.getWorld().getBulletTimer().collisionWorld(), convexShape, transform1, transform2, closestConvexResultCallback);
+        transform2.setIdentity();
+        transform2.setOrigin(new btVector3(this.getPosition().x, v1.getY(), this.getPosition().z));
+        transform2.setRotation(new btQuaternion(transform_m.getRotation()));
 
-        this.isOnGround = closestConvexResultCallback.hasHit();
+        //btConvexShape convexShape = new btBoxShape(new btVector3(Math.abs(v2.getX() - v1.getX()) * 0.5f, f1, Math.abs(v2.getZ() - v1.getZ()) * 0.5f));
+        //btCollisionWorld.ClosestConvexResultCallback closestConvexResultCallback = new btCollisionWorld.ClosestConvexResultCallback(transform1.getOrigin(), transform2.getOrigin());
+        //this.getWorld().getBulletTimer().dynamicsWorld().convexSweepTest(convexShape, transform1, transform2, closestConvexResultCallback);
+
+        this.isOnGround = true;
     }
 
     public void jump() {
@@ -251,16 +223,16 @@ public abstract class PhysEntity extends CollidableWorldItem implements IDynamic
         this.frictionalForce = frictionalForce;
     }
 
-    protected void applyFrictionalForce(RigidBody rigidBody) {
-        BPVector3f vector3f = new BPVector3f(this.getObjectVelocity().mul(new Vector3d(1, 0, 1)));
-        vector3f.scale(-this.getFrictionalForce());
+    protected void applyFrictionalForce(btRigidBody rigidBody) {
+        Vector3d vector3d = this.getObjectVelocity().mul(new Vector3d(1, 0, 1));
+        btVector3 vector3f = new btVector3(vector3d.x, vector3d.y, vector3d.z);
+        vector3f.multiplyPut(-this.getFrictionalForce());
         rigidBody.applyCentralForce(vector3f);
     }
 
     public Vector3d getLookVector() {
         double x = Math.toRadians(this.getRotation().x);
         double y = Math.toRadians(this.getRotation().y);
-        double z = Math.toRadians(this.getRotation().z);
         double lX = MathHelper.sin(y) * MathHelper.cos(x);
         double lY = -MathHelper.sin(x);
         double lZ = -MathHelper.cos(y) * MathHelper.cos(x);
@@ -302,8 +274,8 @@ public abstract class PhysEntity extends CollidableWorldItem implements IDynamic
             PhysEntity.this.refreshObjectProperties(this);
         }
 
-        public Vector3d getInertia() {
-            return this.inertia;
+        public btVector3 getInertia() {
+            return new btVector3(this.inertia.x, this.inertia.y, this.inertia.z);
         }
 
         public void setInertia(Vector3d inertia) {

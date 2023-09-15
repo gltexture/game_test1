@@ -1,12 +1,11 @@
 package ru.BouH.engine.proxy;
 
 import org.joml.Vector3d;
-import ru.BouH.engine.events.WorldEvents;
 import ru.BouH.engine.game.exception.GameException;
-import ru.BouH.engine.physics.world.timer.GameWorldTimer;
 import ru.BouH.engine.physics.entities.PhysEntity;
 import ru.BouH.engine.physics.entities.player.EntityPlayerSP;
 import ru.BouH.engine.physics.world.object.WorldItem;
+import ru.BouH.engine.physics.world.timer.GameWorldTimer;
 import ru.BouH.engine.render.environment.light.ILight;
 import ru.BouH.engine.render.scene.objects.data.RenderData;
 import ru.BouH.engine.render.screen.Screen;
@@ -36,12 +35,6 @@ public class Proxy {
 
     public void addLight(ILight light) {
         this.screen.getRenderWorld().getEnvironment().getLightManager().addLight(light);
-    }
-
-    public void onSystemStarted() {
-        WorldEvents.addEntities(this.gameWorldTimer.getWorld());
-        WorldEvents.addBrushes(this.gameWorldTimer.getWorld());
-        this.getLocalPlayer().addPlayerInWorlds(this);
     }
 
     public LocalPlayer getLocalPlayer() {

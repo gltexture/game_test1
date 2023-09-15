@@ -1,15 +1,6 @@
 package ru.BouH.engine.math;
 
 import org.joml.Math;
-import org.joml.Quaterniond;
-import org.joml.Vector3d;
-import org.lwjgl.BufferUtils;
-
-import javax.vecmath.Matrix3f;
-import javax.vecmath.Quat4f;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.nio.FloatBuffer;
 
 public class MathHelper {
     private static final int BF_SIN_BITS = 12;
@@ -42,56 +33,16 @@ public class MathHelper {
         }
     }
 
-    public static float toDegrees(float radians) {
-        BigDecimal r = BigDecimal.valueOf(radians);
-        BigDecimal d = r.multiply(BigDecimal.valueOf(180)).divide(BigDecimal.valueOf(Math.PI), 10, RoundingMode.HALF_UP);
-        return d.floatValue();
-    }
-
-    public static Vector3d toDegrees(Quat4f q) {
-        Quaterniond quaterniond = new Quaterniond(q.x, q.y, q.z, q.w);
-        Vector3d vector3d1 = new Vector3d();
-        quaterniond.getEulerAnglesXYZ(vector3d1);
-        return new Vector3d(Math.toDegrees(vector3d1.x), Math.toDegrees(vector3d1.y), Math.toDegrees(vector3d1.z));
-    }
-
-    public static void getRotation(Matrix3f mat, Quat4f dest) {
-        FloatBuffer floatBuffer = BufferUtils.createFloatBuffer(16);
-
-        float trace = mat.m00 + mat.m11 + mat.m22;
-
-        if (trace > 0f) {
-            float s = (float) java.lang.Math.sqrt(trace + 1f);
-            floatBuffer.put(3, (s * 0.5f));
-            s = 0.5f / s;
-
-            floatBuffer.put(0, ((mat.m21 - mat.m12) * s));
-            floatBuffer.put(1, ((mat.m02 - mat.m20) * s));
-            floatBuffer.put(2, ((mat.m10 - mat.m01) * s));
-        } else {
-            int i = mat.m00 < mat.m11 ? (mat.m11 < mat.m22 ? 2 : 1) : (mat.m00 < mat.m22 ? 2 : 0);
-            int j = (i + 1) % 3;
-            int k = (i + 2) % 3;
-
-            float s = (float) java.lang.Math.sqrt(mat.getElement(i, i) - mat.getElement(j, j) - mat.getElement(k, k) + 1f);
-            floatBuffer.put(i, s * 0.5f);
-            s = 0.5f / s;
-
-            floatBuffer.put(3, (mat.getElement(k, j) - mat.getElement(j, k)) * s);
-            floatBuffer.put(j, (mat.getElement(j, i) + mat.getElement(i, j)) * s);
-            floatBuffer.put(k, (mat.getElement(k, i) + mat.getElement(i, k)) * s);
-        }
-        dest.set(floatBuffer.get(0), floatBuffer.get(1), floatBuffer.get(2), floatBuffer.get(3));
-
-        floatBuffer.clear();
-    }
-
     public static float sin(double rad) {
         return BF_sin[(int) (rad * BF_radToIndex) & BF_SIN_MASK];
     }
 
     public static float cos(double rad) {
         return BF_cos[(int) (rad * BF_radToIndex) & BF_SIN_MASK];
+    }
+
+    public static int clamp(int d1, int d2, int d3) {
+        return d1 < d2 ? d2 : (int) MathHelper.min(d1, d3);
     }
 
     public static float clamp(float d1, float d2, float d3) {

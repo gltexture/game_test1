@@ -1,12 +1,12 @@
 package ru.BouH.engine.physics.entities.player;
 
+import org.bytedeco.bullet.LinearMath.btVector3;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.controller.IController;
 import ru.BouH.engine.game.g_static.binding.BindingList;
-import ru.BouH.engine.game.g_static.render.ItemRenderList;
-import ru.BouH.engine.math.BPVector3f;
+import ru.BouH.engine.game.g_static.render.RenderResources;
 import ru.BouH.engine.physics.collision.objects.AbstractCollision;
 import ru.BouH.engine.physics.collision.objects.OBB;
 import ru.BouH.engine.physics.entities.IRemoteController;
@@ -45,7 +45,7 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
 
     @Override
     protected AbstractCollision constructCollision(double scale) {
-        return new OBB(this.getScale(), new Vector3d(0.75d, 1.5d, 0.75d), 5.0f, this.defaultMotionState, new BPVector3f(0.0f, 0.0f, 0.0f));
+        return new OBB(this.getScale(), new Vector3d(0.75d, 1.5d, 0.75d), 5.0f, this.defaultMotionState, new btVector3(0.0f, 0.0f, 0.0f));
     }
 
     public void onJBUpdate() {
@@ -62,7 +62,7 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
         super.onUpdate(iWorld);
         if (this.isValidController()) {
             Vector3d vector3d = this.calcControllerMotion();
-            this.setVelocityVector(this.getMotionVector(vector3d).mul(1.25d));
+            this.setVelocityVector(this.getMotionVector(vector3d).mul(2.25d));
         }
     }
 
@@ -121,16 +121,16 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
 
     @Override
     public void performController(Vector2d rotationInput, Vector3d xyzInput) {
-        if (BindingList.instance.keyBlock1.isClicked()) {
+        if (BindingList.instance.keyBlock1.isPressed()) {
             PhysEntityCube entityPropInfo = new PhysEntityCube(this.getWorld(), new Vector3d(1.0d), this.getPosition().add(this.getLookVector().mul(2.0f)));
             entityPropInfo.setScale(0.5d);
-            Game.getGame().getProxy().addItemInWorlds(entityPropInfo, ItemRenderList.entityCube);
+            Game.getGame().getProxy().addItemInWorlds(entityPropInfo, RenderResources.entityCube);
             entityPropInfo.setObjectVelocity(this.getLookVector().mul(30.0f));
         }
         if (BindingList.instance.keyBlock2.isClicked()) {
             PhysEntityCube entityPropInfo = new PhysLightCube(this.getWorld(), new Vector3d(1.0d), this.getPosition().add(this.getLookVector().mul(2.0f)));
             entityPropInfo.setScale(0.25d);
-            Game.getGame().getProxy().addItemInWorlds(entityPropInfo, ItemRenderList.entityLamp);
+            Game.getGame().getProxy().addItemInWorlds(entityPropInfo, RenderResources.entityLamp);
             int a1 = Game.random.nextInt(3);
             entityPropInfo.setLight(new PointLight(new Vector3d(a1 == 0 ? 1.0d : Game.random.nextFloat(), a1 == 1 ? 1.0d : Game.random.nextFloat() * 0.5f, a1 == 2 ? 1.0d : Game.random.nextFloat() * 0.5f), 6.5d));
             entityPropInfo.setObjectVelocity(this.getLookVector().mul(20.0f));

@@ -6,23 +6,18 @@ import org.lwjgl.glfw.GLFW;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.controller.Binding;
 import ru.BouH.engine.game.controller.input.Keyboard;
+import ru.BouH.engine.game.g_static.render.RenderResources;
 import ru.BouH.engine.physics.entities.player.EntityPlayerSP;
 import ru.BouH.engine.render.RenderManager;
 import ru.BouH.engine.render.scene.SceneRenderBase;
 import ru.BouH.engine.render.scene.components.Model2D;
-import ru.BouH.engine.render.scene.objects.gui.font.FontCode;
-import ru.BouH.engine.render.scene.objects.gui.font.FontTexture;
 import ru.BouH.engine.render.scene.objects.gui.hud.GuiPicture;
 import ru.BouH.engine.render.scene.objects.gui.hud.GuiText;
 import ru.BouH.engine.render.scene.objects.texture.samples.Color3FA;
 import ru.BouH.engine.render.scene.objects.texture.samples.PNGTexture;
 import ru.BouH.engine.render.screen.Screen;
 
-import java.awt.*;
-
 public class GUI {
-    public static final FontTexture standardFont = new FontTexture(new Font("Cambria", Font.PLAIN, 18), FontCode.Window);
-    public static final PNGTexture pic1 = PNGTexture.createTexture("gui/pictures/meme2.png");
     private static final SceneRenderBase sceneRenderBase = Game.getGame().getScreen().getScene().getGuiRender();
 
     public static void renderGUI(double partialTicks) {
@@ -41,8 +36,8 @@ public class GUI {
                 i1 += 20;
             }
         }
-        Vector2d vector2d = GUI.getScaledPictureDimensions(GUI.pic1, 0.1f);
-        GUI.renderPicture(partialTicks, (int) (width - vector2d.x - 2), 2, (int) vector2d.x, (int) vector2d.y, GUI.pic1);
+        Vector2d vector2d = GUI.getScaledPictureDimensions(RenderResources.pngGuiPic1, 0.1f);
+        GUI.renderPicture(partialTicks, (int) (width - vector2d.x - 2), 2, (int) vector2d.x, (int) vector2d.y, RenderResources.pngGuiPic1);
     }
 
     private static Vector2d getScaledPictureDimensions(PNGTexture PNGTexture, float scale) {

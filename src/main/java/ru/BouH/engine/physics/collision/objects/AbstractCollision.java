@@ -1,29 +1,29 @@
 package ru.BouH.engine.physics.collision.objects;
 
-import com.bulletphysics.collision.shapes.CollisionShape;
-import com.bulletphysics.linearmath.MotionState;
-import ru.BouH.engine.math.BPVector3f;
+import org.bytedeco.bullet.BulletCollision.btCollisionShape;
+import org.bytedeco.bullet.LinearMath.btMotionState;
+import org.bytedeco.bullet.LinearMath.btVector3;
 import ru.BouH.engine.physics.collision.CollisionData;
 
 public abstract class AbstractCollision {
     private final float weight;
-    private final MotionState motionState;
-    private final BPVector3f inertia;
+    private final btMotionState motionState;
+    private final btVector3 inertia;
     private CollisionData collisionData;
     private double scale;
 
-    public AbstractCollision(double scale, float weight, MotionState motionState, BPVector3f inertia) {
+    public AbstractCollision(double scale, float weight, btMotionState motionState, btVector3 inertia) {
         this.scale = scale;
         this.weight = weight;
         this.motionState = motionState;
         this.inertia = inertia;
     }
 
-    public AbstractCollision(float weight, MotionState motionState, BPVector3f inertia) {
+    public AbstractCollision(float weight, btMotionState motionState, btVector3 inertia) {
         this(1.0d, weight, motionState, inertia);
     }
 
-    private void buildCollision(float weight, CollisionShape collisionShape, MotionState motionState, BPVector3f inertia) {
+    private void buildCollision(float weight, btCollisionShape collisionShape, btMotionState motionState, btVector3 inertia) {
         this.collisionData = new CollisionData(weight, collisionShape, motionState, inertia);
     }
 
@@ -31,11 +31,11 @@ public abstract class AbstractCollision {
         this.buildCollision(this.getWeight(), this.buildCollisionShape(scale), this.getMotionState(), this.getInertia());
     }
 
-    public BPVector3f getInertia() {
+    public btVector3 getInertia() {
         return this.inertia;
     }
 
-    public MotionState getMotionState() {
+    public btMotionState getMotionState() {
         return this.motionState;
     }
 
@@ -51,13 +51,13 @@ public abstract class AbstractCollision {
         this.scale = scale;
     }
 
-    protected abstract CollisionShape buildCollisionShape(double scale);
+    protected abstract btCollisionShape buildCollisionShape(double scale);
 
-    public CollisionShape getCollisionShape() {
+    public btCollisionShape getCollisionShape() {
         return this.getCollisionInfo().getCollisionShape();
     }
 
-    public void setCollisionShape(CollisionShape collisionShape) {
+    public void setCollisionShape(btCollisionShape collisionShape) {
         this.getCollisionInfo().setCollisionShape(collisionShape);
     }
 

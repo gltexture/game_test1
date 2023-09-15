@@ -230,7 +230,7 @@ public abstract class SceneRenderBase {
 
         public void setNormalMap(int code, WorldItemTexture worldItemTexture) {
             if (worldItemTexture != null && worldItemTexture.hasNormalMap()) {
-                PNGTexture pngTexture = worldItemTexture.getNormalMap();
+                PictureSample pngTexture = worldItemTexture.getNormalMap();
                 SceneRenderBase.this.performUniform(UniformConstants.normal_map, code);
                 SceneRenderBase.this.performUniform(UniformConstants.use_normal_map, 1);
                 pngTexture.performTexture(GL30.GL_TEXTURE0 + code);

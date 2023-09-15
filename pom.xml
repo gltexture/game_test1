@@ -45,6 +45,16 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>bullet-platform</artifactId>
+            <version>3.25-1.5.9</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>bullet</artifactId>
+            <version>3.25-1.5.9</version>
+        </dependency>
+        <dependency>
             <groupId>io.imgui.java</groupId>
             <artifactId>binding</artifactId>
             <version>1.76-0.9</version>
@@ -58,16 +68,6 @@
             <groupId>io.imgui.java</groupId>
             <artifactId>natives-windows</artifactId>
             <version>1.76-0.9</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.vecmath</groupId>
-            <artifactId>vecmath</artifactId>
-            <version>1.5.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.stephengold</groupId>
-            <artifactId>jbullet</artifactId>
-            <version>1.0.2</version>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>

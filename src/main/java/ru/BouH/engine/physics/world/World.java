@@ -1,6 +1,6 @@
 package ru.BouH.engine.physics.world;
 
-import com.bulletphysics.dynamics.RigidBody;
+import org.bytedeco.bullet.BulletDynamics.btRigidBody;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.exception.GameException;
 import ru.BouH.engine.game.g_static.profiler.SectionManager;
@@ -13,6 +13,7 @@ import ru.BouH.engine.proxy.IWorld;
 import ru.BouH.engine.render.environment.light.ILight;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -56,7 +57,8 @@ public final class World implements IWorld {
 
     public void onWorldEnd() {
         Game.getGame().getProfiler().endSection(SectionManager.physWorld);
-        this.clearAllItems();
+        Game.getGame().getLogManager().log("Cleaning game world resources...");
+        this.clearItemsCollection(new ArrayList<>(this.getAllWorldItems()));
     }
 
     public void addLight(ILight iLight) {
@@ -88,25 +90,26 @@ public final class World implements IWorld {
         }
         List<IDynamic> copy2 = new ArrayList<>(this.getAllDynamicItems());
         for (IDynamic iDynamic : copy2) {
-            if (Game.getGame().isShouldBeClosed()) {
-                break;
-            }
             iDynamic.onUpdate(this);
         }
-        for (WorldItem worldItem : this.toCleanItems) {
+        this.clearItemsCollection(this.toCleanItems);
+        this.toCleanItems.clear();
+        this.ticks += 1;
+    }
+
+    private void clearItemsCollection(Collection<? extends WorldItem> collection) {
+        for (WorldItem worldItem : collection) {
             this.collectionsWaitingRefresh = true;
             worldItem.onDestroy(this);
             if (World.isItemJB(worldItem)) {
                 JBulletPhysics jbItem = (JBulletPhysics) worldItem;
-                RigidBody rigidBody = jbItem.getRigidBody();
+                btRigidBody rigidBody = jbItem.getRigidBody();
                 if (rigidBody != null) {
                     this.getBulletTimer().removeRigidBodyFromWorld(rigidBody);
                 }
             }
             this.getAllWorldItems().remove(worldItem);
         }
-        this.toCleanItems.clear();
-        this.ticks += 1;
     }
 
     public int getTicks() {

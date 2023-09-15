@@ -65,7 +65,6 @@ float calc_shadows(vec4, int);
 float calc_dist_proj_shadow(vec4, vec2, int);
 float texture_proj(vec4, vec2, int);
 vec3 calc_normal_map(vec3, mat4);
-
 int calc_cascade_index();
 
 struct CascadeShadow {

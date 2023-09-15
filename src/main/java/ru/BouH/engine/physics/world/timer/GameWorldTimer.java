@@ -18,19 +18,22 @@ public class GameWorldTimer implements IPhysTimer {
     public void updateTimer(int TPS) {
         try {
             Game.getGame().getLogManager().debug("Starting phys-X!");
-            long i = System.currentTimeMillis();
-            long l = 0L;
             Game.getGame().getProfiler().startSection(SectionManager.physX);
             this.getWorld().onWorldStart();
+            synchronized (Game.EngineSystem.logicLocker) {
+                Game.EngineSystem.logicLocker.wait();
+            }
+            long i = System.currentTimeMillis();
+            long l = 0L;
             while (!Game.getGame().isShouldBeClosed()) {
-                synchronized (PhysicThreadManager.locker) {
-                    PhysicThreadManager.locker.wait();
-                }
                 long j = System.currentTimeMillis();
                 long k = j - i;
                 l += k;
                 i = j;
                 while (l > PhysicThreadManager.getTicksForUpdate(TPS)) {
+                    synchronized (PhysicThreadManager.locker) {
+                        PhysicThreadManager.locker.wait();
+                    }
                     l -= PhysicThreadManager.getTicksForUpdate(TPS);
                     this.getWorld().onWorldUpdate();
                     GameWorldTimer.TPS += 1;
