@@ -317,9 +317,11 @@ public class Scene {
             this.getBlurShader().bind();
             this.getBlurShader().performUniform("projection_model_matrix", RenderManager.instance.getOrthographicModelMatrix(model2D));
             this.getBlurShader().performUniform("texture_sampler", 0);
+
             for (int i = 0; i < this.blurKernel.length; i++) {
                 this.getBlurShader().performUniform("kernel[" + i + "]", this.blurKernel[i]);
             }
+
             GL30.glActiveTexture(GL30.GL_TEXTURE0);
             this.sceneFbo.bindTextureFBO(1);
             GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
@@ -348,6 +350,7 @@ public class Scene {
                 sceneRenderBase.onRender(partialTicks);
                 sceneRenderBase.unBindProgram();
             }
+
             if (this.wantsTakeScreenshot) {
                 this.writeBufferInFile();
                 this.wantsTakeScreenshot = false;

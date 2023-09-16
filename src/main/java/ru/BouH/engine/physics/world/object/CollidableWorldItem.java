@@ -79,7 +79,7 @@ public abstract class CollidableWorldItem extends WorldItem implements JBulletPh
 
     public void setScale(double scale) {
         if (this.getRigidBody() != null) {
-            this.onCollisionCreate(this.constructCollision(scale));
+            this.getRigidBody().getCollisionShape().setLocalScaling(new btVector3(scale, scale, scale));
         }
         super.setScale(scale);
     }

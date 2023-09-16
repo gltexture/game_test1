@@ -103,12 +103,17 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
         if (worldItem == null) {
             return null;
         }
-        if (this.getWorldItem() instanceof JBulletPhysics && ((JBulletPhysics) this.getWorldItem()).getRigidBody() != null) {
+        if (this.getWorldItem() instanceof JBulletPhysics) {
             JBulletPhysics jBulletPhysics = (JBulletPhysics) this.getWorldItem();
-            btVector3 v1 = new btVector3();
-            btVector3 v2 = new btVector3();
-            jBulletPhysics.getRigidBody().getAabb(v1, v2);
-            return new Vector3d(v2.getX() - v1.getX(), v2.getY() - v1.getY(), v2.getZ() - v1.getZ());
+            if (jBulletPhysics.getRigidBody() != null) {
+                btVector3 v1 = new btVector3();
+                btVector3 v2 = new btVector3();
+                jBulletPhysics.getRigidBody().getAabb(v1, v2);
+                Vector3d vector3d = new Vector3d(v2.getX() - v1.getX(), v2.getY() - v1.getY(), v2.getZ() - v1.getZ());
+                v1.deallocate();
+                v2.deallocate();
+                return vector3d;
+            }
         }
         return new Vector3d(worldItem.getScale() + 1.0d);
     }
@@ -160,7 +165,7 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
         if (this.getRenderABB() != null) {
             Vector3d size = this.calcABBSize(this.getWorldItem());
             if (size != null) {
-                this.getRenderABB().setAbbForm(this.getRenderPosition(), this.calcABBSize(this.getWorldItem()));
+                this.getRenderABB().setAbbForm(this.getRenderPosition(), size);
             }
         }
         if (this.getWorldItem().isDead()) {
@@ -196,19 +201,25 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
     }
 
     protected Vector3d getFixedPosition() {
+        Vector3d position;
         if (this.getWorldItem() instanceof JBulletPhysics) {
             JBulletPhysics jBulletPhysics = (JBulletPhysics) this.getWorldItem();
-            return jBulletPhysics.getRigidBodyPos();
+            position = jBulletPhysics.getRigidBodyPos();
+        } else {
+            position = this.getWorldItem().getPosition();
         }
-        return this.getWorldItem().getPosition();
+        return new Vector3d(position);
     }
 
     protected Vector3d getFixedRotation() {
+        Vector3d rotation;
         if (this.getWorldItem() instanceof JBulletPhysics) {
             JBulletPhysics jBulletPhysics = (JBulletPhysics) this.getWorldItem();
-            return jBulletPhysics.getRigidBodyRot();
+            rotation = jBulletPhysics.getRigidBodyRot();
+        } else {
+            rotation = this.getWorldItem().getRotation();
         }
-        return this.getWorldItem().getRotation();
+        return new Vector3d(rotation);
     }
 
     public Vector3d getRenderPosition() {

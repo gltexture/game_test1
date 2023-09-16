@@ -1,6 +1,5 @@
 package ru.BouH.engine.physics.entities.prop;
 
-import org.bytedeco.bullet.BulletCollision.btCollisionShape;
 import org.bytedeco.bullet.BulletDynamics.btRigidBody;
 import org.bytedeco.bullet.LinearMath.btVector3;
 import org.joml.Vector3d;
@@ -32,12 +31,8 @@ public class PhysEntityCube extends PhysEntity {
 
     protected void onRigidBodyCreated(btRigidBody rigidBody) {
         super.onRigidBodyCreated(rigidBody);
-        this.getPhysicsProperties().setFriction(3.0f);
-        this.getPhysicsProperties().setWeight(0.1f);
-        btCollisionShape collisionShape = rigidBody.getCollisionShape();
-        btVector3 bpVector3f = new btVector3();
-        collisionShape.calculateLocalInertia(this.getPhysicsProperties().getWeight(), bpVector3f);
-        this.getPhysicsProperties().setInertia(new Vector3d(0));//bpVector3f.getX(), bpVector3f.getY(), bpVector3f.getZ()
+        this.getPhysicsProperties().setWeight(1.0f);
+        //this.getPhysicsProperties().activateRealisticInertia();
     }
 
     @Override

@@ -14,13 +14,12 @@ public interface JBulletPhysics {
     void onJBUpdate();
 
     default Vector3d getRigidBodyRot() {
-        btTransform transform = this.getRigidBody().getWorldTransform();
-        try (btQuaternion r = transform.getRotation()) {
+        try (btQuaternion quaternion = this.getRigidBody().getOrientation()) {
             double[] x = new double[1];
             double[] y = new double[1];
             double[] z = new double[1];
-            r.getEulerZYX(z, y, x);
-            return new Vector3d(Math.toDegrees(z[0]), Math.toDegrees(y[0]), Math.toDegrees(x[0]));
+            quaternion.getEulerZYX(z, y, x);
+            return new Vector3d(Math.toDegrees(z[0]), Math.toDegrees(y[0]), Math.toDegrees(x[0])).negate();
         }
     }
 

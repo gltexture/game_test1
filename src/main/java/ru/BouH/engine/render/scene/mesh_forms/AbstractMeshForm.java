@@ -7,7 +7,7 @@ import java.util.List;
 
 public abstract class AbstractMeshForm {
     private final FormUtils formUtils;
-    private Model3D model;
+    protected Model3D model;
 
     public AbstractMeshForm() {
         this.formUtils = new FormUtils();

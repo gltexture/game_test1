@@ -138,22 +138,23 @@ public class Game {
                     Game.getGame().getProfiler().endSection(SectionManager.startSystem);
                     Game.getGame().getScreen().startScreen();
                 } finally {
-                    try {
-                        Game.getGame().getPhysicThreadManager().destroy();
-                        synchronized (PhysicThreadManager.locker) {
-                            PhysicThreadManager.locker.notifyAll();
-                        }
-                        synchronized (Game.EngineSystem.logicLocker) {
-                            Game.EngineSystem.logicLocker.notifyAll();
-                        }
-                        while (Game.getGame().getPhysicThreadManager().checkActivePhysics()) {
-                            Thread.sleep(25);
-                        }
-                        Game.getGame().getProfiler().endSection(SectionManager.game);
-                        Game.getGame().getProfiler().stopAllSections();
-                        Game.getGame().displayProfilerResult(Game.getGame().getProfiler());
-                    } catch (InterruptedException ignored) {
+                    Game.getGame().getPhysicThreadManager().destroy();
+                    synchronized (PhysicThreadManager.locker) {
+                        PhysicThreadManager.locker.notifyAll();
                     }
+                    synchronized (Game.EngineSystem.logicLocker) {
+                        Game.EngineSystem.logicLocker.notifyAll();
+                    }
+                    while (Game.getGame().getPhysicThreadManager().checkActivePhysics()) {
+                        try {
+                            Thread.sleep(25);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    Game.getGame().getProfiler().endSection(SectionManager.game);
+                    Game.getGame().getProfiler().stopAllSections();
+                    Game.getGame().displayProfilerResult(Game.getGame().getProfiler());
                 }
             });
             this.thread.setName("game");

@@ -1,6 +1,8 @@
 package ru.BouH.engine.math;
 
+import org.bytedeco.bullet.LinearMath.btVector3;
 import org.joml.Math;
+import org.joml.Vector3d;
 
 public class MathHelper {
     private static final int BF_SIN_BITS = 12;
@@ -31,6 +33,14 @@ public class MathHelper {
             BF_sin[(int) ((float) i * BF_degToIndex) & BF_SIN_MASK] = (float) Math.sin((double) i * Math.PI / 180.0);
             BF_cos[(int) ((float) i * BF_degToIndex) & BF_SIN_MASK] = (float) Math.cos((double) i * Math.PI / 180.0);
         }
+    }
+
+    public static btVector3 convert(Vector3d vector3d) {
+        return new btVector3(vector3d.x, vector3d.y, vector3d.z);
+    }
+
+    public static Vector3d convert(btVector3 vector3d) {
+        return new Vector3d(vector3d.getX(), vector3d.getY(), vector3d.getZ());
     }
 
     public static float sin(double rad) {

@@ -62,7 +62,7 @@ public class Screen {
     }
 
     public void initScreen() {
-        this.isInFocus = true;
+        this.isInFocus = false;
         this.scene = new Scene(this, new SceneWorld(Game.getGame().getPhysicsWorld()));
         this.scene.init();
         this.setWindowCallbacks();

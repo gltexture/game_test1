@@ -1,6 +1,7 @@
 package ru.BouH.engine.physics.world.timer;
 
 import org.jetbrains.annotations.NotNull;
+import ru.BouH.engine.math.IntPair;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -9,6 +10,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 public class PhysicThreadManager {
     public static final Object locker = new Object();
+    public static final IntPair WORLD_BORDERS = new IntPair(-750, 750);
     public static final int TICKS_PER_SECOND = 50;
     public static final int PHYS_THREADS = 2;
     private final ExecutorService executorService;
@@ -34,10 +36,10 @@ public class PhysicThreadManager {
 
     public void initService() {
         this.getExecutorService().execute(() -> {
-            this.getBulletWorldTimer().updateTimer(this.getTps());
+            this.getGameWorldTimer().updateTimer(this.getTps());
         });
         this.getExecutorService().execute(() -> {
-            this.getGameWorldTimer().updateTimer(this.getTps());
+            this.getBulletWorldTimer().updateTimer(this.getTps());
         });
     }
 

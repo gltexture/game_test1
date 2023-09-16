@@ -1,5 +1,9 @@
 package ru.BouH.engine.physics.entities.player;
 
+import org.bytedeco.bullet.BulletCollision.btBoxShape;
+import org.bytedeco.bullet.BulletCollision.btCollisionWorld;
+import org.bytedeco.bullet.BulletCollision.btConvexShape;
+import org.bytedeco.bullet.LinearMath.btTransform;
 import org.bytedeco.bullet.LinearMath.btVector3;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
@@ -22,6 +26,8 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
     private final double eyeHeight;
     private IController controller;
     private Vector3d inputMotion;
+    private boolean isOnGround;
+    private int ticksBeforeCanJump;
 
     public EntityPlayerSP(World world, Vector3d pos, Vector3d rot, String name) {
         super(world, pos, rot, name);
@@ -50,20 +56,85 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
 
     public void onJBUpdate() {
         super.onJBUpdate();
-        if (this.isValidController()) {
-            Vector3d vector3d = this.calcControllerMotion();
-            if (vector3d.y > 0) {
-                this.jump();
+        if (this.getRigidBody() != null) {
+            this.groundCheck();
+            if (this.isValidController()) {
+                Vector3d vector3d = this.calcControllerMotion();
+                if (vector3d.y > 0) {
+                    this.jump();
+                }
             }
         }
     }
 
     public void onUpdate(IWorld iWorld) {
         super.onUpdate(iWorld);
-        if (this.isValidController()) {
-            Vector3d vector3d = this.calcControllerMotion();
-            this.setVelocityVector(this.getMotionVector(vector3d).mul(2.25d));
+        if (this.getRigidBody() != null) {
+            if (this.isValidController()) {
+                Vector3d vector3d = this.calcControllerMotion();
+                this.setVelocityVector(this.getMotionVector(vector3d).mul(6.25d));
+                if (this.isOnGround()) {
+                    if (this.ticksBeforeCanJump-- > 0) {
+                        this.ticksBeforeCanJump -= 1;
+                    } else {
+                        this.canJump = true;
+                    }
+                } else {
+                    if (this.canJump) {
+                        this.ticksBeforeCanJump = 50;
+                    }
+                    this.canJump = false;
+                }
+                this.getRigidBody().activate();
+            }
         }
+    }
+
+    protected void groundCheck() {
+        if (!this.getRigidBody().isInWorld() || this.getRigidBody() == null) {
+            this.isOnGround = false;
+            return;
+        }
+
+        btVector3 v1 = new btVector3();
+        btVector3 v2 = new btVector3();
+        this.getRigidBody().getAabb(v1, v2);
+
+        btTransform transform_m = this.getRigidBody().getWorldTransform();
+        btTransform transform1 = new btTransform(transform_m);
+        btTransform transform2 = new btTransform(transform_m);
+        final double f1 = Math.min(v2.getY() - v1.getY(), 0.03f);
+
+        btVector3 v3 = new btVector3(Math.abs(v2.getX() - v1.getX()) * 0.5f - 0.01f, f1, Math.abs(v2.getZ() - v1.getZ()) * 0.5f - 0.01f);
+
+        transform1.setOrigin(new btVector3(this.getPosition().x, v1.getY() + f1 * 2, this.getPosition().z));
+        transform2.setOrigin(new btVector3(this.getPosition().x, v1.getY(), this.getPosition().z));
+
+        btConvexShape convexShape = new btBoxShape(v3);
+        btCollisionWorld.ConvexResultCallback closestConvexResultCallback = new btCollisionWorld.ClosestConvexResultCallback(transform1.getOrigin(), transform2.getOrigin());
+        this.getWorld().getBulletTimer().dynamicsWorld().convexSweepTest(convexShape, transform1, transform2, closestConvexResultCallback);
+
+        v1.deallocate();
+        v2.deallocate();
+        v3.deallocate();
+        convexShape.deallocate();
+        transform1.deallocate();
+        transform2.deallocate();
+
+        this.isOnGround = closestConvexResultCallback.hasHit();
+        closestConvexResultCallback.deallocate();
+    }
+
+    public void jump() {
+        if (this.canJump) {
+            this.addObjectVelocity(new Vector3d(0.0d, 6.5d, 0.0d));
+            this.ticksBeforeCanJump = 20;
+            this.canJump = false;
+        }
+    }
+
+    public boolean isOnGround() {
+        return this.isOnGround;
     }
 
     protected Vector3d getMotionVector(Vector3d vector3d) {
@@ -121,9 +192,9 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
 
     @Override
     public void performController(Vector2d rotationInput, Vector3d xyzInput) {
-        if (BindingList.instance.keyBlock1.isPressed()) {
+        if (BindingList.instance.keyBlock1.isClicked()) {
             PhysEntityCube entityPropInfo = new PhysEntityCube(this.getWorld(), new Vector3d(1.0d), this.getPosition().add(this.getLookVector().mul(2.0f)));
-            entityPropInfo.setScale(0.5d);
+            entityPropInfo.setScale(1.5d);
             Game.getGame().getProxy().addItemInWorlds(entityPropInfo, RenderResources.entityCube);
             entityPropInfo.setObjectVelocity(this.getLookVector().mul(30.0f));
         }

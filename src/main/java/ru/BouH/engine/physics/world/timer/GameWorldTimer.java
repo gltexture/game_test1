@@ -4,7 +4,10 @@ import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.exception.GameException;
 import ru.BouH.engine.game.g_static.profiler.SectionManager;
 import ru.BouH.engine.physics.world.World;
-import ru.BouH.engine.render.screen.Screen;
+import ru.BouH.engine.physics.world.object.WorldItem;
+
+import java.util.Iterator;
+import java.util.List;
 
 public class GameWorldTimer implements IPhysTimer {
     private final World world;
@@ -36,8 +39,9 @@ public class GameWorldTimer implements IPhysTimer {
                     }
                     l -= PhysicThreadManager.getTicksForUpdate(TPS);
                     this.getWorld().onWorldUpdate();
-                    GameWorldTimer.TPS += 1;
+
                 }
+                GameWorldTimer.TPS += 1;
                 Thread.sleep(Math.max(1L, PhysicThreadManager.getTicksForUpdate(TPS) - l));
             }
             this.getWorld().onWorldEnd();
@@ -45,6 +49,19 @@ public class GameWorldTimer implements IPhysTimer {
             Game.getGame().getLogManager().debug("Stopping phys-X!");
         } catch (InterruptedException | GameException e) {
             throw new RuntimeException(e);
+        } finally {
+            this.cleanResources();
+        }
+    }
+
+    public void cleanResources() {
+        Game.getGame().getLogManager().log("Cleaning game world resources...");
+        List<WorldItem> worldItems = this.getWorld().getAllWorldItems();
+        Iterator<WorldItem> worldItemIterator = worldItems.iterator();
+        while (worldItemIterator.hasNext()) {
+            WorldItem worldItem = worldItemIterator.next();
+            worldItem.onDestroy(this.getWorld());
+            worldItemIterator.remove();
         }
     }
 

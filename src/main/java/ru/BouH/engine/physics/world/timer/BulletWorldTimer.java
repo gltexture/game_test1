@@ -9,14 +9,13 @@ import ru.BouH.engine.game.exception.GameException;
 import ru.BouH.engine.game.g_static.profiler.SectionManager;
 import ru.BouH.engine.physics.collision.JBulletPhysics;
 import ru.BouH.engine.physics.world.World;
-import ru.BouH.engine.render.screen.Screen;
 import ru.BouH.engine.render.screen.timer.Timer;
 
 public class BulletWorldTimer implements IPhysTimer {
     public static final Object lock = new Object();
     public static int TPS;
     private final World world;
-    private final btDbvtBroadphase broadcaster;
+    private final btBroadphaseInterface broadcaster;
     private final btCollisionConfiguration collisionConfiguration;
     private final btCollisionDispatcher collisionDispatcher;
     private final btDiscreteDynamicsWorld discreteDynamicsWorld;
@@ -24,7 +23,7 @@ public class BulletWorldTimer implements IPhysTimer {
 
     public BulletWorldTimer(World world) {
         this.world = world;
-        this.broadcaster = new btDbvtBroadphase();
+        this.broadcaster = new btAxisSweep3(new btVector3(PhysicThreadManager.WORLD_BORDERS.getA1(), PhysicThreadManager.WORLD_BORDERS.getA1(), PhysicThreadManager.WORLD_BORDERS.getA1()), new btVector3(PhysicThreadManager.WORLD_BORDERS.getA2(), PhysicThreadManager.WORLD_BORDERS.getA2(), PhysicThreadManager.WORLD_BORDERS.getA2()));
         this.collisionConfiguration = new btDefaultCollisionConfiguration();
         this.collisionDispatcher = new btCollisionDispatcher(collisionConfiguration);
         this.constraintSolve = new btSequentialImpulseConstraintSolver();
@@ -60,13 +59,11 @@ public class BulletWorldTimer implements IPhysTimer {
                         for (JBulletPhysics worldItem : this.world.getAllJBItems()) {
                             worldItem.onJBUpdate();
                         }
-
                         discreteDynamicsWorld1.stepSimulation(1.0f / TPS);
                         Timer.syncDown();
                     }
-
-                    BulletWorldTimer.TPS += 1;
                 }
+                BulletWorldTimer.TPS += 1;
                 Thread.sleep(Math.max(1L, PhysicThreadManager.getTicksForUpdate(TPS) - l));
             }
             Game.getGame().getProfiler().endSection(SectionManager.bulletPhysWorld);
@@ -128,7 +125,7 @@ public class BulletWorldTimer implements IPhysTimer {
         return this.constraintSolve;
     }
 
-    public btDbvtBroadphase getBroadcaster() {
+    public btBroadphaseInterface getBroadcaster() {
         return this.broadcaster;
     }
 

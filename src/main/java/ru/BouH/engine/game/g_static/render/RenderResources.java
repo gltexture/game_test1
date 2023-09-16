@@ -34,8 +34,8 @@ public class RenderResources {
     public static CubeMapPNGTexture skyboxCubeMap;
 
     public void preLoad() {
-        RenderResources.pngGuiPic1 = PNGTexture.createTexture("gui/pictures/meme2.png");
         RenderResources.standardFont = new FontTexture(new Font("Cambria", Font.PLAIN, 18), FontCode.Window);
+        RenderResources.pngGuiPic1 = PNGTexture.createTexture("gui/pictures/meme2.png");
         RenderResources.bricksPng = PNGTexture.createTexture("props/bricks.png");
         RenderResources.grassPng = PNGTexture.createTexture("terrain/grass.png");
         RenderResources.bricksNormalMap = PNGTexture.createTexture("normals/bricks.png");

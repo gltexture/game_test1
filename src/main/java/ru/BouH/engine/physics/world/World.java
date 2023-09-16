@@ -1,5 +1,7 @@
 package ru.BouH.engine.physics.world;
 
+import org.bytedeco.bullet.BulletDynamics.btDiscreteDynamicsWorld;
+import org.bytedeco.bullet.BulletDynamics.btDynamicsWorld;
 import org.bytedeco.bullet.BulletDynamics.btRigidBody;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.exception.GameException;
@@ -57,8 +59,6 @@ public final class World implements IWorld {
 
     public void onWorldEnd() {
         Game.getGame().getProfiler().endSection(SectionManager.physWorld);
-        Game.getGame().getLogManager().log("Cleaning game world resources...");
-        this.clearItemsCollection(new ArrayList<>(this.getAllWorldItems()));
     }
 
     public void addLight(ILight iLight) {
@@ -75,6 +75,10 @@ public final class World implements IWorld {
 
     public void clearAllItems() {
         this.getAllWorldItems().forEach(WorldItem::setDead);
+    }
+
+    public btDynamicsWorld getDynamicsWorld() {
+        return this.getBulletTimer().dynamicsWorld();
     }
 
     public void onWorldUpdate() {
