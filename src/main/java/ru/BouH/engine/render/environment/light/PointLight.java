@@ -3,11 +3,11 @@ package ru.BouH.engine.render.environment.light;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
-import ru.BouH.engine.physics.world.object.IDynamic;
+import ru.BouH.engine.physics.world.object.IWorldDynamic;
 import ru.BouH.engine.proxy.IWorld;
 import ru.BouH.engine.render.scene.objects.items.PhysXObject;
 
-public class PointLight implements ILight, IDynamic {
+public class PointLight implements ILight, IWorldDynamic {
     private PhysXObject physXObject;
     private Vector3d offset;
     private Vector3d lightColor;

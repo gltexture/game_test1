@@ -1,4 +1,4 @@
-package ru.BouH.engine.physics.collision;
+package ru.BouH.engine.physics.world.object;
 
 import org.bytedeco.bullet.BulletDynamics.btRigidBody;
 import org.bytedeco.bullet.LinearMath.btQuaternion;
@@ -6,13 +6,10 @@ import org.bytedeco.bullet.LinearMath.btTransform;
 import org.joml.Vector3d;
 import ru.BouH.engine.physics.collision.objects.AbstractCollision;
 
-public interface JBulletPhysics {
+public interface JBulletObject {
     AbstractCollision getCollision();
 
     btRigidBody getRigidBody();
-
-    void onJBUpdate();
-
     default Vector3d getRigidBodyRot() {
         try (btQuaternion quaternion = this.getRigidBody().getOrientation()) {
             double[] x = new double[1];

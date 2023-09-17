@@ -8,12 +8,11 @@ import org.bytedeco.bullet.LinearMath.btTransform;
 import org.bytedeco.bullet.LinearMath.btVector3;
 import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
-import ru.BouH.engine.physics.collision.JBulletPhysics;
 import ru.BouH.engine.physics.collision.objects.AbstractCollision;
 import ru.BouH.engine.physics.world.World;
 import ru.BouH.engine.proxy.IWorld;
 
-public abstract class CollidableWorldItem extends WorldItem implements JBulletPhysics {
+public abstract class CollidableWorldItem extends WorldItem implements JBulletObject {
     protected final btDefaultMotionState defaultMotionState;
     private AbstractCollision abstractCollision;
     private btRigidBody rigidBody;

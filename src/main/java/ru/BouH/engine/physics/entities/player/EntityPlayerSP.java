@@ -3,6 +3,7 @@ package ru.BouH.engine.physics.entities.player;
 import org.bytedeco.bullet.BulletCollision.btBoxShape;
 import org.bytedeco.bullet.BulletCollision.btCollisionWorld;
 import org.bytedeco.bullet.BulletCollision.btConvexShape;
+import org.bytedeco.bullet.BulletDynamics.btRigidBody;
 import org.bytedeco.bullet.LinearMath.btTransform;
 import org.bytedeco.bullet.LinearMath.btVector3;
 import org.joml.Vector2d;
@@ -11,9 +12,12 @@ import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.controller.IController;
 import ru.BouH.engine.game.g_static.binding.BindingList;
 import ru.BouH.engine.game.g_static.render.RenderResources;
+import ru.BouH.engine.math.MathHelper;
 import ru.BouH.engine.physics.collision.objects.AbstractCollision;
 import ru.BouH.engine.physics.collision.objects.OBB;
 import ru.BouH.engine.physics.entities.IRemoteController;
+import ru.BouH.engine.physics.entities.Materials;
+import ru.BouH.engine.physics.entities.PhysDynamicEntity;
 import ru.BouH.engine.physics.entities.PhysEntity;
 import ru.BouH.engine.physics.entities.prop.PhysEntityCube;
 import ru.BouH.engine.physics.entities.prop.PhysLightCube;
@@ -21,20 +25,24 @@ import ru.BouH.engine.physics.world.World;
 import ru.BouH.engine.proxy.IWorld;
 import ru.BouH.engine.render.environment.light.PointLight;
 
-public class EntityPlayerSP extends PhysEntity implements IRemoteController {
+public class EntityPlayerSP extends PhysDynamicEntity implements IRemoteController {
     private final Vector3d cameraRotation;
     private final double eyeHeight;
+
     private IController controller;
     private Vector3d inputMotion;
     private boolean isOnGround;
     private int ticksBeforeCanJump;
+    private double speed;
 
     public EntityPlayerSP(World world, Vector3d pos, Vector3d rot, String name) {
         super(world, pos, rot, name);
         this.inputMotion = new Vector3d(0.0d);
         this.cameraRotation = new Vector3d();
         this.eyeHeight = 0.425d;
-        this.setSpeed(3.0f);
+        this.setSpeed(1.0f);
+        this.getPhysicsProperties().setWeight(3.0d);
+        this.getPhysicsProperties().setFriction(3.0d);
     }
 
     public EntityPlayerSP(World world, Vector3d pos, String name) {
@@ -54,25 +62,10 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
         return new OBB(this.getScale(), new Vector3d(0.75d, 1.5d, 0.75d), 5.0f, this.defaultMotionState, new btVector3(0.0f, 0.0f, 0.0f));
     }
 
-    public void onJBUpdate() {
-        super.onJBUpdate();
-        if (this.getRigidBody() != null) {
-            this.groundCheck();
-            if (this.isValidController()) {
-                Vector3d vector3d = this.calcControllerMotion();
-                if (vector3d.y > 0) {
-                    this.jump();
-                }
-            }
-        }
-    }
-
     public void onUpdate(IWorld iWorld) {
         super.onUpdate(iWorld);
         if (this.getRigidBody() != null) {
             if (this.isValidController()) {
-                Vector3d vector3d = this.calcControllerMotion();
-                this.setVelocityVector(this.getMotionVector(vector3d).mul(6.25d));
                 if (this.isOnGround()) {
                     if (this.ticksBeforeCanJump-- > 0) {
                         this.ticksBeforeCanJump -= 1;
@@ -88,6 +81,45 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
                 this.getRigidBody().activate();
             }
         }
+    }
+
+    public void onJBUpdate() {
+        super.onJBUpdate();
+        if (this.getRigidBody() != null) {
+            this.groundCheck();
+            if (this.isValidController()) {
+                this.speed = 3.0d;
+                this.makeStep(this.getStepVelocityVector(this.calcControllerMotion()), this.getPhysicsProperties().getFriction());
+                Vector3d vector3d = this.calcControllerMotion();
+                if (vector3d.y > 0) {
+                    this.jump();
+                }
+            }
+        }
+    }
+
+    private void makeStep(Vector3d vector3d, double thurst) {
+        this.setVelocityVector(vector3d);
+    }
+
+    private Vector3d getStepVelocityVector(Vector3d motion) {
+        double speed = this.getObjectSpeed();
+        Vector3d v1 = this.getMotionVector(motion).mul(this.getSpeed());
+        if (speed > 20) {
+            v1.div(speed);
+        }
+        if (!this.isOnGround()) {
+            v1.mul(0.1d);
+        }
+        return v1;
+    }
+
+    public double getSpeed() {
+        return this.speed;
+    }
+
+    public void setSpeed(double speed) {
+        this.speed = speed;
     }
 
     protected void groundCheck() {
@@ -127,7 +159,7 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
 
     public void jump() {
         if (this.canJump) {
-            this.addObjectVelocity(new Vector3d(0.0d, 6.5d, 0.0d));
+            this.addObjectVelocity(new Vector3d(0.0d, 5.0d, 0.0d));
             this.ticksBeforeCanJump = 20;
             this.canJump = false;
         }
@@ -195,6 +227,7 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
         if (BindingList.instance.keyBlock1.isClicked()) {
             PhysEntityCube entityPropInfo = new PhysEntityCube(this.getWorld(), new Vector3d(1.0d), this.getPosition().add(this.getLookVector().mul(2.0f)));
             entityPropInfo.setScale(1.5d);
+            entityPropInfo.setMaterial(Materials.brickCube);
             Game.getGame().getProxy().addItemInWorlds(entityPropInfo, RenderResources.entityCube);
             entityPropInfo.setObjectVelocity(this.getLookVector().mul(30.0f));
         }

@@ -36,6 +36,7 @@ public class GUI {
                 i1 += 20;
             }
         }
+        GUI.renderText(partialTicks, 0, i1 + 20, "speed: " + String.format("%.2f", Game.getGame().getProxy().getPlayerSP().getObjectSpeed()), 0xffffff);
         Vector2d vector2d = GUI.getScaledPictureDimensions(RenderResources.pngGuiPic1, 0.1f);
         GUI.renderPicture(partialTicks, (int) (width - vector2d.x - 2), 2, (int) vector2d.x, (int) vector2d.y, RenderResources.pngGuiPic1);
     }

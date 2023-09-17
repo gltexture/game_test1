@@ -7,7 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.exception.GameException;
 import ru.BouH.engine.game.g_static.profiler.SectionManager;
-import ru.BouH.engine.physics.collision.JBulletPhysics;
+import ru.BouH.engine.physics.world.object.JBulletDynamic;
+import ru.BouH.engine.physics.world.object.JBulletObject;
 import ru.BouH.engine.physics.world.World;
 import ru.BouH.engine.render.screen.timer.Timer;
 
@@ -56,7 +57,7 @@ public class BulletWorldTimer implements IPhysTimer {
                     l -= PhysicThreadManager.getTicksForUpdate(TPS);
                     synchronized (BulletWorldTimer.lock) {
                         Timer.syncUp();
-                        for (JBulletPhysics worldItem : this.world.getAllJBItems()) {
+                        for (JBulletDynamic worldItem : this.world.getAllJBItems()) {
                             worldItem.onJBUpdate();
                         }
                         discreteDynamicsWorld1.stepSimulation(1.0f / TPS);

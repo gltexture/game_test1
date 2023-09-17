@@ -1,13 +1,13 @@
 package ru.BouH.engine.physics.world;
 
-import org.bytedeco.bullet.BulletDynamics.btDiscreteDynamicsWorld;
 import org.bytedeco.bullet.BulletDynamics.btDynamicsWorld;
 import org.bytedeco.bullet.BulletDynamics.btRigidBody;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.exception.GameException;
 import ru.BouH.engine.game.g_static.profiler.SectionManager;
-import ru.BouH.engine.physics.collision.JBulletPhysics;
-import ru.BouH.engine.physics.world.object.IDynamic;
+import ru.BouH.engine.physics.world.object.JBulletDynamic;
+import ru.BouH.engine.physics.world.object.JBulletObject;
+import ru.BouH.engine.physics.world.object.IWorldDynamic;
 import ru.BouH.engine.physics.world.object.WorldItem;
 import ru.BouH.engine.physics.world.timer.BulletWorldTimer;
 import ru.BouH.engine.physics.world.timer.GameWorldTimer;
@@ -21,8 +21,8 @@ import java.util.stream.Collectors;
 
 public final class World implements IWorld {
     private final List<WorldItem> allWorldItems;
-    private final List<JBulletPhysics> allJBItems;
-    private final List<IDynamic> allDynamicItems;
+    private final List<JBulletDynamic> allJBItems;
+    private final List<IWorldDynamic> allDynamicItems;
     private final List<WorldItem> toCleanItems;
     private boolean collectionsWaitingRefresh;
     private int ticks;
@@ -35,11 +35,15 @@ public final class World implements IWorld {
     }
 
     public static boolean isItemDynamic(WorldItem worldItem) {
-        return worldItem instanceof IDynamic;
+        return worldItem instanceof IWorldDynamic;
     }
 
-    public static boolean isItemJB(WorldItem worldItem) {
-        return worldItem instanceof JBulletPhysics;
+    public static boolean isItemJBulletDynamic(WorldItem worldItem) {
+        return worldItem instanceof JBulletDynamic;
+    }
+
+    public static boolean isItemJBulletObject(WorldItem worldItem) {
+        return worldItem instanceof JBulletObject;
     }
 
     public BulletWorldTimer getBulletTimer() {
@@ -85,16 +89,16 @@ public final class World implements IWorld {
         List<WorldItem> copy1 = new ArrayList<>(this.getAllWorldItems());
         if (this.collectionsWaitingRefresh) {
             this.getAllDynamicItems().clear();
-            this.getAllDynamicItems().addAll(copy1.stream().filter(World::isItemDynamic).map(e -> (IDynamic) e).collect(Collectors.toList()));
+            this.getAllDynamicItems().addAll(copy1.stream().filter(World::isItemDynamic).map(e -> (IWorldDynamic) e).collect(Collectors.toList()));
             synchronized (BulletWorldTimer.lock) {
                 this.getAllJBItems().clear();
-                this.getAllJBItems().addAll(copy1.stream().filter(World::isItemJB).map(e -> (JBulletPhysics) e).collect(Collectors.toList()));
+                this.getAllJBItems().addAll(copy1.stream().filter(World::isItemJBulletDynamic).map(e -> (JBulletDynamic) e).collect(Collectors.toList()));
             }
             this.collectionsWaitingRefresh = false;
         }
-        List<IDynamic> copy2 = new ArrayList<>(this.getAllDynamicItems());
-        for (IDynamic iDynamic : copy2) {
-            iDynamic.onUpdate(this);
+        List<IWorldDynamic> copy2 = new ArrayList<>(this.getAllDynamicItems());
+        for (IWorldDynamic iWorldDynamic : copy2) {
+            iWorldDynamic.onUpdate(this);
         }
         this.clearItemsCollection(this.toCleanItems);
         this.toCleanItems.clear();
@@ -105,8 +109,8 @@ public final class World implements IWorld {
         for (WorldItem worldItem : collection) {
             this.collectionsWaitingRefresh = true;
             worldItem.onDestroy(this);
-            if (World.isItemJB(worldItem)) {
-                JBulletPhysics jbItem = (JBulletPhysics) worldItem;
+            if (World.isItemJBulletObject(worldItem)) {
+                JBulletObject jbItem = (JBulletObject) worldItem;
                 btRigidBody rigidBody = jbItem.getRigidBody();
                 if (rigidBody != null) {
                     this.getBulletTimer().removeRigidBodyFromWorld(rigidBody);
@@ -133,11 +137,11 @@ public final class World implements IWorld {
         return this.getAllWorldItems().size();
     }
 
-    public synchronized List<IDynamic> getAllDynamicItems() {
+    public synchronized List<IWorldDynamic> getAllDynamicItems() {
         return this.allDynamicItems;
     }
 
-    public synchronized List<JBulletPhysics> getAllJBItems() {
+    public synchronized List<JBulletDynamic> getAllJBItems() {
         return this.allJBItems;
     }
 

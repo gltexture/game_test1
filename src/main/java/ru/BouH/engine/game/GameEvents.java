@@ -3,6 +3,7 @@ package ru.BouH.engine.game;
 import org.joml.Vector3d;
 import ru.BouH.engine.game.g_static.render.RenderResources;
 import ru.BouH.engine.physics.brush.Plane4dBrush;
+import ru.BouH.engine.physics.entities.Materials;
 import ru.BouH.engine.physics.entities.prop.PhysEntityCube;
 import ru.BouH.engine.physics.world.World;
 
@@ -15,6 +16,7 @@ public class GameEvents {
 
     public static void addEntities(World world) {
         PhysEntityCube entityPropInfo = new PhysEntityCube(world, new Vector3d(1, 1, 1), new Vector3d(0.0d, 15.0d, 10.0d));
+        entityPropInfo.setMaterial(Materials.brickCube);
         Game.getGame().getProxy().addItemInWorlds(entityPropInfo, RenderResources.entityCube);
 
         PhysEntityCube entityPropInfo2 = new PhysEntityCube(world, new Vector3d(1, 1, 1), new Vector3d(100.0d, 60.0d, 100.0d));
@@ -27,18 +29,23 @@ public class GameEvents {
         final int wallH = 100;
         
         Plane4dBrush plane4dBrush = new Plane4dBrush(world, new Vector3d[]{new Vector3d(-size, 0, -size), new Vector3d(-size, 0, size), new Vector3d(size, 0, -size), new Vector3d(size, 0, size)});
+        plane4dBrush.setMaterial(Materials.grassGround);
         Game.getGame().getProxy().addItemInWorlds(plane4dBrush, RenderResources.planeBrick);
 
         Plane4dBrush plane4dBrush2 = new Plane4dBrush(world, new Vector3d[]{new Vector3d(-size, 0, size), new Vector3d(-size, wallH, size), new Vector3d(-size, 0, -size), new Vector3d(-size, wallH, -size)});
+        plane4dBrush2.setMaterial(Materials.brickCube);
         Game.getGame().getProxy().addItemInWorlds(plane4dBrush2, RenderResources.plane);
 
         Plane4dBrush plane4dBrush3 = new Plane4dBrush(world, new Vector3d[]{new Vector3d(-size, 0, -size), new Vector3d(size, 0, -size), new Vector3d(size, wallH, -size), new Vector3d(-size, wallH, -size)});
+        plane4dBrush3.setMaterial(Materials.brickCube);
         Game.getGame().getProxy().addItemInWorlds(plane4dBrush3, RenderResources.plane);
 
         Plane4dBrush plane4dBrush4 = new Plane4dBrush(world, new Vector3d[]{new Vector3d(size, 0, size), new Vector3d(size, wallH, size), new Vector3d(-size, 0, size), new Vector3d(-size, wallH, size)});
+        plane4dBrush4.setMaterial(Materials.brickCube);
         Game.getGame().getProxy().addItemInWorlds(plane4dBrush4, RenderResources.plane);
 
         Plane4dBrush plane4dBrush5 = new Plane4dBrush(world, new Vector3d[]{new Vector3d(size, 0, size), new Vector3d(size, wallH, size), new Vector3d(size, 0, -size), new Vector3d(size, wallH, -size)});
+        plane4dBrush5.setMaterial(Materials.brickCube);
         Game.getGame().getProxy().addItemInWorlds(plane4dBrush5, RenderResources.plane);
     }
 }

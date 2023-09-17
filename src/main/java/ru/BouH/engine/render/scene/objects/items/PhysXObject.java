@@ -5,11 +5,11 @@ import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.physics.brush.WorldBrush;
-import ru.BouH.engine.physics.collision.JBulletPhysics;
+import ru.BouH.engine.physics.world.object.JBulletObject;
 import ru.BouH.engine.physics.collision.objects.AbstractCollision;
 import ru.BouH.engine.physics.collision.objects.ConvexShape;
 import ru.BouH.engine.physics.collision.objects.OBB;
-import ru.BouH.engine.physics.world.object.IDynamic;
+import ru.BouH.engine.physics.world.object.IWorldDynamic;
 import ru.BouH.engine.physics.world.object.IWorldObject;
 import ru.BouH.engine.physics.world.object.WorldItem;
 import ru.BouH.engine.proxy.IWorld;
@@ -25,7 +25,7 @@ import ru.BouH.engine.render.scene.objects.IRenderObject;
 import ru.BouH.engine.render.scene.objects.data.RenderData;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 
-public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynamic {
+public abstract class PhysXObject implements IRenderObject, IWorldObject, IWorldDynamic {
     private final RenderABB renderABB;
     private final SceneWorld sceneWorld;
     private final WorldItem worldItem;
@@ -55,10 +55,10 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
     }
 
     public AbstractMeshForm genCollisionMesh() {
-        if (this.getWorldItem() instanceof JBulletPhysics) {
-            JBulletPhysics JBulletPhysics = (JBulletPhysics) this.getWorldItem();
-            if (JBulletPhysics.hasCollision()) {
-                return this.constructForm(JBulletPhysics.getCollision());
+        if (this.getWorldItem() instanceof JBulletObject) {
+            JBulletObject JBulletObject = (JBulletObject) this.getWorldItem();
+            if (JBulletObject.hasCollision()) {
+                return this.constructForm(JBulletObject.getCollision());
             }
         }
         return null;
@@ -103,12 +103,12 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
         if (worldItem == null) {
             return null;
         }
-        if (this.getWorldItem() instanceof JBulletPhysics) {
-            JBulletPhysics jBulletPhysics = (JBulletPhysics) this.getWorldItem();
-            if (jBulletPhysics.getRigidBody() != null) {
+        if (this.getWorldItem() instanceof JBulletObject) {
+            JBulletObject jBulletObject = (JBulletObject) this.getWorldItem();
+            if (jBulletObject.getRigidBody() != null) {
                 btVector3 v1 = new btVector3();
                 btVector3 v2 = new btVector3();
-                jBulletPhysics.getRigidBody().getAabb(v1, v2);
+                jBulletObject.getRigidBody().getAabb(v1, v2);
                 Vector3d vector3d = new Vector3d(v2.getX() - v1.getX(), v2.getY() - v1.getY(), v2.getZ() - v1.getZ());
                 v1.deallocate();
                 v2.deallocate();
@@ -202,9 +202,9 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
 
     protected Vector3d getFixedPosition() {
         Vector3d position;
-        if (this.getWorldItem() instanceof JBulletPhysics) {
-            JBulletPhysics jBulletPhysics = (JBulletPhysics) this.getWorldItem();
-            position = jBulletPhysics.getRigidBodyPos();
+        if (this.getWorldItem() instanceof JBulletObject) {
+            JBulletObject jBulletObject = (JBulletObject) this.getWorldItem();
+            position = jBulletObject.getRigidBodyPos();
         } else {
             position = this.getWorldItem().getPosition();
         }
@@ -213,9 +213,9 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IDynam
 
     protected Vector3d getFixedRotation() {
         Vector3d rotation;
-        if (this.getWorldItem() instanceof JBulletPhysics) {
-            JBulletPhysics jBulletPhysics = (JBulletPhysics) this.getWorldItem();
-            rotation = jBulletPhysics.getRigidBodyRot();
+        if (this.getWorldItem() instanceof JBulletObject) {
+            JBulletObject jBulletObject = (JBulletObject) this.getWorldItem();
+            rotation = jBulletObject.getRigidBodyRot();
         } else {
             rotation = this.getWorldItem().getRotation();
         }

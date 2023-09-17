@@ -5,11 +5,12 @@ import org.bytedeco.bullet.LinearMath.btVector3;
 import org.joml.Vector3d;
 import ru.BouH.engine.physics.collision.objects.AbstractCollision;
 import ru.BouH.engine.physics.collision.objects.OBB;
+import ru.BouH.engine.physics.entities.PhysDynamicEntity;
 import ru.BouH.engine.physics.entities.PhysEntity;
 import ru.BouH.engine.physics.world.World;
 import ru.BouH.engine.proxy.IWorld;
 
-public class PhysEntityCube extends PhysEntity {
+public class PhysEntityCube extends PhysDynamicEntity {
     private final Vector3d size;
 
     public PhysEntityCube(World world, Vector3d size, Vector3d pos, Vector3d rot) {
@@ -31,7 +32,6 @@ public class PhysEntityCube extends PhysEntity {
 
     protected void onRigidBodyCreated(btRigidBody rigidBody) {
         super.onRigidBodyCreated(rigidBody);
-        this.getPhysicsProperties().setWeight(1.0f);
         //this.getPhysicsProperties().activateRealisticInertia();
     }
 

@@ -3,7 +3,6 @@ package ru.BouH.engine.physics.entities;
 import org.bytedeco.bullet.BulletCollision.*;
 import org.bytedeco.bullet.BulletDynamics.btDynamicsWorld;
 import org.bytedeco.bullet.BulletDynamics.btRigidBody;
-import org.bytedeco.bullet.LinearMath.btTransform;
 import org.bytedeco.bullet.LinearMath.btVector3;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2d;
@@ -11,25 +10,18 @@ import org.joml.Vector3d;
 import ru.BouH.engine.math.MathHelper;
 import ru.BouH.engine.physics.world.World;
 import ru.BouH.engine.physics.world.object.CollidableWorldItem;
-import ru.BouH.engine.physics.world.object.IDynamic;
-import ru.BouH.engine.proxy.IWorld;
 
-public abstract class PhysEntity extends CollidableWorldItem implements IDynamic {
-    public static final float DEFAULT_SPEED = 1.0f;
-    protected final Vector2d defaultCCDParams;
+public abstract class PhysEntity extends CollidableWorldItem {
+    private PhysicsProperties physicsProperties;
     protected final Vector2d explicitCCDParams;
     private final Vector3d velocityVector;
     protected boolean canJump;
-    private PhysicsProperties physicsProperties;
-    private float speed;
 
     public PhysEntity(World world, Vector3d pos, Vector3d rot, String name) {
         super(world, pos, rot, name);
         this.physicsProperties = new PhysicsProperties();
-        this.defaultCCDParams = new Vector2d(5.0e-2d, 0.1d);
         this.explicitCCDParams = new Vector2d(1.0e-4d, 0.25d);
         this.velocityVector = new Vector3d(0.0d);
-        this.speed = PhysEntity.DEFAULT_SPEED;
         this.canJump = false;
     }
 
@@ -52,26 +44,7 @@ public abstract class PhysEntity extends CollidableWorldItem implements IDynamic
     protected void addCallBacks(btDynamicsWorld w) {
     }
 
-    public void onJBUpdate() {
-        if (this.getRigidBody() != null) {
-            this.addObjectVelocity(this.getVelocityVector());
-            this.enableExplicitCollisionDetection(this.getRigidBody());
-            this.setVelocityVector(new Vector3d(0.0d));
-        }
-    }
-
-    @Override
-    public void onUpdate(IWorld iWorld) {
-        if (this.getRigidBody() != null) {
-            if (this.getPosition().y <= -10 || this.getPosition().y >= 500) {
-                this.setPosition(new Vector3d(0, 5, 0));
-                this.setObjectVelocity(new Vector3d(0.0d));
-            }
-        }
-        this.getPrevPosition().set(this.getPosition());
-    }
-
-    private void applyCentralForce(Vector3d vector3d) {
+    public void applyCentralForce(Vector3d vector3d) {
         try (btVector3 btVector3 = new btVector3(vector3d.x, vector3d.y, vector3d.z)) {
             this.getRigidBody().applyCentralForce(btVector3);
         }
@@ -126,7 +99,7 @@ public abstract class PhysEntity extends CollidableWorldItem implements IDynamic
         rigidBody.setContactStiffnessAndDamping(physicsProperties.getStiffness(), physicsProperties.getDamping());
         rigidBody.setDamping(physicsProperties.getLDamping(), physicsProperties.getADamping());
         rigidBody.setRestitution(physicsProperties.getRestitution());
-        rigidBody.setMassProps(physicsProperties.getWeight(), new btVector3(physicsProperties.getInertia()));
+        rigidBody.setMassProps(physicsProperties.getWeight(), physicsProperties.getInertia());
         rigidBody.updateInertiaTensor();
     }
 
@@ -144,8 +117,8 @@ public abstract class PhysEntity extends CollidableWorldItem implements IDynamic
     }
 
     protected void disableCCD(btRigidBody rigidBody) {
-        rigidBody.setCcdMotionThreshold((float) this.defaultCCDParams.x);
-        rigidBody.setCcdSweptSphereRadius((float) this.defaultCCDParams.y);
+        rigidBody.setCcdMotionThreshold(0.0d);
+        rigidBody.setCcdSweptSphereRadius(0.0d);
     }
 
     public void refreshObjectProperties(PhysicsProperties physicsProperties) {
@@ -163,26 +136,21 @@ public abstract class PhysEntity extends CollidableWorldItem implements IDynamic
         return new Vector3d(lX, lY, lZ);
     }
 
-    public float getSpeed() {
-        return this.speed;
+    public PhysEntity setMaterial(Materials.MaterialProperties materialProperties) {
+        this.getPhysicsProperties().setMaterial(materialProperties);
+        return this;
     }
 
-    public void setSpeed(float speed) {
-        this.speed = speed;
+    public void setScale(double scale) {
+        super.setScale(scale);
+        this.refreshObjectProperties(this.getPhysicsProperties());
     }
 
     public class PhysicsProperties {
-        public static final double DEFAULT_FRICTION_X = 1.0f;
-        public static final double DEFAULT_FRICTION_Y = 1.0f;
-        public static final double DEFAULT_FRICTION_Z = 1.0f;
-        public static final double DEFAULT_FRICTION = 0.5d;
-        public static final double DEFAULT_LINEAR_DAMPING = 0.75f;
-        public static final double DEFAULT_ANGULAR_DAMPING = 0.75f;
-        public static final double DEFAULT_STIFFNESS = Double.MAX_VALUE;
-        public static final double DEFAULT_DAMPING = 0.75d;
         public static final double DEFAULT_WEIGHT = 1.0f;
-        public static final double DEFAULT_RESTITUTION = 0.15f;
-
+        private Materials.MaterialProperties materialProperties;
+        private boolean scaleWeight;
+        private boolean realisticInertia;
         private Vector3d frictionAxes;
         private double friction;
         private double l_damping;
@@ -191,42 +159,60 @@ public abstract class PhysEntity extends CollidableWorldItem implements IDynamic
         private double stiffness;
         private double weight;
         private double restitution;
-        private Vector3d inertia;
 
         public PhysicsProperties() {
-            this.frictionAxes = new Vector3d(PhysicsProperties.DEFAULT_FRICTION_X, PhysicsProperties.DEFAULT_FRICTION_Y, PhysicsProperties.DEFAULT_FRICTION_Z);
-            this.l_damping = PhysicsProperties.DEFAULT_LINEAR_DAMPING;
-            this.a_damping = PhysicsProperties.DEFAULT_ANGULAR_DAMPING;
-            this.friction = PhysicsProperties.DEFAULT_FRICTION;
             this.weight = PhysicsProperties.DEFAULT_WEIGHT;
-            this.damping = PhysicsProperties.DEFAULT_DAMPING;
-            this.stiffness = PhysicsProperties.DEFAULT_STIFFNESS;
-            this.restitution = PhysicsProperties.DEFAULT_RESTITUTION;
-            this.inertia = new Vector3d(0.0d);
+            this.scaleWeight = true;
+            this.realisticInertia = false;
+            this.setMaterial(Materials.defaultMaterial);
         }
 
-        public void activateRealisticInertia() {
-            btCollisionShape collisionShape = PhysEntity.this.getRigidBody().getCollisionShape();
-            btVector3 bpVector3f = new btVector3();
-            collisionShape.calculateLocalInertia(this.getWeight(), bpVector3f);
-            this.setInertia(new Vector3d(bpVector3f.getX(), bpVector3f.getY(), bpVector3f.getZ()));
+        public void setMaterial(Materials.MaterialProperties materialProperties) {
+            this.materialProperties = materialProperties;
+            materialProperties.writeInPhysicsProperties(this);
             this.refreshRigidBody();
         }
 
-        public void setStiffness(double stiffness) {
+        public btVector3 calcRealisticInertia() {
+            btCollisionShape collisionShape = PhysEntity.this.getRigidBody().getCollisionShape();
+            btVector3 bpVector3f = new btVector3();
+            collisionShape.calculateLocalInertia(this.getWeight(), bpVector3f);
+            return bpVector3f;
+        }
+
+        public boolean isRealisticInertia() {
+            return this.realisticInertia;
+        }
+
+        public void setRealisticInertia(boolean realisticInertia) {
+            this.realisticInertia = realisticInertia;
+            this.refreshRigidBody();
+        }
+
+        public PhysicsProperties setStiffness(double stiffness) {
             this.stiffness = stiffness;
+            return this;
         }
 
         public double getStiffness() {
             return this.stiffness;
         }
 
-        public void setDamping(double damping) {
+        public PhysicsProperties setDamping(double damping) {
             this.damping = damping;
+            return this;
         }
 
         public double getDamping() {
             return this.damping;
+        }
+
+        public boolean isScaleWeight() {
+            return this.scaleWeight;
+        }
+
+        public void setScaleWeight(boolean scaleWeight) {
+            this.scaleWeight = scaleWeight;
         }
 
         private void refreshRigidBody() {
@@ -234,65 +220,71 @@ public abstract class PhysEntity extends CollidableWorldItem implements IDynamic
         }
 
         public btVector3 getInertia() {
-            return new btVector3(this.inertia.x, this.inertia.y, this.inertia.z);
+            return this.isRealisticInertia() ? this.calcRealisticInertia() : new btVector3(0.0d, 0.0d, 0.0d);
         }
 
-        public void setFriction(double friction) {
+        public Materials.MaterialProperties getMaterialProperties() {
+            return this.materialProperties;
+        }
+
+        public PhysicsProperties setFriction(double friction) {
             this.friction = friction;
+            this.refreshRigidBody();
+            return this;
         }
 
         public double getFriction() {
             return this.friction;
         }
 
-        public void setInertia(Vector3d inertia) {
-            this.inertia = inertia;
-            this.refreshRigidBody();
-        }
-
         public double getRestitution() {
             return this.restitution;
         }
 
-        public void setRestitution(float restitution) {
+        public PhysicsProperties setRestitution(double restitution) {
             this.restitution = restitution;
             this.refreshRigidBody();
+            return this;
         }
 
         public double getWeight() {
-            return this.weight;
+            return this.weight * this.getMaterialProperties().getWeightMultiplier() * (PhysEntity.this.getScale() * PhysEntity.this.getScale());
         }
 
-        public void setWeight(float weight) {
+        public PhysicsProperties setWeight(double weight) {
             this.weight = weight;
             this.refreshRigidBody();
+            return this;
         }
 
         public double getLDamping() {
             return this.l_damping;
         }
 
-        public void setLDamping(double damping) {
+        public PhysicsProperties setLDamping(double damping) {
             this.l_damping = damping;
             this.refreshRigidBody();
+            return this;
         }
 
         public double getADamping() {
             return this.a_damping;
         }
 
-        public void setADamping(double damping) {
+        public PhysicsProperties setADamping(double damping) {
             this.a_damping = damping;
             this.refreshRigidBody();
+            return this;
         }
 
         public Vector3d getFrictionAxes() {
             return this.frictionAxes;
         }
 
-        public void setFrictionAxes(Vector3d frictionAxes) {
+        public PhysicsProperties setFrictionAxes(Vector3d frictionAxes) {
             this.frictionAxes = frictionAxes;
             this.refreshRigidBody();
+            return this;
         }
     }
 }

@@ -29,7 +29,6 @@ public class Plane4dBrush extends WorldBrush {
 
     protected void onRigidBodyCreated(btRigidBody rigidBody) {
         super.onRigidBodyCreated(rigidBody);
-        rigidBody.setFriction(6.8f);
     }
 
     @Override
