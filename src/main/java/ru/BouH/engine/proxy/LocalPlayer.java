@@ -2,14 +2,17 @@ package ru.BouH.engine.proxy;
 
 import org.joml.Vector3d;
 import ru.BouH.engine.game.g_static.render.RenderResources;
+import ru.BouH.engine.physics.entities.Materials;
 import ru.BouH.engine.physics.entities.player.EntityPlayerSP;
+import ru.BouH.engine.physics.jb_objects.RigidBodyObject;
 import ru.BouH.engine.physics.world.World;
 
 public class LocalPlayer {
     private final EntityPlayerSP entityPlayerSP;
+    public static boolean VALID_PL = false;
 
     public LocalPlayer(World world, Vector3d pos) {
-        this.entityPlayerSP = new EntityPlayerSP(world, pos, new Vector3d(0.0d));
+        this.entityPlayerSP = new EntityPlayerSP(world, RigidBodyObject.PhysProperties.createProperties(Materials.defaultMaterial, false, 10.0d), pos, new Vector3d(0.0d));
     }
 
     public EntityPlayerSP getEntityPlayerSP() {
@@ -18,5 +21,6 @@ public class LocalPlayer {
 
     public void addPlayerInWorlds(Proxy proxy) {
         proxy.addItemInWorlds(this.getEntityPlayerSP(), RenderResources.player);
+        LocalPlayer.VALID_PL = true;
     }
 }

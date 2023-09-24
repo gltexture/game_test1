@@ -1,7 +1,9 @@
 package ru.BouH.engine.physics.world.object;
 
+import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
+import ru.BouH.engine.math.MathHelper;
 import ru.BouH.engine.physics.entities.IRemoteController;
 import ru.BouH.engine.physics.world.World;
 import ru.BouH.engine.proxy.IWorld;
@@ -20,24 +22,36 @@ public abstract class WorldItem implements IWorldObject {
     private boolean isDead;
     private double scale;
 
-    public WorldItem(World world, Vector3d pos, Vector3d rot, String itemName) {
+    public WorldItem(World world, double scale, @NotNull Vector3d pos, @NotNull Vector3d rot, String itemName) {
         this.itemName = itemName;
-        this.rotation = rot == null ? new Vector3d(0.0d) : rot;
-        this.position = pos == null ? new Vector3d(0.0d) : pos;
+        this.rotation = rot;
+        this.position = pos;
         this.prevPosition = pos;
-        this.scale = 1.0f;
+        this.scale = scale;
         this.world = world;
         this.iLight = null;
-        this.itemId = globalId++;
         this.isDead = false;
+        this.itemId = WorldItem.globalId++;
+    }
+
+    public WorldItem(World world, double scale, Vector3d pos, String itemName) {
+        this(world, scale, pos, new Vector3d(0.0d), itemName);
+    }
+
+    public WorldItem(World world, double scale, String itemName) {
+        this(world, scale, new Vector3d(0.0d), new Vector3d(0.0d), itemName);
+    }
+
+    public WorldItem(World world, @NotNull Vector3d pos, @NotNull Vector3d rot, String itemName) {
+        this(world, 1.0d, pos, rot, itemName);
     }
 
     public WorldItem(World world, Vector3d pos, String itemName) {
-        this(world, pos, new Vector3d(0.0d), itemName);
+        this(world, 1.0d, pos, new Vector3d(0.0d), itemName);
     }
 
     public WorldItem(World world, String itemName) {
-        this(world, new Vector3d(0.0d), new Vector3d(0.0d), itemName);
+        this(world, 1.0d, new Vector3d(0.0d), new Vector3d(0.0d), itemName);
     }
 
     public void onSpawn(IWorld iWorld) {
@@ -89,6 +103,14 @@ public abstract class WorldItem implements IWorldObject {
         return true;
     }
 
+    public Vector3d getLookVector() {
+        double x = Math.toRadians(this.getRotation().x);
+        double y = Math.toRadians(this.getRotation().y);
+        double lX = MathHelper.sin(y) * MathHelper.cos(x);
+        double lY = -MathHelper.sin(x);
+        double lZ = -MathHelper.cos(y) * MathHelper.cos(x);
+        return new Vector3d(lX, lY, lZ);
+    }
 
     public void setDead() {
         if (this.canBeDestroyed()) {

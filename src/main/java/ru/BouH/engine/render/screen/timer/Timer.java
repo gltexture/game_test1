@@ -6,13 +6,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Timer {
     private final int physicsTicks;
+    private final AtomicBoolean syncUpdate = new AtomicBoolean();
     private double lastTime;
     private double renderPartial;
-    private final AtomicBoolean syncUpdate = new AtomicBoolean();
 
     public Timer(int physicsTicks) {
         this.physicsTicks = physicsTicks;
         this.lastTime = Game.systemTime();
+    }
+
+    public static void syncUp() {
+        Game.getGame().getScreen().getTimer().getSyncUpdate().set(true);
+    }
+
+    public static void syncDown() {
+        Game.getGame().getScreen().getTimer().getSyncUpdate().set(false);
     }
 
     public void updateTimer() {
@@ -32,13 +40,5 @@ public class Timer {
 
     public AtomicBoolean getSyncUpdate() {
         return this.syncUpdate;
-    }
-
-    public static void syncUp() {
-        Game.getGame().getScreen().getTimer().getSyncUpdate().set(true);
-    }
-
-    public static void syncDown() {
-        Game.getGame().getScreen().getTimer().getSyncUpdate().set(false);
     }
 }

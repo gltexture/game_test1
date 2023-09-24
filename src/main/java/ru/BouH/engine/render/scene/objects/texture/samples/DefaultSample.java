@@ -22,12 +22,12 @@ public class DefaultSample implements Sample {
     }
 
     @Override
-    public WorldItemTexture.PassUniValue[] toPassShaderValues() {
-        return new WorldItemTexture.PassUniValue[]{new WorldItemTexture.PassUniValue("quads_c1", this.getColors1()), new WorldItemTexture.PassUniValue("quads_c2", this.getColors2())};
+    public int getRenderID() {
+        return 2;
     }
 
     @Override
-    public int getRenderID() {
-        return 2;
+    public WorldItemTexture.PassUniValue[] toPassShaderValues() {
+        return new WorldItemTexture.PassUniValue[]{new WorldItemTexture.PassUniValue("quads_c1", this.getColors1()), new WorldItemTexture.PassUniValue("quads_c2", this.getColors2())};
     }
 }

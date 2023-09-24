@@ -10,7 +10,6 @@ import ru.BouH.engine.render.scene.components.Model3D;
 import ru.BouH.engine.render.scene.objects.data.RenderData;
 import ru.BouH.engine.render.scene.objects.texture.PictureSample;
 import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
-import ru.BouH.engine.render.scene.objects.texture.samples.PNGTexture;
 import ru.BouH.engine.render.scene.programs.CubeMapSample;
 import ru.BouH.engine.render.scene.programs.ShaderManager;
 import ru.BouH.engine.render.scene.programs.UniformBufferProgram;

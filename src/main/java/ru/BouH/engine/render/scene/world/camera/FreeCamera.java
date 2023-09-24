@@ -24,6 +24,14 @@ public class FreeCamera extends Camera {
         super.setCameraRot(vector3d);
     }
 
+    @Override
+    public void updateCamera(double partialTicks) {
+        if (this.getController() != null) {
+            this.moveCamera(ControllerDispatcher.getOptionedXYZVec(this.getController()));
+            this.moveCameraRot(ControllerDispatcher.getOptionedDisplayVec(this.getController()));
+        }
+    }
+
     public void addCameraPos(Vector3d vector3d) {
         super.setCameraPos(this.getCamPosition().add(vector3d));
     }
@@ -38,14 +46,6 @@ public class FreeCamera extends Camera {
 
     public void setController(IController controller) {
         this.controller = controller;
-    }
-
-    @Override
-    public void updateCamera(double partialTicks) {
-        if (this.getController() != null) {
-            this.moveCamera(ControllerDispatcher.getOptionedXYZVec(this.getController()));
-            this.moveCameraRot(ControllerDispatcher.getOptionedDisplayVec(this.getController()));
-        }
     }
 
     private void moveCameraRot(Vector2d xy) {

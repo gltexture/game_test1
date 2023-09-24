@@ -8,6 +8,7 @@ import ru.BouH.engine.render.scene.world.camera.ICamera;
 
 public class TransformationUtils {
     private final Matrix4d viewMatrix;
+
     public TransformationUtils() {
         this.viewMatrix = new Matrix4d();
     }

@@ -10,8 +10,8 @@ import java.util.Iterator;
 import java.util.List;
 
 public class GameWorldTimer implements IPhysTimer {
-    private final World world;
     public static int TPS;
+    private final World world;
 
     public GameWorldTimer() {
         this.world = new World();
@@ -39,7 +39,6 @@ public class GameWorldTimer implements IPhysTimer {
                     }
                     l -= PhysicThreadManager.getTicksForUpdate(TPS);
                     this.getWorld().onWorldUpdate();
-
                 }
                 GameWorldTimer.TPS += 1;
                 Thread.sleep(Math.max(1L, PhysicThreadManager.getTicksForUpdate(TPS) - l));

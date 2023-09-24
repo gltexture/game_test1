@@ -23,15 +23,15 @@ public class Camera implements ICamera {
         this.camRotation.set(vector3d);
     }
 
-    @Override
-    public void updateCamera(double partialTicks) {
-    }
-
     public Vector3d getCamPosition() {
         return new Vector3d(this.camPosition);
     }
 
     public Vector3d getCamRotation() {
         return new Vector3d(this.camRotation);
+    }
+
+    @Override
+    public void updateCamera(double partialTicks) {
     }
 }

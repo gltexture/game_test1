@@ -25,13 +25,13 @@ public class PhysicThreadManager {
         this.bulletWorldTimer = new BulletWorldTimer(this.getGameWorldTimer().getWorld());
     }
 
+    public static long getTicksForUpdate(int TPS) {
+        return 1000L / TPS;
+    }
+
     public boolean checkActivePhysics() {
         ThreadPoolExecutor executor = (ThreadPoolExecutor) this.getExecutorService();
         return executor.getActiveCount() > 0;
-    }
-
-    public static long getTicksForUpdate(int TPS) {
-        return 1000L / TPS;
     }
 
     public void initService() {

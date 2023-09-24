@@ -5,9 +5,9 @@ import org.bytedeco.bullet.BulletDynamics.btRigidBody;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.exception.GameException;
 import ru.BouH.engine.game.g_static.profiler.SectionManager;
-import ru.BouH.engine.physics.world.object.JBulletDynamic;
-import ru.BouH.engine.physics.world.object.JBulletObject;
 import ru.BouH.engine.physics.world.object.IWorldDynamic;
+import ru.BouH.engine.physics.jb_objects.JBulletDynamic;
+import ru.BouH.engine.physics.jb_objects.JBulletEntity;
 import ru.BouH.engine.physics.world.object.WorldItem;
 import ru.BouH.engine.physics.world.timer.BulletWorldTimer;
 import ru.BouH.engine.physics.world.timer.GameWorldTimer;
@@ -43,7 +43,7 @@ public final class World implements IWorld {
     }
 
     public static boolean isItemJBulletObject(WorldItem worldItem) {
-        return worldItem instanceof JBulletObject;
+        return worldItem instanceof JBulletEntity;
     }
 
     public BulletWorldTimer getBulletTimer() {
@@ -59,6 +59,26 @@ public final class World implements IWorld {
         Game.getGame().getLogManager().log("Creating local player");
         Game.getGame().getProxy().createLocalPlayer();
         Game.getGame().getLogManager().log("Local player created!");
+    }
+
+    public void onWorldUpdate() {
+        List<WorldItem> copy1 = new ArrayList<>(this.getAllWorldItems());
+        if (this.collectionsWaitingRefresh) {
+            this.getAllDynamicItems().clear();
+            this.getAllDynamicItems().addAll(copy1.stream().filter(World::isItemDynamic).map(e -> (IWorldDynamic) e).collect(Collectors.toList()));
+            synchronized (BulletWorldTimer.lock) {
+                this.getAllJBItems().clear();
+                this.getAllJBItems().addAll(copy1.stream().filter(World::isItemJBulletDynamic).map(e -> (JBulletDynamic) e).collect(Collectors.toList()));
+            }
+            this.collectionsWaitingRefresh = false;
+        }
+        List<IWorldDynamic> copy2 = new ArrayList<>(this.getAllDynamicItems());
+        for (IWorldDynamic iWorldDynamic : copy2) {
+            iWorldDynamic.onUpdate(this);
+        }
+        this.clearItemsCollection(this.toCleanItems);
+        this.toCleanItems.clear();
+        this.ticks += 1;
     }
 
     public void onWorldEnd() {
@@ -82,27 +102,7 @@ public final class World implements IWorld {
     }
 
     public btDynamicsWorld getDynamicsWorld() {
-        return this.getBulletTimer().dynamicsWorld();
-    }
-
-    public void onWorldUpdate() {
-        List<WorldItem> copy1 = new ArrayList<>(this.getAllWorldItems());
-        if (this.collectionsWaitingRefresh) {
-            this.getAllDynamicItems().clear();
-            this.getAllDynamicItems().addAll(copy1.stream().filter(World::isItemDynamic).map(e -> (IWorldDynamic) e).collect(Collectors.toList()));
-            synchronized (BulletWorldTimer.lock) {
-                this.getAllJBItems().clear();
-                this.getAllJBItems().addAll(copy1.stream().filter(World::isItemJBulletDynamic).map(e -> (JBulletDynamic) e).collect(Collectors.toList()));
-            }
-            this.collectionsWaitingRefresh = false;
-        }
-        List<IWorldDynamic> copy2 = new ArrayList<>(this.getAllDynamicItems());
-        for (IWorldDynamic iWorldDynamic : copy2) {
-            iWorldDynamic.onUpdate(this);
-        }
-        this.clearItemsCollection(this.toCleanItems);
-        this.toCleanItems.clear();
-        this.ticks += 1;
+        return this.getBulletTimer().getDynamicsWorld();
     }
 
     private void clearItemsCollection(Collection<? extends WorldItem> collection) {
@@ -110,8 +110,8 @@ public final class World implements IWorld {
             this.collectionsWaitingRefresh = true;
             worldItem.onDestroy(this);
             if (World.isItemJBulletObject(worldItem)) {
-                JBulletObject jbItem = (JBulletObject) worldItem;
-                btRigidBody rigidBody = jbItem.getRigidBody();
+                JBulletEntity jbItem = (JBulletEntity) worldItem;
+                btRigidBody rigidBody = jbItem.getRigidBodyObject();
                 if (rigidBody != null) {
                     this.getBulletTimer().removeRigidBodyFromWorld(rigidBody);
                 }

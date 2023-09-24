@@ -13,9 +13,11 @@ import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.controller.ControllerDispatcher;
 import ru.BouH.engine.game.g_static.profiler.SectionManager;
 import ru.BouH.engine.math.MathHelper;
-import ru.BouH.engine.physics.world.timer.GameWorldTimer;
+import ru.BouH.engine.physics.entities.player.EntityPlayerSP;
 import ru.BouH.engine.physics.world.timer.BulletWorldTimer;
+import ru.BouH.engine.physics.world.timer.GameWorldTimer;
 import ru.BouH.engine.physics.world.timer.PhysicThreadManager;
+import ru.BouH.engine.proxy.LocalPlayer;
 import ru.BouH.engine.render.scene.Scene;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 import ru.BouH.engine.render.scene.world.camera.ICamera;
@@ -172,7 +174,9 @@ public class Screen {
         Game.getGame().getProfiler().startSection(SectionManager.renderE);
         this.getRenderWorld().onWorldStart();
         this.getScene().preRender();
-        this.controllerDispatcher.attachControllerTo(ControllerDispatcher.mouseKeyboardController, Game.getGame().getPlayerSP());
+        if (LocalPlayer.VALID_PL) {
+            this.controllerDispatcher.attachControllerTo(ControllerDispatcher.mouseKeyboardController, Game.getGame().getPlayerSP());
+        }
         try {
             this.renderLoop();
         } catch (InterruptedException e) {

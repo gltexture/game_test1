@@ -13,6 +13,7 @@ public interface ILight {
     void setOffset(Vector3d vector3d);
 
     LightType lightType();
+
     void deactivate();
 
     boolean isActive();

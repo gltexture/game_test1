@@ -3,7 +3,6 @@ package ru.BouH.engine.render.scene.programs;
 import org.joml.Matrix4d;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
-import ru.BouH.engine.game.Game;
 import ru.BouH.engine.math.IntPair;
 import ru.BouH.engine.render.RenderManager;
 import ru.BouH.engine.render.environment.light.LightManager;

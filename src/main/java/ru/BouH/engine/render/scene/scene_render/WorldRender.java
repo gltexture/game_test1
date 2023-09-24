@@ -1,13 +1,20 @@
 package ru.BouH.engine.render.scene.scene_render;
 
+import org.bytedeco.bullet.LinearMath.btTransform;
+import org.bytedeco.bullet.LinearMath.btVector3;
 import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.game.Game;
+import ru.BouH.engine.physics.jb_objects.JBulletEntity;
+import ru.BouH.engine.physics.jb_objects.RigidBodyObject;
+import ru.BouH.engine.physics.world.object.WorldItem;
 import ru.BouH.engine.render.environment.shadows.CascadeShadowBuilder;
 import ru.BouH.engine.render.scene.Scene;
 import ru.BouH.engine.render.scene.SceneRenderBase;
 import ru.BouH.engine.render.scene.components.Model3D;
+import ru.BouH.engine.render.scene.debug.jbullet.JBDebugDraw;
 import ru.BouH.engine.render.scene.mesh_forms.AbstractMeshForm;
 import ru.BouH.engine.render.scene.mesh_forms.VectorForm;
+import ru.BouH.engine.render.scene.mesh_forms.wire.AABBWireForm;
 import ru.BouH.engine.render.scene.objects.items.PhysXObject;
 import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.scene.objects.texture.samples.Color3FA;
@@ -15,7 +22,8 @@ import ru.BouH.engine.render.scene.programs.CubeMapSample;
 import ru.BouH.engine.render.scene.programs.UniformBufferUtils;
 import ru.BouH.engine.render.scene.scene_render.utility.RenderGroup;
 import ru.BouH.engine.render.scene.scene_render.utility.UniformConstants;
-import ru.BouH.engine.render.screen.Screen;
+
+import java.util.Iterator;
 
 public class WorldRender extends SceneRenderBase {
     private final CubeMapSample cubeEnvironmentTexture;
@@ -54,13 +62,9 @@ public class WorldRender extends SceneRenderBase {
         UniformBufferUtils.updateLightBuffers(this);
         this.performUniform(UniformConstants.dimensions, Game.getGame().getScreen().getWindow().getWindowDimensions());
         this.getUtils().performProjectionMatrix();
-        this.getUtils().disableMsaa();
         this.renderDebugSunDirection(this);
-        this.getUtils().enableMsaa();
         for (PhysXObject entityItem : this.getSceneWorld().getFilteredEntityList()) {
-            this.getUtils().disableMsaa();
             this.renderHitBox(partialTicks, this, entityItem);
-            this.getUtils().enableMsaa();
             if (entityItem.isHasRender()) {
                 if (entityItem.isHasModel()) {
                     this.setRenderTranslation(entityItem);
@@ -75,6 +79,14 @@ public class WorldRender extends SceneRenderBase {
         this.unBindProgram();
     }
 
+    public void onStartRender() {
+        super.onStartRender();
+    }
+
+    public void onStopRender() {
+        super.onStopRender();
+    }
+
     private void setRenderTranslation(PhysXObject physXObject) {
         Model3D model3D = physXObject.getModel3D();
         model3D.setScale(physXObject.getScale());
@@ -87,6 +99,7 @@ public class WorldRender extends SceneRenderBase {
     }
 
     private void renderDebugSunDirection(SceneRenderBase sceneRenderBase) {
+        this.getUtils().disableMsaa();
         this.getUtils().disableLight();
         VectorForm vectorForm = sceneRenderBase.getSceneWorld().getEnvironment().sunDebugVector;
         sceneRenderBase.getUtils().performModelViewMatrix3d(vectorForm.getMeshInfo());
@@ -98,32 +111,39 @@ public class WorldRender extends SceneRenderBase {
         GL30.glDisableVertexAttribArray(0);
         GL30.glBindVertexArray(0);
         this.getUtils().enableLight();
+        this.getUtils().enableMsaa();
     }
 
     private void renderHitBox(double partialTicks, SceneRenderBase sceneRenderBase, PhysXObject physXObject) {
-        AbstractMeshForm form = physXObject.genCollisionMesh();
-        if (form != null && form.hasMesh()) {
-            this.getUtils().disableLight();
-            form.getMeshInfo().getPosition().set(physXObject.getRenderPosition());
-            form.getMeshInfo().getRotation().set(physXObject.getRenderRotation());
-            sceneRenderBase.getUtils().performModelViewMatrix3d(form.getMeshInfo());
-            GL30.glBindVertexArray(form.getMeshInfo().getVao());
-            GL30.glEnableVertexAttribArray(0);
-            GL30.glEnable(GL30.GL_DEPTH_TEST);
-            this.getUtils().setTexture(WorldItemTexture.createItemTexture(new Color3FA(0, 1, 0, 1)));
-            GL30.glDrawElements(GL30.GL_LINES, form.getMeshInfo().getVertexCount(), GL30.GL_UNSIGNED_INT, 0);
-            GL30.glDisableVertexAttribArray(0);
-            GL30.glBindVertexArray(0);
-            form.clearMesh();
-            this.getUtils().enableLight();
+        WorldItem worldItem = physXObject.getWorldItem();
+        if (worldItem instanceof JBulletEntity) {
+            JBulletEntity jBulletEntity = (JBulletEntity) worldItem;
+            RigidBodyObject rigidBodyObject = jBulletEntity.getRigidBodyObject();
+            if (jBulletEntity.isValid()) {
+                this.getUtils().disableMsaa();
+                this.getUtils().disableLight();
+                btVector3 min = new btVector3();
+                btVector3 max = new btVector3();
+                btTransform transform = new btTransform();
+                transform.setIdentity();
+                rigidBodyObject.getCollisionShape().getAabb(transform, min, max);
+                transform.deallocate();
+                AABBWireForm form = new AABBWireForm(min, max);
+                if (form.hasMesh()) {
+                    form.getMeshInfo().getPosition().set(physXObject.getRenderPosition());
+                    sceneRenderBase.getUtils().performModelViewMatrix3d(form.getMeshInfo());
+                    GL30.glBindVertexArray(form.getMeshInfo().getVao());
+                    GL30.glEnableVertexAttribArray(0);
+                    GL30.glEnable(GL30.GL_DEPTH_TEST);
+                    this.getUtils().setTexture(WorldItemTexture.createItemTexture(new Color3FA(0, 1, 0, 1)));
+                    GL30.glDrawElements(GL30.GL_LINES, form.getMeshInfo().getVertexCount(), GL30.GL_UNSIGNED_INT, 0);
+                    GL30.glDisableVertexAttribArray(0);
+                    GL30.glBindVertexArray(0);
+                    form.clearMesh();
+                }
+                this.getUtils().enableLight();
+                this.getUtils().enableMsaa();
+            }
         }
-    }
-
-    public void onStartRender() {
-        super.onStartRender();
-    }
-
-    public void onStopRender() {
-        super.onStopRender();
     }
 }

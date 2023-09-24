@@ -78,7 +78,7 @@ uniform sampler2D shadowMap_1;
 uniform sampler2D shadowMap_2;
 
 vec2 getVecTC() {
-    return out_texture * texture_scaling;
+    return texture_scaling * out_texture;
 }
 
 void main()
@@ -107,7 +107,7 @@ vec4 calc_light() {
 }
 
 vec3 calc_normal_map(vec3 vNorm, mat4 mvm) {
-    vec3 normalMap = texture(normal_map, getVecTC()).rgb * 2.0 - 1.0;
+    vec3 normalMap = texture2D(normal_map, getVecTC()).rgb * 2.0 - 1.0;
     vec4 transformedNormal = mvm * vec4(normalMap, 0.0);
     vec3 correctedNormal = normalize(transformedNormal.xyz) + vNorm;
     return normalize(correctedNormal + vNorm);
@@ -142,7 +142,7 @@ float calc_shadows(vec4 world_pos, int idx) {
 
 vec4 setup_colors() {
     int i1 = use_texture;
-    return i1 == 0 ? texture(texture_sampler, getVecTC()) : i1 == 1 ? object_rgb : i1 == 2 ? get_quads(getVecTC()) : vec4(1., 0., 0., 1.);
+    return i1 == 0 ? texture2D(texture_sampler, getVecTC()) : i1 == 1 ? object_rgb : i1 == 2 ? get_quads(getVecTC()) : vec4(1., 0., 0., 1.);
 }
 
 vec4 calc_light_factor(vec3 colors, float brightness, vec3 vPos, vec3 light_dir, vec3 vNormal) {

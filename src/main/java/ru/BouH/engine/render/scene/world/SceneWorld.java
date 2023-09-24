@@ -102,6 +102,20 @@ public final class SceneWorld implements IWorld {
         Game.getGame().getProfiler().startSection(SectionManager.renderWorld);
     }
 
+    public void onWorldUpdate() {
+        this.getEnvironment().updateEnvironment();
+        SceneWorld.elapsedRenderTicks += 0.01f;
+    }
+
+    @Override
+    public void onWorldEnd() {
+        Game.getGame().getProfiler().endSection(SectionManager.renderWorld);
+        Game.getGame().getLogManager().log("Cleaning meshes!");
+        this.removeAllEntities();
+        SceneWorld.toCleanSet.forEach(IMesh::cleanMesh);
+        Game.getGame().getLogManager().log("Successfully cleaned meshes!");
+    }
+
     public void onWorldEntityUpdate(double partialTicks) {
         Iterator<PhysXObject> iterator = this.getEntityList().iterator();
         while (iterator.hasNext()) {
@@ -115,20 +129,6 @@ public final class SceneWorld implements IWorld {
             }
         }
         this.onWorldUpdate();
-    }
-
-    public void onWorldUpdate() {
-        this.getEnvironment().updateEnvironment();
-        SceneWorld.elapsedRenderTicks += 0.01f;
-    }
-
-    @Override
-    public void onWorldEnd() {
-        Game.getGame().getProfiler().endSection(SectionManager.renderWorld);
-        Game.getGame().getLogManager().log("Cleaning meshes!");
-        this.removeAllEntities();
-        SceneWorld.toCleanSet.forEach(IMesh::cleanMesh);
-        Game.getGame().getLogManager().log("Successfully cleaned meshes!");
     }
 
     public FrustumCulling getFrustumCulling() {

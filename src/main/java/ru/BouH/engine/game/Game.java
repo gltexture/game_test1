@@ -7,8 +7,8 @@ import ru.BouH.engine.game.jframe.ProgressBar;
 import ru.BouH.engine.game.logger.GameLogging;
 import ru.BouH.engine.game.profiler.Profiler;
 import ru.BouH.engine.game.profiler.Section;
-import ru.BouH.engine.physics.world.World;
 import ru.BouH.engine.physics.entities.player.EntityPlayerSP;
+import ru.BouH.engine.physics.world.World;
 import ru.BouH.engine.physics.world.timer.PhysicThreadManager;
 import ru.BouH.engine.proxy.Proxy;
 import ru.BouH.engine.render.scene.world.SceneWorld;
@@ -17,9 +17,8 @@ import ru.BouH.engine.render.screen.Screen;
 import java.util.Random;
 
 public class Game {
-    public static final String build = "07.09.2023";
+    public static final String build = "24.09.2023";
     public static long rngSeed;
-    private EngineSystem engineSystem;
     public static Random random;
     private static Game startScreen;
     private final GameLogging logManager;
@@ -27,6 +26,7 @@ public class Game {
     private final Screen screen;
     private final PhysicThreadManager physicThreadManager;
     private final Proxy proxy;
+    private EngineSystem engineSystem;
     private boolean shouldBeClosed = false;
 
     private Game() {
@@ -109,8 +109,8 @@ public class Game {
 
     public static class EngineSystem {
         public static final Object logicLocker = new Object();
-        private Thread thread;
         private final RenderResources renderResources;
+        private Thread thread;
         private boolean threadHasStarted;
 
         public EngineSystem() {

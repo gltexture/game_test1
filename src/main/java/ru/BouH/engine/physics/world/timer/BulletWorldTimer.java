@@ -2,14 +2,15 @@ package ru.BouH.engine.physics.world.timer;
 
 import org.bytedeco.bullet.BulletCollision.*;
 import org.bytedeco.bullet.BulletDynamics.*;
+import org.bytedeco.bullet.LinearMath.btIDebugDraw;
 import org.bytedeco.bullet.LinearMath.btVector3;
 import org.jetbrains.annotations.NotNull;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.exception.GameException;
 import ru.BouH.engine.game.g_static.profiler.SectionManager;
-import ru.BouH.engine.physics.world.object.JBulletDynamic;
-import ru.BouH.engine.physics.world.object.JBulletObject;
 import ru.BouH.engine.physics.world.World;
+import ru.BouH.engine.physics.jb_objects.JBulletDynamic;
+import ru.BouH.engine.render.scene.debug.jbullet.JBDebugDraw;
 import ru.BouH.engine.render.screen.timer.Timer;
 
 public class BulletWorldTimer implements IPhysTimer {
@@ -21,19 +22,31 @@ public class BulletWorldTimer implements IPhysTimer {
     private final btCollisionDispatcher collisionDispatcher;
     private final btDiscreteDynamicsWorld discreteDynamicsWorld;
     private final btConstraintSolver constraintSolve;
+    private final JBDebugDraw jbDebugDraw;
 
     public BulletWorldTimer(World world) {
         this.world = world;
         this.broadcaster = new btAxisSweep3(new btVector3(PhysicThreadManager.WORLD_BORDERS.getA1(), PhysicThreadManager.WORLD_BORDERS.getA1(), PhysicThreadManager.WORLD_BORDERS.getA1()), new btVector3(PhysicThreadManager.WORLD_BORDERS.getA2(), PhysicThreadManager.WORLD_BORDERS.getA2(), PhysicThreadManager.WORLD_BORDERS.getA2()));
         this.collisionConfiguration = new btDefaultCollisionConfiguration();
         this.collisionDispatcher = new btCollisionDispatcher(collisionConfiguration);
-        this.constraintSolve = new btSequentialImpulseConstraintSolver();
+        this.collisionDispatcher.setDispatcherFlags(btCollisionDispatcher.CD_STATIC_STATIC_REPORTED | btCollisionDispatcher.CD_DISABLE_CONTACTPOOL_DYNAMIC_ALLOCATION | btCollisionDispatcher.CD_USE_RELATIVE_CONTACT_BREAKING_THRESHOLD);
+        this.constraintSolve = new btConstraintSolverPoolMt(2);
         this.discreteDynamicsWorld = new btDiscreteDynamicsWorld(this.getCollisionDispatcher(), this.getBroadcaster(), this.getConstraintSolver(), this.getCollisionConfiguration());
-        this.discreteDynamicsWorld.setGravity(new btVector3(0, -10.0f, 0));
+        this.discreteDynamicsWorld.setGravity(new btVector3(0, -9.8f, 0));
+        this.discreteDynamicsWorld.getDispatchInfo().m_deterministicOverlappingPairs(false);
+        this.discreteDynamicsWorld.getDispatchInfo().m_useConvexConservativeDistanceUtil(true);
+        this.discreteDynamicsWorld.getDispatchInfo().m_useContinuous(true);
+        this.discreteDynamicsWorld.getDispatchInfo().m_convexConservativeDistanceThreshold(0.01f);
+        this.discreteDynamicsWorld.getDispatchInfo().m_allowedCcdPenetration(0.0d);
+        this.discreteDynamicsWorld.performDiscreteCollisionDetection();
+
+        this.jbDebugDraw = new JBDebugDraw();
+        this.jbDebugDraw.setDebugMode(btIDebugDraw.DBG_DrawWireframe | btIDebugDraw.DBG_DrawAabb);
+        this.discreteDynamicsWorld.setDebugDrawer(this.jbDebugDraw);
     }
 
     @SuppressWarnings("all")
-    public void updateTimer(int TPS)  {
+    public void updateTimer(int TPS) {
         final btDiscreteDynamicsWorld discreteDynamicsWorld1 = this.getDiscreteDynamicsWorld();
         if (discreteDynamicsWorld1 == null) {
             throw new GameException("Current Dynamics World is NULL!");
@@ -60,7 +73,9 @@ public class BulletWorldTimer implements IPhysTimer {
                         for (JBulletDynamic worldItem : this.world.getAllJBItems()) {
                             worldItem.onJBUpdate();
                         }
-                        discreteDynamicsWorld1.stepSimulation(1.0f / TPS);
+                        final double step = 1.0f / TPS;
+                        final int explicit = 16;
+                        discreteDynamicsWorld1.stepSimulation(step, explicit, step / (double) explicit);
                         Timer.syncDown();
                     }
                 }
@@ -75,12 +90,16 @@ public class BulletWorldTimer implements IPhysTimer {
         }
     }
 
+    public JBDebugDraw getJbDebugDraw() {
+        return this.jbDebugDraw;
+    }
+
     public void cleanResources() {
         Game.getGame().getLogManager().log("Cleaning physics world resources...");
         this.getDiscreteDynamicsWorld().deallocate();
     }
 
-    public synchronized final btDynamicsWorld dynamicsWorld() {
+    public synchronized final btDynamicsWorld getDynamicsWorld() {
         return this.getDiscreteDynamicsWorld();
     }
 

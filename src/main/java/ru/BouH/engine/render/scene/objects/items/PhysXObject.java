@@ -5,10 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.physics.brush.WorldBrush;
-import ru.BouH.engine.physics.world.object.JBulletObject;
-import ru.BouH.engine.physics.collision.objects.AbstractCollision;
-import ru.BouH.engine.physics.collision.objects.ConvexShape;
-import ru.BouH.engine.physics.collision.objects.OBB;
+import ru.BouH.engine.physics.jb_objects.JBulletEntity;
 import ru.BouH.engine.physics.world.object.IWorldDynamic;
 import ru.BouH.engine.physics.world.object.IWorldObject;
 import ru.BouH.engine.physics.world.object.WorldItem;
@@ -18,9 +15,6 @@ import ru.BouH.engine.render.frustum.FrustumCulling;
 import ru.BouH.engine.render.frustum.RenderABB;
 import ru.BouH.engine.render.scene.components.Model3D;
 import ru.BouH.engine.render.scene.fabric.RenderFabric;
-import ru.BouH.engine.render.scene.mesh_forms.AbstractMeshForm;
-import ru.BouH.engine.render.scene.mesh_forms.collision_wire.CollisionOBBoxForm;
-import ru.BouH.engine.render.scene.mesh_forms.collision_wire.CollisionPlaneForm;
 import ru.BouH.engine.render.scene.objects.IRenderObject;
 import ru.BouH.engine.render.scene.objects.data.RenderData;
 import ru.BouH.engine.render.scene.world.SceneWorld;
@@ -31,11 +25,11 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IWorld
     private final WorldItem worldItem;
     private final RenderData renderData;
     protected Model3D model3D;
+    protected Vector3d renderPosition;
+    protected Vector3d renderRotation;
     private boolean isObjectCulled;
     private boolean isVisible;
     private boolean isDead;
-    protected Vector3d renderPosition;
-    protected Vector3d renderRotation;
     private ILight light;
 
     public PhysXObject(@NotNull SceneWorld sceneWorld, @NotNull WorldItem worldItem, @NotNull RenderData renderData) {
@@ -52,28 +46,6 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IWorld
 
     protected void setModel() {
         this.model3D = null;
-    }
-
-    public AbstractMeshForm genCollisionMesh() {
-        if (this.getWorldItem() instanceof JBulletObject) {
-            JBulletObject JBulletObject = (JBulletObject) this.getWorldItem();
-            if (JBulletObject.hasCollision()) {
-                return this.constructForm(JBulletObject.getCollision());
-            }
-        }
-        return null;
-    }
-
-    private AbstractMeshForm constructForm(AbstractCollision iCollision) {
-        if (iCollision != null) {
-            if (iCollision instanceof OBB) {
-                return new CollisionOBBoxForm((OBB) iCollision);
-            } else if (iCollision instanceof ConvexShape) {
-                ConvexShape c = (ConvexShape) iCollision;
-                return new CollisionPlaneForm(c.getPoints()[0], c.getPoints()[1], c.getPoints()[2], c.getPoints()[3]);
-            }
-        }
-        return null;
     }
 
     @Override
@@ -103,12 +75,12 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IWorld
         if (worldItem == null) {
             return null;
         }
-        if (this.getWorldItem() instanceof JBulletObject) {
-            JBulletObject jBulletObject = (JBulletObject) this.getWorldItem();
-            if (jBulletObject.getRigidBody() != null) {
+        if (this.getWorldItem() instanceof JBulletEntity) {
+            JBulletEntity jBulletEntity = (JBulletEntity) this.getWorldItem();
+            if (jBulletEntity.isValid()) {
                 btVector3 v1 = new btVector3();
                 btVector3 v2 = new btVector3();
-                jBulletObject.getRigidBody().getAabb(v1, v2);
+                jBulletEntity.getRigidBodyObject().getAabb(v1, v2);
                 Vector3d vector3d = new Vector3d(v2.getX() - v1.getX(), v2.getY() - v1.getY(), v2.getZ() - v1.getZ());
                 v1.deallocate();
                 v2.deallocate();
@@ -202,9 +174,9 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IWorld
 
     protected Vector3d getFixedPosition() {
         Vector3d position;
-        if (this.getWorldItem() instanceof JBulletObject) {
-            JBulletObject jBulletObject = (JBulletObject) this.getWorldItem();
-            position = jBulletObject.getRigidBodyPos();
+        if (this.getWorldItem() instanceof JBulletEntity) {
+            JBulletEntity jBulletEntity = (JBulletEntity) this.getWorldItem();
+            position = jBulletEntity.getRigidBodyObject().getTranslation();
         } else {
             position = this.getWorldItem().getPosition();
         }
@@ -213,9 +185,9 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IWorld
 
     protected Vector3d getFixedRotation() {
         Vector3d rotation;
-        if (this.getWorldItem() instanceof JBulletObject) {
-            JBulletObject jBulletObject = (JBulletObject) this.getWorldItem();
-            rotation = jBulletObject.getRigidBodyRot();
+        if (this.getWorldItem() instanceof JBulletEntity) {
+            JBulletEntity jBulletEntity = (JBulletEntity) this.getWorldItem();
+            rotation = jBulletEntity.getRigidBodyObject().getRotation();
         } else {
             rotation = this.getWorldItem().getRotation();
         }
@@ -239,16 +211,16 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IWorld
         return this.getRenderData().getRenderFabric();
     }
 
+    public boolean isHasRender() {
+        return this.renderFabric() != null;
+    }
+
     public RenderData getRenderData() {
         return this.renderData;
     }
 
     public WorldItem getWorldItem() {
         return this.worldItem;
-    }
-
-    public boolean isHasRender() {
-        return this.renderFabric() != null;
     }
 
     public boolean isHasModel() {

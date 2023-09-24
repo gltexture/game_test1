@@ -2,9 +2,10 @@ package ru.BouH.engine.render.scene.mesh_forms;
 
 import org.joml.Vector3d;
 import org.joml.Vector3f;
-import ru.BouH.engine.math.MathHelper;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class PlaneForm extends AbstractMeshForm {
     public PlaneForm(Vector3d v1, Vector3d v2, Vector3d v3, Vector3d v4) {

@@ -35,13 +35,13 @@ public abstract class RenderData {
         return this;
     }
 
+    public Vector2d getTextureScaling() {
+        return this.getRenderProperties().getTextureScaling();
+    }
+
     public RenderData setTextureScaling(Vector2d textureScaling) {
         this.getRenderProperties().setTextureScaling(textureScaling);
         return this;
-    }
-
-    public Vector2d getTextureScaling() {
-        return this.getRenderProperties().getTextureScaling();
     }
 
     public RenderData attachNormalMap(PictureSample pictureSample) {
@@ -121,20 +121,20 @@ public abstract class RenderData {
             this.textureScaling = textureScaling;
         }
 
-        public RenderProperties copyRP() {
-            return new RenderProperties(this.getTextureScaling(), this.isLightExposed(), this.isLerpPosition(), this.isLerpRotation());
-        }
-
         public static RenderProperties defaultRenderProperties() {
             return new RenderProperties(true, true, true);
         }
 
-        public void setTextureScaling(Vector2d textureScaling) {
-            this.textureScaling = textureScaling;
+        public RenderProperties copyRP() {
+            return new RenderProperties(this.getTextureScaling(), this.isLightExposed(), this.isLerpPosition(), this.isLerpRotation());
         }
 
         public Vector2d getTextureScaling() {
             return this.textureScaling;
+        }
+
+        public void setTextureScaling(Vector2d textureScaling) {
+            this.textureScaling = textureScaling;
         }
 
         public boolean isLerpPosition() {

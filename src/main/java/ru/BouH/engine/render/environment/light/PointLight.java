@@ -35,51 +35,12 @@ public class PointLight implements ILight, IWorldDynamic {
         this(lightColor, new Vector3d(0.0d), brightness);
     }
 
-    public void deactivate() {
-        this.brightness = 0.0d;
-        this.setLightColor(new Vector3d(0.0d));
-        this.setLightPos(new Vector3d(0.0d));
-    }
-
-    public boolean isActive() {
-        return this.getBrightness() > 0.0d;
-    }
-
-    @Override
-    public LightType lightType() {
-        return LightType.POINT_LIGHT;
-    }
-
-    public Vector3d getOffset() {
-        return new Vector3d(this.offset);
-    }
-
-    public void setOffset(Vector3d offset) {
-        this.offset = offset;
-    }
-
-    public Vector3d getLightColor() {
-        return new Vector3d(this.lightColor);
-    }
-
-    public void setLightColor(Vector3d lightColor) {
-        this.lightColor = lightColor;
-    }
-
     public Vector3d getNormalizedPointLightPos(Matrix4d viewMatrix) {
         Vector3d pos = this.getLightPos();
         Vector4d aux = new Vector4d(pos, 1.0d);
         aux.mul(viewMatrix);
         pos.set(new Vector3d(aux.x, aux.y, aux.z));
         return pos;
-    }
-
-    public Vector3d getLightPos() {
-        return new Vector3d(this.lightPos).add(this.getOffset());
-    }
-
-    public void setLightPos(Vector3d lightPos) {
-        this.lightPos = lightPos;
     }
 
     public double getBrightness() {
@@ -97,6 +58,45 @@ public class PointLight implements ILight, IWorldDynamic {
     @Override
     public PhysXObject attachedTo() {
         return this.physXObject;
+    }
+
+    public Vector3d getOffset() {
+        return new Vector3d(this.offset);
+    }
+
+    public void setOffset(Vector3d offset) {
+        this.offset = offset;
+    }
+
+    @Override
+    public LightType lightType() {
+        return LightType.POINT_LIGHT;
+    }
+
+    public void deactivate() {
+        this.brightness = 0.0d;
+        this.setLightColor(new Vector3d(0.0d));
+        this.setLightPos(new Vector3d(0.0d));
+    }
+
+    public boolean isActive() {
+        return this.getBrightness() > 0.0d;
+    }
+
+    public Vector3d getLightColor() {
+        return new Vector3d(this.lightColor);
+    }
+
+    public void setLightColor(Vector3d lightColor) {
+        this.lightColor = lightColor;
+    }
+
+    public Vector3d getLightPos() {
+        return new Vector3d(this.lightPos).add(this.getOffset());
+    }
+
+    public void setLightPos(Vector3d lightPos) {
+        this.lightPos = lightPos;
     }
 
     @Override

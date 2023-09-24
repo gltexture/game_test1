@@ -23,7 +23,7 @@ public class GUI {
     public static void renderGUI(double partialTicks) {
         double width = Game.getGame().getScreen().getWidth();
         double height = Game.getGame().getScreen().getHeight();
-        EntityPlayerSP entityPlayerSP = Game.getGame().getPlayerSP();
+        final EntityPlayerSP entityPlayerSP = Game.getGame().getPlayerSP();
         GUI.renderText(partialTicks, 0, 0, "FPS: " + Screen.FPS + " | TPS1: " + Screen.PHYS1_TPS + " | TPS2: " + Screen.PHYS2_TPS, 0xffffff);
         GUI.renderText(partialTicks, 0, 20, "entities: " + Game.getGame().getPhysicsWorld().countItems(), 0xffffff);
         GUI.renderText(partialTicks, 0, 40, String.format("%s %s %s", (int) entityPlayerSP.getPosition().x, (int) entityPlayerSP.getPosition().y, (int) entityPlayerSP.getPosition().z), 0xffffff);
@@ -36,9 +36,9 @@ public class GUI {
                 i1 += 20;
             }
         }
-        GUI.renderText(partialTicks, 0, i1 + 20, "speed: " + String.format("%.2f", Game.getGame().getProxy().getPlayerSP().getObjectSpeed()), 0xffffff);
-        Vector2d vector2d = GUI.getScaledPictureDimensions(RenderResources.pngGuiPic1, 0.1f);
-        GUI.renderPicture(partialTicks, (int) (width - vector2d.x - 2), 2, (int) vector2d.x, (int) vector2d.y, RenderResources.pngGuiPic1);
+        GUI.renderText(partialTicks, 0, i1 + 20, "speed: " + String.format("%.2f", entityPlayerSP.getObjectSpeed()), 0xffffff);
+        //Vector2d vector2d = GUI.getScaledPictureDimensions(RenderResources.pngGuiPic1, 0.1f);
+        //GUI.renderPicture(partialTicks, (int) (width - vector2d.x - 2), 2, (int) vector2d.x, (int) vector2d.y, RenderResources.pngGuiPic1);
     }
 
     private static Vector2d getScaledPictureDimensions(PNGTexture PNGTexture, float scale) {

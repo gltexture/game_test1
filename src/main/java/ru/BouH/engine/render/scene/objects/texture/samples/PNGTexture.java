@@ -72,10 +72,6 @@ public class PNGTexture implements PictureSample {
         return new PNGTexture(inputStream);
     }
 
-    public boolean isValid() {
-        return this.getPNGInBuffer() != null;
-    }
-
     public ByteBuffer getPNGInBuffer() {
         return this.imageBuffer;
     }
@@ -97,6 +93,10 @@ public class PNGTexture implements PictureSample {
     public void performTexture(int code) {
         GL20.glActiveTexture(code);
         GL20.glBindTexture(GL20.GL_TEXTURE_2D, this.textureId);
+    }
+
+    public boolean isValid() {
+        return this.getPNGInBuffer() != null;
     }
 
     @Override

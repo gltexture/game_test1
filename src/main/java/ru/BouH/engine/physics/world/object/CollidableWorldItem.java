@@ -1,149 +1,137 @@
 package ru.BouH.engine.physics.world.object;
 
-import org.bytedeco.bullet.BulletCollision.btCollisionObject;
+import org.bytedeco.bullet.BulletCollision.btCollisionShape;
 import org.bytedeco.bullet.BulletDynamics.btRigidBody;
 import org.bytedeco.bullet.LinearMath.btDefaultMotionState;
-import org.bytedeco.bullet.LinearMath.btQuaternion;
-import org.bytedeco.bullet.LinearMath.btTransform;
+import org.bytedeco.bullet.LinearMath.btMotionState;
 import org.bytedeco.bullet.LinearMath.btVector3;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3d;
-import ru.BouH.engine.game.Game;
-import ru.BouH.engine.physics.collision.objects.AbstractCollision;
+import ru.BouH.engine.physics.collision.AbstractCollision;
+import ru.BouH.engine.physics.entities.Materials;
+import ru.BouH.engine.physics.entities.PhysEntity;
+import ru.BouH.engine.physics.jb_objects.JBulletEntity;
+import ru.BouH.engine.physics.jb_objects.RigidBodyObject;
 import ru.BouH.engine.physics.world.World;
 import ru.BouH.engine.proxy.IWorld;
 
-public abstract class CollidableWorldItem extends WorldItem implements JBulletObject {
-    protected final btDefaultMotionState defaultMotionState;
-    private AbstractCollision abstractCollision;
-    private btRigidBody rigidBody;
+public abstract class CollidableWorldItem extends WorldItem implements JBulletEntity {
+    private RigidBodyObject rigidBodyObject;
+    private final Vector3d startTranslation;
+    private final Vector3d startRotation;
+    private RigidBodyConstructor rigidBodyConstructor;
+    private final RigidBodyObject.PhysProperties properties;
 
-    public CollidableWorldItem(World world, Vector3d pos, Vector3d rot, String itemName) {
-        super(world, pos, rot, itemName);
-        this.defaultMotionState = new btDefaultMotionState();
+    public CollidableWorldItem(World world, RigidBodyObject.PhysProperties properties, double scale, @NotNull Vector3d startTranslation, @NotNull Vector3d startRotation, String itemName) {
+        super(world, scale, startTranslation, startRotation, itemName);
+        this.properties = properties;
+        this.startTranslation = startTranslation;
+        this.startRotation = startRotation;
     }
 
-    public CollidableWorldItem(World world, Vector3d pos, String itemName) {
-        this(world, pos, new Vector3d(0.0d), itemName);
-    }
-
-    public CollidableWorldItem(World world, String itemName) {
-        this(world, new Vector3d(0.0d), itemName);
-    }
+    protected abstract AbstractCollision constructCollision();
 
     public void onSpawn(IWorld iWorld) {
         super.onSpawn(iWorld);
-        this.onCollisionCreate(this.constructCollision(this.getScale()));
+        this.constructRigidBody();
     }
 
-    public void updateCollisionObjectState(btCollisionObject collisionObject) {
-        if (collisionObject == null) {
-            Game.getGame().getLogManager().warn("Entity " + this + " doesn't have active RigidBody!");
-        } else {
-            this.activateRigidBody();
-            this.updateTensorRigidBody();
-        }
+    protected void constructRigidBody() {
+        this.createRigidBody(this.getWorld(), this.startTranslation, this.startRotation, this.getScale(), this.properties);
+        this.addCallBacks(this.getRigidBodyObject());
     }
 
-    public void activateRigidBody() {
-        this.getRigidBody().activate();
+    protected RigidBodyConstructor getRigidBodyConstructor() {
+        return this.rigidBodyConstructor;
     }
 
-    public void updateTensorRigidBody() {
-        this.getRigidBody().updateInertiaTensor();
+    private void createRigidBody(World world, @NotNull Vector3d position, @NotNull Vector3d rotation, double scaling, RigidBodyObject.PhysProperties properties) {
+        this.rigidBodyConstructor = new RigidBodyConstructor(world, startTranslation, startRotation, scaling, this.constructCollision());
+        this.rigidBodyObject = this.getRigidBodyConstructor().buildRigidBody(properties);
+        world.getBulletTimer().addRigidBodyInWorld(this.getRigidBodyObject());
+        this.getRigidBodyObject().setTranslation(position);
+        this.getRigidBodyObject().setRotation(rotation);
+        this.getRigidBodyObject().updateCollisionObjectState();
     }
 
-    public void onJBUpdate() {
-    }
-
-    protected void rotateCollisionObject(btCollisionObject collisionObject, Vector3d angles) {
-        btTransform transform = collisionObject.getWorldTransform();
-        btQuaternion quaternion = new btQuaternion();
-        quaternion.setEulerZYX(angles.z, angles.y, angles.x);
-        transform.setRotation(quaternion);
-        collisionObject.setWorldTransform(transform);
-        this.updateCollisionObjectState(collisionObject);
-        this.getWorld().getBulletTimer().updateRigidBodyAabb(this.getRigidBody());
-    }
-
-    protected void translateCollisionObject(btCollisionObject collisionObject, Vector3d pos) {
-        btTransform transform = collisionObject.getWorldTransform();
-        transform.setOrigin(new btVector3(pos.x, pos.y, pos.z));
-        collisionObject.setWorldTransform(transform);
-        this.updateCollisionObjectState(collisionObject);
-        this.getWorld().getBulletTimer().updateRigidBodyAabb(this.getRigidBody());
-    }
-
-    protected void onRigidBodyCreated(btRigidBody rigidBody) {
-    }
-
-    public void setScale(double scale) {
-        if (this.getRigidBody() != null) {
-            this.getRigidBody().getCollisionShape().setLocalScaling(new btVector3(scale, scale, scale));
-        }
-        super.setScale(scale);
-    }
-
-    protected btRigidBody createRigidBody(btRigidBody.btRigidBodyConstructionInfo rigidBodyConstructionInfo) {
-        return new btRigidBody(rigidBodyConstructionInfo);
+    protected void addCallBacks(RigidBodyObject rigidBodyObject) {
     }
 
     public Vector3d getPosition() {
-        return this.getRigidBody() != null ? this.getRigidBodyPos() : super.getPosition();
-    }
-
-    public void setPosition(Vector3d vector3d) {
-        if (this.getRigidBody() != null) {
-            this.translateCollisionObject(this.getRigidBody(), new Vector3d(vector3d.x, vector3d.y, vector3d.z));
-        }
+        return this.getRigidBodyObject().getTranslation();
     }
 
     public Vector3d getRotation() {
-        return this.getRigidBody() != null ? this.getRigidBodyRot() : super.getRotation();
+        return this.getRigidBodyObject().getRotation();
     }
 
+    public void setPosition(Vector3d vector3d) {
+        this.getRigidBodyObject().setTranslation(vector3d);
+    }
     public void setRotation(Vector3d vector3d) {
-        if (this.getRigidBody() != null) {
-            this.rotateCollisionObject(this.getRigidBody(), new Vector3d(vector3d.x, vector3d.y, vector3d.z));
+        this.getRigidBodyObject().setRotation(vector3d);
+    }
+
+    public RigidBodyObject getRigidBodyObject() {
+        return this.rigidBodyObject;
+    }
+
+    public void applyCentralForce(Vector3d vector3d) {
+        this.getRigidBodyObject().applyCentralForce(vector3d);
+    }
+
+    public double getObjectSpeed() {
+        return this.getObjectVelocity().length();
+    }
+
+    public Vector3d getObjectVelocity() {
+        return this.getRigidBodyObject().getObjectLinearVelocity();
+    }
+
+    public void setObjectVelocity(Vector3d vector3d) {
+        this.getRigidBodyObject().setObjectLinearVelocity(vector3d);
+    }
+
+    public void addObjectVelocity(Vector3d vector3d) {
+        this.getRigidBodyObject().addObjectLinearVelocity(vector3d);
+    }
+
+    public void setScale(double scale) {
+        super.setScale(scale);
+        if (this.isValid()) {
+            this.getRigidBodyObject().setScaling(scale);
         }
     }
 
-    public void onCollisionCreate(AbstractCollision abstractCollision) {
-        if (abstractCollision != null) {
-            abstractCollision.refreshCollision();
-            this.setCollision(abstractCollision);
+    public static class RigidBodyConstructor {
+        private final btCollisionShape btCollisionShape;
+        private final btMotionState motionState;
+        private btRigidBody.btRigidBodyConstructionInfo btRigidBodyConstructionInfo;
+        private final World world;
+
+        public RigidBodyConstructor(World world, @NotNull Vector3d position, @NotNull Vector3d rotation, double scaling, AbstractCollision abstractCollision) {
+            this.btCollisionShape = abstractCollision.buildCollisionShape(scaling);
+            this.motionState = new btDefaultMotionState();
+            this.world = world;
         }
-    }
 
-    protected abstract AbstractCollision constructCollision(double scale);
-
-    public AbstractCollision getCollision() {
-        return this.abstractCollision;
-    }
-
-    private void setCollision(AbstractCollision abstractCollision) {
-        if (abstractCollision != null) {
-            btRigidBody.btRigidBodyConstructionInfo constructionInfo = abstractCollision.getCollisionInfo().getRigidBodyConstructionInfo();
-            if (this.getRigidBody() == null) {
-                Vector3d trans = this.getPosition();
-                Vector3d rotate = this.getRotation();
-                this.rigidBody = this.createRigidBody(constructionInfo);
-                this.onRigidBodyCreated(this.getRigidBody());
-                this.getWorld().getBulletTimer().addRigidBodyInWorld(this.getRigidBody());
-                this.setPosition(trans);
-                this.setRotation(rotate);
-                this.updateCollisionObjectState(this.rigidBody);
-                this.abstractCollision = abstractCollision;
-            } else {
-                if (this.getRigidBody().getCollisionShape() != null) {
-                    this.getRigidBody().setCollisionShape(null);
-                }
-                this.getRigidBody().setCollisionShape(abstractCollision.getCollisionShape());
-            }
+        public RigidBodyObject buildRigidBody(RigidBodyObject.PhysProperties physicsProperties) {
+            this.btRigidBodyConstructionInfo = new btRigidBody.btRigidBodyConstructionInfo(1.0d, this.getMotionState(), this.getBtCollisionShape(), null);
+            RigidBodyObject rigidBodyObject1 = new RigidBodyObject(this.world, this.getBtRigidBodyConstructionInfo());
+            rigidBodyObject1.setRigidBodyProperties(physicsProperties);
+            return rigidBodyObject1;
         }
-    }
 
-    @Override
-    public btRigidBody getRigidBody() {
-        return this.rigidBody;
+        public btCollisionShape getBtCollisionShape() {
+            return this.btCollisionShape;
+        }
+
+        public btMotionState getMotionState() {
+            return this.motionState;
+        }
+
+        public btRigidBody.btRigidBodyConstructionInfo getBtRigidBodyConstructionInfo() {
+            return this.btRigidBodyConstructionInfo;
+        }
     }
 }

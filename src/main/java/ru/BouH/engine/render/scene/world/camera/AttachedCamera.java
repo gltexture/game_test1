@@ -22,11 +22,6 @@ public class AttachedCamera extends Camera {
         this(worldItem, true, true);
     }
 
-    @Override
-    public void updateCamera(double partialTicks) {
-        this.lerpCamera(partialTicks);
-    }
-
     private void lerpCamera(double partialTicks) {
         WorldItem worldItem1 = this.getWorldItem();
         if (worldItem1 != null) {
@@ -41,6 +36,11 @@ public class AttachedCamera extends Camera {
 
     public Vector3d getCamPosition() {
         return super.getCamPosition();
+    }
+
+    @Override
+    public void updateCamera(double partialTicks) {
+        this.lerpCamera(partialTicks);
     }
 
     private Vector3d cameraOffset() {

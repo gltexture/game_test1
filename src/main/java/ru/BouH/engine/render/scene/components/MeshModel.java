@@ -126,6 +126,21 @@ public class MeshModel implements IMesh {
         return this.vao;
     }
 
+    public int getVertexCount() {
+        return this.vertexCount;
+    }
+
+    public void cleanMesh() {
+        GL30.glDisableVertexAttribArray(0);
+        GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, 0);
+        GL30.glDeleteBuffers(this.getIdxVbo());
+        GL30.glDeleteBuffers(this.getPosVbo());
+        GL30.glDeleteBuffers(this.getTextureVbo());
+        GL30.glDeleteBuffers(this.getNormalsVbo());
+        GL30.glBindVertexArray(0);
+        GL30.glDeleteVertexArrays(this.getVao());
+    }
+
     public int getIdxVbo() {
         return this.idxVbo;
     }
@@ -140,20 +155,5 @@ public class MeshModel implements IMesh {
 
     public int getNormalsVbo() {
         return this.normalsVbo;
-    }
-
-    public int getVertexCount() {
-        return this.vertexCount;
-    }
-
-    public void cleanMesh() {
-        GL30.glDisableVertexAttribArray(0);
-        GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, 0);
-        GL30.glDeleteBuffers(this.getIdxVbo());
-        GL30.glDeleteBuffers(this.getPosVbo());
-        GL30.glDeleteBuffers(this.getTextureVbo());
-        GL30.glDeleteBuffers(this.getNormalsVbo());
-        GL30.glBindVertexArray(0);
-        GL30.glDeleteVertexArrays(this.getVao());
     }
 }

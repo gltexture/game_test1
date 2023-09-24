@@ -22,15 +22,15 @@ public class WorldObject extends PhysXObject {
         }
     }
 
+    @Override
+    public void onDestroy(IWorld iWorld) {
+        super.onDestroy(iWorld);
+    }
+
     public void onUpdate(IWorld iWorld) {
         super.onUpdate(iWorld);
         if (this.getWorldItem().isDead()) {
             this.setDead();
         }
-    }
-
-    @Override
-    public void onDestroy(IWorld iWorld) {
-        super.onDestroy(iWorld);
     }
 }
