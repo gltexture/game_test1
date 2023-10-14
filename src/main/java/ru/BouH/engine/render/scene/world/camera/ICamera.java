@@ -4,8 +4,7 @@ import org.joml.Vector3d;
 
 public interface ICamera {
     Vector3d getCamPosition();
-
     Vector3d getCamRotation();
-
-    void updateCamera(double partialTicks);
+    void updateCameraPosition(double partialTicks);
+    void updateCameraRotation(double partialTicks);
 }

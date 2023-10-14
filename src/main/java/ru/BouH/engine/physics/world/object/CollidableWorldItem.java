@@ -48,7 +48,7 @@ public abstract class CollidableWorldItem extends WorldItem implements JBulletEn
     private void createRigidBody(World world, @NotNull Vector3d position, @NotNull Vector3d rotation, double scaling, RigidBodyObject.PhysProperties properties) {
         this.rigidBodyConstructor = new RigidBodyConstructor(world, startTranslation, startRotation, scaling, this.constructCollision());
         this.rigidBodyObject = this.getRigidBodyConstructor().buildRigidBody(properties);
-        world.getBulletTimer().addRigidBodyInWorld(this.getRigidBodyObject());
+        world.getGameWorldTimer().addRigidBodyInWorld(this.getRigidBodyObject());
         this.getRigidBodyObject().setTranslation(position);
         this.getRigidBodyObject().setRotation(rotation);
         this.getRigidBodyObject().updateCollisionObjectState();

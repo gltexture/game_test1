@@ -24,9 +24,9 @@ public abstract class WorldItem implements IWorldObject {
 
     public WorldItem(World world, double scale, @NotNull Vector3d pos, @NotNull Vector3d rot, String itemName) {
         this.itemName = itemName;
-        this.rotation = rot;
-        this.position = pos;
-        this.prevPosition = pos;
+        this.rotation = new Vector3d(rot);
+        this.position = new Vector3d(pos);
+        this.prevPosition = new Vector3d(pos);
         this.scale = scale;
         this.world = world;
         this.iLight = null;
@@ -52,6 +52,10 @@ public abstract class WorldItem implements IWorldObject {
 
     public WorldItem(World world, String itemName) {
         this(world, 1.0d, new Vector3d(0.0d), new Vector3d(0.0d), itemName);
+    }
+
+    public void updatePrevPosition() {
+        this.prevPosition.set(new Vector3d(this.getPosition()));
     }
 
     public void onSpawn(IWorld iWorld) {

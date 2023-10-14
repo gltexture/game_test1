@@ -1,44 +1,44 @@
 package ru.BouH.engine.render.screen.timer;
 
 import ru.BouH.engine.game.Game;
-
-import java.util.concurrent.atomic.AtomicBoolean;
+import ru.BouH.engine.render.utils.Syncer;
 
 public class Timer {
-    private final int physicsTicks;
-    private final AtomicBoolean syncUpdate = new AtomicBoolean();
+    private final Syncer SYNC_TIME = new Syncer();
     private double lastTime;
-    private double renderPartial;
+    private double deltaTime;
 
-    public Timer(int physicsTicks) {
-        this.physicsTicks = physicsTicks;
-        this.lastTime = Game.systemTime();
+    public Timer() {
+        this.lastTime = Game.glfwTime();
+    }
+
+    public void reset() {
+        this.lastTime = Game.glfwTime();
     }
 
     public static void syncUp() {
-        Game.getGame().getScreen().getTimer().getSyncUpdate().set(true);
+        Game.getGame().getScreen().getTimer().getSyncUpdate().syncUp();
     }
 
     public static void syncDown() {
-        Game.getGame().getScreen().getTimer().getSyncUpdate().set(false);
+        Game.getGame().getScreen().getTimer().getSyncUpdate().syncDown();
     }
 
     public void updateTimer() {
-        double currentTime = Game.systemTime();
-        double elapsed = currentTime - this.lastTime;
+        double currentTime = Game.glfwTime();
+        this.deltaTime = currentTime - this.lastTime;
         this.lastTime = currentTime;
-        this.renderPartial = elapsed * this.physicsTicks;
     }
 
-    public double getRenderPartial() {
-        return this.renderPartial;
+    public double getDeltaTime() {
+        return this.deltaTime;
     }
 
     public boolean markSyncUpdate() {
-        return this.getSyncUpdate().get();
+        return this.getSyncUpdate().shouldSync();
     }
 
-    public AtomicBoolean getSyncUpdate() {
-        return this.syncUpdate;
+    public Syncer getSyncUpdate() {
+        return this.SYNC_TIME;
     }
 }

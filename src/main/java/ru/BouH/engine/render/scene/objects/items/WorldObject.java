@@ -14,12 +14,13 @@ public class WorldObject extends PhysXObject {
         super(sceneWorld, worldItem, renderData);
     }
 
-    protected void setModel() {
+    protected Model3D buildObjectModel() {
         if (this.getRenderData() instanceof RenderModeledData) {
             RenderModeledData renderModeledData = (RenderModeledData) this.getRenderData();
             MeshModel meshModel = renderModeledData.getMeshModel();
-            this.model3D = new Model3D(meshModel);
+            return new Model3D(meshModel);
         }
+        return null;
     }
 
     @Override

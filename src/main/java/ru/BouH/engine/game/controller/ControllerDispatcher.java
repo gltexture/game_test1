@@ -3,6 +3,7 @@ package ru.BouH.engine.game.controller;
 import org.joml.Vector2d;
 import org.joml.Vector2i;
 import org.joml.Vector3d;
+import org.lwjgl.glfw.GLFW;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.controller.input.MouseKeyboardController;
 import ru.BouH.engine.game.g_static.binding.BindingList;
@@ -73,7 +74,10 @@ public class ControllerDispatcher {
                     double d1 = xy[0] - posM.x;
                     double d2 = xy[1] - posM.y;
                     this.getCurrentController().getDisplayInput().set(new Vector2d(d2, d1));
-                    mouseKeyboardController1.getMouse().setCursorCoordinates(new double[]{posM.x, posM.y});
+                    if (GLFW.glfwGetKey(Game.getGame().getScreen().getWindow().getDescriptor(), GLFW.GLFW_KEY_RIGHT) == GLFW.GLFW_PRESS) {
+                        this.getCurrentController().getDisplayInput().set(new Vector2d(0, 2000 * Game.getGame().getScreen().getTimer().getDeltaTime()));
+                    }
+                    mouseKeyboardController1.getMouse().setCursorCoordinates(new double[]{ posM.x, posM.y });
                     if (BindingList.instance.keyA.isPressed()) {
                         this.getCurrentController().getXYZInput().add(-1.0f, 0.0f, 0.0f);
                     }

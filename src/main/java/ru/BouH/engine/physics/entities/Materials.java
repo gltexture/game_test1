@@ -6,8 +6,8 @@ import ru.BouH.engine.physics.jb_objects.RigidBodyObject;
 @SuppressWarnings("all")
 public class Materials {
     public static MaterialProperties defaultMaterial = new MaterialProperties("defaultMaterial");
-    public static MaterialProperties grassGround = new MaterialProperties("grassGround").setFriction(5.0d).setRestitution(0.0d);
-    public static MaterialProperties brickCube = new MaterialProperties("brickCube").setFriction(5.0d).setRestitution(0.0d);
+    public static MaterialProperties grassGround = new MaterialProperties("grassGround").setFriction(16.0d).setRestitution(0.0d);
+    public static MaterialProperties brickCube = new MaterialProperties("brickCube").setFriction(32.0d).setRestitution(0.0d);
 
     public static class MaterialProperties {
         public static final double DEFAULT_FRICTION_X = 1.0d;

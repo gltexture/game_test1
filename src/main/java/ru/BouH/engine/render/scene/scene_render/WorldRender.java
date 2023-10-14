@@ -27,6 +27,7 @@ import java.util.Iterator;
 
 public class WorldRender extends SceneRenderBase {
     private final CubeMapSample cubeEnvironmentTexture;
+    public static PhysXObject physXObject;
 
     public WorldRender(Scene.SceneRenderConveyor sceneRenderConveyor) {
         super(1, sceneRenderConveyor, RenderGroup.WORLD);

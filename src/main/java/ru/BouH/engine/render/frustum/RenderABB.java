@@ -12,12 +12,17 @@ public class RenderABB {
         this.abbMax = new Vector3f(0);
     }
 
-    public void setAbbForm(Vector3d center, Vector3d size) {
+    public void setAABBCenterSize(Vector3d center, Vector3d size) {
         double d1 = size.x / 2.0f;
         double d2 = size.y / 2.0f;
         double d3 = size.z / 2.0f;
         this.abbMin.set((float) (center.x - d1), (float) (center.y - d2), (float) (center.z - d3));
         this.abbMax.set((float) (center.x + d1), (float) (center.y + d2), (float) (center.z + d3));
+    }
+
+    public void setAABBMinMax(Vector3d min, Vector3d max) {
+        this.abbMin.set(min);
+        this.abbMax.set(max);
     }
 
     public Vector3f getAbbMin() {

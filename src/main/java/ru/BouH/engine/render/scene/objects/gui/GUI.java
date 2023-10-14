@@ -24,7 +24,7 @@ public class GUI {
         double width = Game.getGame().getScreen().getWidth();
         double height = Game.getGame().getScreen().getHeight();
         final EntityPlayerSP entityPlayerSP = Game.getGame().getPlayerSP();
-        GUI.renderText(partialTicks, 0, 0, "FPS: " + Screen.FPS + " | TPS1: " + Screen.PHYS1_TPS + " | TPS2: " + Screen.PHYS2_TPS, 0xffffff);
+        GUI.renderText(partialTicks, 0, 0, "FPS: " + Screen.FPS + " | TPS1: " + Screen.PHYS1_TPS, 0xffffff);
         GUI.renderText(partialTicks, 0, 20, "entities: " + Game.getGame().getPhysicsWorld().countItems(), 0xffffff);
         GUI.renderText(partialTicks, 0, 40, String.format("%s %s %s", (int) entityPlayerSP.getPosition().x, (int) entityPlayerSP.getPosition().y, (int) entityPlayerSP.getPosition().z), 0xffffff);
         int i1 = 60;

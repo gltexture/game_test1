@@ -21,7 +21,7 @@ public class RenderEntity implements RenderFabric {
             RenderData renderData = entityItem.getRenderData();
             Model3D model3D = entityItem.getModel3D();
             sceneRenderBase.getUtils().performModelViewMatrix3d(model3D);
-            model3D.setScale(physEntity.getScale());
+            model3D.setScale(entityItem.getScale());
             model3D.setPosition(entityItem.getRenderPosition());
             model3D.setRotation(entityItem.getRenderRotation());
             sceneRenderBase.getUtils().setTexture(renderData.getItemTexture());

@@ -6,6 +6,7 @@ import org.lwjgl.opengl.GL43;
 import org.lwjgl.system.MemoryUtil;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.controller.IController;
+import ru.BouH.engine.math.MathHelper;
 import ru.BouH.engine.physics.world.object.WorldItem;
 import ru.BouH.engine.physics.world.timer.PhysicThreadManager;
 import ru.BouH.engine.proxy.LocalPlayer;
@@ -30,7 +31,9 @@ import ru.BouH.engine.render.scene.world.camera.AttachedCamera;
 import ru.BouH.engine.render.scene.world.camera.FreeCamera;
 import ru.BouH.engine.render.scene.world.camera.ICamera;
 import ru.BouH.engine.render.screen.Screen;
+import ru.BouH.engine.render.screen.timer.TestTimer;
 import ru.BouH.engine.render.screen.window.Window;
+import ru.BouH.engine.render.utils.Syncer;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -43,8 +46,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Scene {
+    public static final Syncer SYNC_UPD_POS = new Syncer();
+    public double elapsedTime;
     private final List<SceneRenderBase> sceneRenderBases;
     private final Screen screen;
     private final Window window;
@@ -57,6 +63,7 @@ public class Scene {
     private ICamera currentCamera;
 
     public Scene(Screen screen, SceneWorld sceneWorld) {
+        Scene.SYNC_UPD_POS.syncUp();
         this.sceneWorld = sceneWorld;
         this.screen = screen;
         this.window = this.getScreen().getWindow();
@@ -67,6 +74,7 @@ public class Scene {
         this.worldRender = new WorldRender(this.getSceneRenderConveyor());
         this.guiRender = new GuiRender(this.getSceneRenderConveyor());
         this.currentCamera = null;
+        this.elapsedTime = PhysicThreadManager.getFrameTime();
     }
 
     public static boolean isSceneActive() {
@@ -185,34 +193,46 @@ public class Scene {
     }
 
     public void enableAttachedCamera(WorldItem worldItem) {
-        this.setRenderCamera(new AttachedCamera(worldItem));
+        if (worldItem != null) {
+            this.setRenderCamera(new AttachedCamera(worldItem, this.getCurrentController()));
+        }
     }
 
     public void attachCameraToLocalPlayer(LocalPlayer localPlayer) {
-        if (localPlayer != null && localPlayer.getEntityPlayerSP() != null) {
-            this.setRenderCamera(new AttachedCamera(localPlayer.getEntityPlayerSP()));
-        }
+        this.enableAttachedCamera(localPlayer.getEntityPlayerSP());
+    }
+
+    public IController getCurrentController() {
+        return this.getScreen().getControllerDispatcher().getCurrentController();
     }
 
     public boolean isCameraAttachedToItem(WorldItem worldItem) {
         return this.getCurrentCamera() instanceof AttachedCamera && ((AttachedCamera) this.getCurrentCamera()).getWorldItem() == worldItem;
     }
 
+    TestTimer testTimer = new TestTimer(20);
+    public void renderScene(double deltaTime) {
+        testTimer.updateTimer();
+        this.elapsedTime += deltaTime / PhysicThreadManager.getFrameTime();
+        double d1 = Math.min(this.elapsedTime, 1.0d);
+        System.out.println(d1);
+        this.renderSceneWithInterpolation(deltaTime, d1);
+    }
+
     @SuppressWarnings("all")
-    public void renderScene(double partialTicks) throws InterruptedException {
+    private void renderSceneWithInterpolation(double deltaTicks, double partialTicks) {
         if (Scene.isSceneActive()) {
             if (this.getCurrentCamera() != null) {
-                this.getFrustumCulling().refreshFrustumCullingState(RenderManager.instance.getProjectionMatrix(), RenderManager.instance.getViewMatrix());
-                while (Game.getGame().getScreen().getTimer().markSyncUpdate()) {
-                    Thread.sleep(0);
-                }
-                this.getSceneRender().onRender(partialTicks, this.sortedSceneList(this.getEntityRender(), this.getSkyRender()), this.sortedSceneList(this.getGuiRender()));
-                this.getCurrentCamera().updateCamera(partialTicks);
-                RenderManager.instance.updateViewMatrix(this.getCurrentCamera());
-                this.getRenderWorld().onWorldEntityUpdate(partialTicks);
+                while (Game.getGame().getScreen().getTimer().markSyncUpdate());
+                this.getRenderWorld().onWorldEntityUpdate(partialTicks, deltaTicks / PhysicThreadManager.getFrameTime());
                 synchronized (PhysicThreadManager.locker) {
                     PhysicThreadManager.locker.notifyAll();
                 }
+                this.getCurrentCamera().updateCameraPosition(deltaTicks);
+                this.getCurrentCamera().updateCameraRotation(partialTicks);
+                RenderManager.instance.updateViewMatrix(this.getCurrentCamera());
+                this.getFrustumCulling().refreshFrustumCullingState(RenderManager.instance.getProjectionMatrix(), RenderManager.instance.getViewMatrix());
+                this.getSceneRender().onRender(partialTicks, this.sortedSceneList(this.getEntityRender(), this.getSkyRender()), this.sortedSceneList(this.getGuiRender()));
             }
         }
     }

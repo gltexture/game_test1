@@ -1,6 +1,8 @@
 package ru.BouH.engine.physics.jb_objects;
 
-public interface JBulletEntity {
+import ru.BouH.engine.physics.world.object.IWorldDynamic;
+
+public interface JBulletEntity extends IWorldDynamic {
     RigidBodyObject getRigidBodyObject();
 
     default boolean isValid() {

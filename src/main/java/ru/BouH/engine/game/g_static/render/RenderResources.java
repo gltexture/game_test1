@@ -13,6 +13,7 @@ import ru.BouH.engine.render.scene.objects.gui.font.FontTexture;
 import ru.BouH.engine.render.scene.objects.items.BrushPlanePhysXObject;
 import ru.BouH.engine.render.scene.objects.items.EntityPhysicsObject;
 import ru.BouH.engine.render.scene.objects.items.PhysicsColoredLamp;
+import ru.BouH.engine.render.scene.objects.items.WorldObject;
 import ru.BouH.engine.render.scene.objects.texture.PictureSample;
 import ru.BouH.engine.render.scene.objects.texture.samples.Color3FA;
 import ru.BouH.engine.render.scene.objects.texture.samples.CubeMapPNGTexture;
@@ -24,6 +25,7 @@ import java.awt.*;
 public class RenderResources {
     public static FontTexture standardFont;
     public static PNGTexture pngGuiPic1;
+    public static RenderModeledData entityWOBject;
     public static RenderModeledData entityCube;
     public static RenderModeledData entityLamp;
     public static StandardRenderData player;
@@ -36,19 +38,20 @@ public class RenderResources {
     public static CubeMapPNGTexture skyboxCubeMap;
 
     public void preLoad() {
+        final RenderData.RenderProperties physicalObjectProperties = new RenderData.RenderProperties(true, true, false);
         RenderResources.standardFont = new FontTexture(new Font("Cambria", Font.PLAIN, 18), FontCode.Window);
+        RenderResources.skyboxCubeMap = new CubeMapPNGTexture("skybox/sky1");
         RenderResources.pngGuiPic1 = PNGTexture.createTexture("gui/pictures/meme2.png");
         RenderResources.bricksPng = PNGTexture.createTexture("props/bricks.png");
         RenderResources.grassPng = PNGTexture.createTexture("terrain/grass.png");
         RenderResources.bricksNormalMap = PNGTexture.createTexture("normals/bricks.png");
         RenderResources.cubeObj = Utils.loadMesh("prop/cube.obj");
-        RenderResources.skyboxCubeMap = new CubeMapPNGTexture("skybox/sky1");
 
-        RenderData.RenderProperties physicalObjectProperties = new RenderData.RenderProperties(true, true, false);
+        RenderResources.entityWOBject = new RenderModeledData(new RenderEntity(), bricksPng, WorldObject.class, cubeObj, physicalObjectProperties);
         RenderResources.entityCube = (RenderModeledData) new RenderModeledData(new RenderEntity(), bricksPng, EntityPhysicsObject.class, cubeObj, physicalObjectProperties).attachNormalMap(RenderResources.bricksNormalMap);
         RenderResources.entityLamp = new RenderModeledData(new RenderEntity(), new Color3FA(0xffffff), PhysicsColoredLamp.class, cubeObj, physicalObjectProperties);
         RenderResources.player = new StandardRenderData(new RenderNull(), EntityPhysicsObject.class);
         RenderResources.plane = (StandardRenderData) new StandardRenderData(new RenderBrushPlane(), bricksPng, BrushPlanePhysXObject.class).setTextureScaling(new Vector2d(32.0f, 4.0f)).attachNormalMap(RenderResources.bricksNormalMap);
-        RenderResources.planeBrick = (StandardRenderData) new StandardRenderData(new RenderBrushPlane(), grassPng, BrushPlanePhysXObject.class).setTextureScaling(new Vector2d(128.0f, 128.0f));
+        RenderResources.planeBrick = (StandardRenderData) new StandardRenderData(new RenderBrushPlane(), grassPng, BrushPlanePhysXObject.class).setTextureScaling(new Vector2d(256.0f, 256.0f));
     }
 }

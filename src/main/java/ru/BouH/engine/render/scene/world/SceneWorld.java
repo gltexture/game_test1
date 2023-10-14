@@ -3,15 +3,18 @@ package ru.BouH.engine.render.scene.world;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.exception.GameException;
 import ru.BouH.engine.game.g_static.profiler.SectionManager;
+import ru.BouH.engine.physics.entities.player.EntityPlayerSP;
 import ru.BouH.engine.physics.world.World;
 import ru.BouH.engine.physics.world.object.WorldItem;
 import ru.BouH.engine.proxy.IWorld;
 import ru.BouH.engine.render.environment.Environment;
 import ru.BouH.engine.render.environment.light.ILight;
 import ru.BouH.engine.render.frustum.FrustumCulling;
+import ru.BouH.engine.render.scene.Scene;
 import ru.BouH.engine.render.scene.components.IMesh;
 import ru.BouH.engine.render.scene.objects.data.RenderData;
 import ru.BouH.engine.render.scene.objects.items.PhysXObject;
+import ru.BouH.engine.render.scene.scene_render.WorldRender;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -50,6 +53,9 @@ public final class SceneWorld implements IWorld {
     }
 
     public void addPhysEntity(PhysXObject physXObject) {
+        if (physXObject.getWorldItem() instanceof EntityPlayerSP) {
+            WorldRender.physXObject = physXObject;
+        }
         physXObject.onSpawn(this);
         this.getEntityList().add(physXObject);
     }
@@ -116,12 +122,19 @@ public final class SceneWorld implements IWorld {
         Game.getGame().getLogManager().log("Successfully cleaned meshes!");
     }
 
-    public void onWorldEntityUpdate(double partialTicks) {
+    public void test() {
+        Game.getGame().getScreen().getScene().elapsedTime = 0.0d;
+        for (PhysXObject physXObject : this.getEntityList()) {
+            physXObject.test();
+        }
+    }
+
+    public void onWorldEntityUpdate(double partialTicks, double blend) {
         Iterator<PhysXObject> iterator = this.getEntityList().iterator();
         while (iterator.hasNext()) {
             PhysXObject physXObject = iterator.next();
             physXObject.onUpdate(this);
-            physXObject.updateRenderPos(partialTicks);
+            physXObject.updateRenderPos(partialTicks, blend);
             physXObject.checkCulling(this.getFrustumCulling());
             if (physXObject.isDead()) {
                 physXObject.onDestroy(this);

@@ -1,19 +1,16 @@
 package ru.BouH.engine.render.scene.world.camera;
 
-import org.joml.Vector2d;
 import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.controller.ControllerDispatcher;
 import ru.BouH.engine.game.controller.IController;
 
 public class FreeCamera extends Camera {
-    public static final double CAM_SPEED = 0.25d;
-    private IController controller;
+    public static final double CAM_SPEED = 180.0d;
 
     public FreeCamera(IController controller, Vector3d pos, Vector3d rot) {
-        super(pos, rot);
+        super(controller, pos, rot);
         Game.getGame().getLogManager().log("Created free camera at: " + pos);
-        this.controller = controller;
     }
 
     public void setCameraPos(Vector3d vector3d) {
@@ -25,31 +22,17 @@ public class FreeCamera extends Camera {
     }
 
     @Override
-    public void updateCamera(double partialTicks) {
+    public void updateCameraPosition(double partialTicks) {
         if (this.getController() != null) {
-            this.moveCamera(ControllerDispatcher.getOptionedXYZVec(this.getController()));
-            this.moveCameraRot(ControllerDispatcher.getOptionedDisplayVec(this.getController()));
+            this.moveCamera(ControllerDispatcher.getOptionedXYZVec(this.getController()).mul(partialTicks));
         }
     }
 
-    public void addCameraPos(Vector3d vector3d) {
-        super.setCameraPos(this.getCamPosition().add(vector3d));
-    }
-
-    public void addCameraRot(Vector3d vector3d) {
-        super.setCameraRot(this.getCamRotation().add(vector3d));
-    }
-
-    public IController getController() {
-        return this.controller;
-    }
-
-    public void setController(IController controller) {
-        this.controller = controller;
-    }
-
-    private void moveCameraRot(Vector2d xy) {
-        this.addCameraRot(new Vector3d(xy, 0));
+    @Override
+    public void updateCameraRotation(double partialTicks) {
+        if (this.getController() != null) {
+            this.move2dCameraRot(ControllerDispatcher.getOptionedDisplayVec(this.getController()));
+        }
     }
 
     private void moveCamera(Vector3d direction) {

@@ -30,7 +30,7 @@ public class Game {
     private boolean shouldBeClosed = false;
 
     private Game() {
-        Game.rngSeed = System.nanoTime();
+        Game.rngSeed = Game.systemTime();
         Game.random = new Random(Game.rngSeed);
         this.logManager = new GameLogging();
         this.profiler = new Profiler();
@@ -39,7 +39,11 @@ public class Game {
         this.proxy = new Proxy(this.getPhysicThreadManager().getGameWorldTimer(), this.getScreen());
     }
 
-    public static double systemTime() {
+    public static long systemTime() {
+        return (GLFW.glfwGetTimerValue() * 1000L) / (GLFW.glfwGetTimerFrequency() + 1);
+    }
+
+    public static double glfwTime() {
         return GLFW.glfwGetTime();
     }
 

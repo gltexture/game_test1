@@ -21,7 +21,7 @@ public class Proxy {
     }
 
     public void createLocalPlayer() {
-        this.localPlayer = new LocalPlayer(gameWorldTimer.getWorld(), new Vector3d(390.0d, 5.0d, 0.0d));
+        this.localPlayer = new LocalPlayer(gameWorldTimer.getWorld(), new Vector3d(195.0d, 1.0d, 0.0d));
     }
 
     public void addItemInWorlds(WorldItem worldItem, RenderData renderData) {

@@ -12,11 +12,7 @@ import org.lwjgl.system.MemoryUtil;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.controller.ControllerDispatcher;
 import ru.BouH.engine.game.g_static.profiler.SectionManager;
-import ru.BouH.engine.math.MathHelper;
-import ru.BouH.engine.physics.entities.player.EntityPlayerSP;
-import ru.BouH.engine.physics.world.timer.BulletWorldTimer;
 import ru.BouH.engine.physics.world.timer.GameWorldTimer;
-import ru.BouH.engine.physics.world.timer.PhysicThreadManager;
 import ru.BouH.engine.proxy.LocalPlayer;
 import ru.BouH.engine.render.scene.Scene;
 import ru.BouH.engine.render.scene.world.SceneWorld;
@@ -31,7 +27,6 @@ public class Screen {
     public static final int defaultH = 720;
     public static int FPS;
     public static int PHYS1_TPS;
-    public static int PHYS2_TPS;
     public static int MSAA_SAMPLES = 4;
     private final Timer timer;
     public boolean isInFocus;
@@ -40,7 +35,7 @@ public class Screen {
     private Window window;
 
     public Screen() {
-        this.timer = new Timer(PhysicThreadManager.TICKS_PER_SECOND);
+        this.timer = new Timer();
     }
 
     public static void takeScreenshot() {
@@ -187,14 +182,15 @@ public class Screen {
         Game.getGame().getProfiler().endSection(SectionManager.renderE);
     }
 
+    private double elapsedTime;
     @SuppressWarnings("all")
     private void renderLoop() throws InterruptedException {
         int fps = 0;
-        double lastFPS = Game.systemTime();
+        double lastFPS = Game.glfwTime();
         GLFW.glfwSetTime(0.0d);
         this.enableMSAA();
+        this.getTimer().reset();
         while (!Game.getGame().isShouldBeClosed()) {
-            this.getTimer().updateTimer();
             if (GLFW.glfwWindowShouldClose(this.getWindow().getDescriptor())) {
                 Game.getGame().destroyGame();
                 break;
@@ -205,22 +201,21 @@ public class Screen {
                 }
                 this.getControllerDispatcher().updateController(this.isInFocus, this.getWindow());
             }
-            double currentTime = Game.systemTime();
+            double currentTime = Game.glfwTime();
             fps += 1;
             if (currentTime - lastFPS >= 1.0f) {
                 Screen.PHYS1_TPS = GameWorldTimer.TPS;
-                Screen.PHYS2_TPS = BulletWorldTimer.TPS;
                 GameWorldTimer.TPS = 0;
-                BulletWorldTimer.TPS = 0;
                 Screen.FPS = fps;
                 fps = 0;
                 lastFPS = currentTime;
             }
             if (this.getScene().getCurrentCamera() != null) {
+                this.getTimer().updateTimer();
                 GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
                 GL30.glEnable(GL30.GL_CULL_FACE);
                 GL30.glCullFace(GL30.GL_BACK);
-                this.getScene().renderScene(MathHelper.clamp(this.getTimer().getRenderPartial(), 0.0d, 1.0d));
+                this.getScene().renderScene(this.getTimer().getDeltaTime());
             }
             GLFW.glfwSwapBuffers(this.getWindow().getDescriptor());
             GLFW.glfwSetInputMode(this.getWindow().getDescriptor(), GLFW.GLFW_CURSOR, !this.isInFocus ? GLFW.GLFW_CURSOR_NORMAL : GLFW.GLFW_CURSOR_HIDDEN);

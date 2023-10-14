@@ -6,10 +6,8 @@ import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.exception.GameException;
 import ru.BouH.engine.game.g_static.profiler.SectionManager;
 import ru.BouH.engine.physics.world.object.IWorldDynamic;
-import ru.BouH.engine.physics.jb_objects.JBulletDynamic;
 import ru.BouH.engine.physics.jb_objects.JBulletEntity;
 import ru.BouH.engine.physics.world.object.WorldItem;
-import ru.BouH.engine.physics.world.timer.BulletWorldTimer;
 import ru.BouH.engine.physics.world.timer.GameWorldTimer;
 import ru.BouH.engine.proxy.IWorld;
 import ru.BouH.engine.render.environment.light.ILight;
@@ -21,7 +19,6 @@ import java.util.stream.Collectors;
 
 public final class World implements IWorld {
     private final List<WorldItem> allWorldItems;
-    private final List<JBulletDynamic> allJBItems;
     private final List<IWorldDynamic> allDynamicItems;
     private final List<WorldItem> toCleanItems;
     private boolean collectionsWaitingRefresh;
@@ -29,7 +26,6 @@ public final class World implements IWorld {
 
     public World() {
         this.allWorldItems = new ArrayList<>();
-        this.allJBItems = new ArrayList<>();
         this.allDynamicItems = new ArrayList<>();
         this.toCleanItems = new ArrayList<>();
     }
@@ -38,16 +34,8 @@ public final class World implements IWorld {
         return worldItem instanceof IWorldDynamic;
     }
 
-    public static boolean isItemJBulletDynamic(WorldItem worldItem) {
-        return worldItem instanceof JBulletDynamic;
-    }
-
     public static boolean isItemJBulletObject(WorldItem worldItem) {
         return worldItem instanceof JBulletEntity;
-    }
-
-    public BulletWorldTimer getBulletTimer() {
-        return Game.getGame().getPhysicThreadManager().getBulletWorldTimer();
     }
 
     public GameWorldTimer getGameWorldTimer() {
@@ -66,14 +54,12 @@ public final class World implements IWorld {
         if (this.collectionsWaitingRefresh) {
             this.getAllDynamicItems().clear();
             this.getAllDynamicItems().addAll(copy1.stream().filter(World::isItemDynamic).map(e -> (IWorldDynamic) e).collect(Collectors.toList()));
-            synchronized (BulletWorldTimer.lock) {
-                this.getAllJBItems().clear();
-                this.getAllJBItems().addAll(copy1.stream().filter(World::isItemJBulletDynamic).map(e -> (JBulletDynamic) e).collect(Collectors.toList()));
-            }
             this.collectionsWaitingRefresh = false;
         }
         List<IWorldDynamic> copy2 = new ArrayList<>(this.getAllDynamicItems());
         for (IWorldDynamic iWorldDynamic : copy2) {
+            WorldItem worldItem = (WorldItem) iWorldDynamic;
+            worldItem.getPrevPosition().set(worldItem.getPosition());
             iWorldDynamic.onUpdate(this);
         }
         this.clearItemsCollection(this.toCleanItems);
@@ -100,11 +86,6 @@ public final class World implements IWorld {
     public void clearAllItems() {
         this.getAllWorldItems().forEach(WorldItem::setDead);
     }
-
-    public btDynamicsWorld getDynamicsWorld() {
-        return this.getBulletTimer().getDynamicsWorld();
-    }
-
     private void clearItemsCollection(Collection<? extends WorldItem> collection) {
         for (WorldItem worldItem : collection) {
             this.collectionsWaitingRefresh = true;
@@ -113,7 +94,7 @@ public final class World implements IWorld {
                 JBulletEntity jbItem = (JBulletEntity) worldItem;
                 btRigidBody rigidBody = jbItem.getRigidBodyObject();
                 if (rigidBody != null) {
-                    this.getBulletTimer().removeRigidBodyFromWorld(rigidBody);
+                    this.getGameWorldTimer().removeRigidBodyFromWorld(rigidBody);
                 }
             }
             this.getAllWorldItems().remove(worldItem);
@@ -139,10 +120,6 @@ public final class World implements IWorld {
 
     public synchronized List<IWorldDynamic> getAllDynamicItems() {
         return this.allDynamicItems;
-    }
-
-    public synchronized List<JBulletDynamic> getAllJBItems() {
-        return this.allJBItems;
     }
 
     public synchronized List<WorldItem> getAllWorldItems() {
