@@ -1,5 +1,6 @@
 package ru.BouH.engine.render.scene.world;
 
+import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.exception.GameException;
 import ru.BouH.engine.game.g_static.profiler.SectionManager;
@@ -129,7 +130,8 @@ public final class SceneWorld implements IWorld {
             PhysicsObject physicsObject = iterator.next();
             if (refresh) {
                 physicsObject.refreshInterpolatingState();
-                physicsObject.getWorldItem().setPrevPosition(physicsObject.getWorldItem().getPosition());
+                physicsObject.setPrevPos(physicsObject.getWorldItem().getPosition());
+                physicsObject.setPrevRot(physicsObject.getWorldItem().getRotation());
             }
             physicsObject.onUpdate(this);
             physicsObject.updateRenderPos(partialTicks);

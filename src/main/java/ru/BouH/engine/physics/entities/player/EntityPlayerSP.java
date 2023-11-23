@@ -66,8 +66,7 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
             this.groundCheck();
             if (this.isValidController()) {
                 final Vector3d motionC = this.calcControllerMotion();
-                //this.onStep(this.getStepVelocityVector(motionC));
-                this.setObjectVelocity(this.getMotionVector(motionC).mul(18));
+                this.onStep(this.getStepVelocityVector(motionC));
                 if (motionC.y > 0) {
                     this.onJump();
                 }

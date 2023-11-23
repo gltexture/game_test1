@@ -2,9 +2,12 @@ package ru.BouH.engine.render.scene.objects.items;
 
 import org.bytedeco.bullet.LinearMath.btVector3;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Quaterniond;
 import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.physics.brush.WorldBrush;
+import ru.BouH.engine.physics.entities.player.EntityPlayerSP;
+import ru.BouH.engine.physics.entities.prop.PhysEntityCube;
 import ru.BouH.engine.physics.jb_objects.JBulletEntity;
 import ru.BouH.engine.physics.world.object.IWorldDynamic;
 import ru.BouH.engine.physics.world.object.IWorldObject;
@@ -25,9 +28,12 @@ public abstract class PhysicsObject implements IRenderObject, IWorldObject, IWor
     private final WorldItem worldItem;
     private final RenderData renderData;
     protected Model3D model3D;
+    protected Vector3d prevRenderPosition;
+    protected Vector3d prevRenderRotation;
     protected Vector3d renderPosition;
     protected Vector3d renderRotation;
-    private InterpolationPoints currState;
+    private InterpolationPoints currentPositionInterpolation;
+    private InterpolationPoints currentRotationInterpolation;
     private boolean isObjectCulled;
     private boolean isVisible;
     private boolean isDead;
@@ -38,12 +44,15 @@ public abstract class PhysicsObject implements IRenderObject, IWorldObject, IWor
         this.worldItem = worldItem;
         this.renderPosition = new Vector3d(worldItem.getPosition());
         this.renderRotation = new Vector3d(worldItem.getRotation());
+        this.prevRenderPosition = new Vector3d(worldItem.getPosition());
+        this.prevRenderRotation = new Vector3d(worldItem.getRotation());
         this.light = null;
         this.sceneWorld = sceneWorld;
         this.renderData = renderData;
         this.isVisible = true;
         this.isObjectCulled = false;
-        this.currState = new InterpolationPoints(PhysicsObject.this.getWorldItem());
+        this.currentPositionInterpolation = new InterpolationPoints(this.getPrevRenderPosition(), this.getFixedPosition());
+        this.currentRotationInterpolation = new InterpolationPoints(this.getPrevRenderRotation(), this.getFixedRotation());
     }
 
     protected void setModel() {
@@ -152,24 +161,44 @@ public abstract class PhysicsObject implements IRenderObject, IWorldObject, IWor
         Vector3d rot = this.getFixedRotation();
 
         if (this.shouldInterpolatePos()) {
-            this.renderPosition.set(this.getCurrentState().interpolatedPoint(partialTicks));
+            this.renderPosition.set(this.getCurrentPosState().interpolatedPoint(partialTicks));
         } else {
             this.renderPosition.set(pos);
         }
 
         if (this.shouldInterpolateRot()) {
-            this.renderRotation.set(rot);
+            Vector3d newRotation = new Vector3d();
+            Quaterniond result = getQuaternionInterpolated(partialTicks);
+            result.getEulerAnglesXYZ(newRotation);
+            this.renderRotation.set(new Vector3d(Math.toDegrees(newRotation.x), Math.toDegrees(newRotation.y), Math.toDegrees(newRotation.z)));
         } else {
             this.renderRotation.set(rot);
         }
     }
 
-    public void refreshInterpolatingState() {
-        this.currState = new InterpolationPoints(this.getWorldItem());
+    private Quaterniond getQuaternionInterpolated(double partialTicks) {
+        Quaterniond start = new Quaterniond();
+        Quaterniond end = new Quaterniond();
+
+        start.rotateXYZ(Math.toRadians(this.getCurrentRotState().getStartPoint().x), Math.toRadians(this.getCurrentRotState().getStartPoint().y), Math.toRadians(this.getCurrentRotState().getStartPoint().z));
+        end.rotateXYZ(Math.toRadians(this.getCurrentRotState().getEndPoint().x), Math.toRadians(this.getCurrentRotState().getEndPoint().y), Math.toRadians(this.getCurrentRotState().getEndPoint().z));
+
+        Quaterniond res = new Quaterniond();
+        start.slerp(end, partialTicks, res);
+        return res;
     }
 
-    private InterpolationPoints getCurrentState() {
-        return this.currState;
+    public void refreshInterpolatingState() {
+        this.currentPositionInterpolation = new InterpolationPoints(this.getWorldItem().getPosition(), this.getPrevRenderPosition());
+        this.currentRotationInterpolation = new InterpolationPoints(this.getWorldItem().getRotation(), this.getPrevRenderRotation());
+    }
+
+    private InterpolationPoints getCurrentPosState() {
+        return this.currentPositionInterpolation;
+    }
+
+    private InterpolationPoints getCurrentRotState() {
+        return this.currentRotationInterpolation;
     }
 
     public void checkCulling(FrustumCulling frustumCulling) {
@@ -190,6 +219,22 @@ public abstract class PhysicsObject implements IRenderObject, IWorldObject, IWor
 
     protected Vector3d getFixedRotation() {
         return this.getWorldItem().getRotation();
+    }
+
+    public Vector3d getPrevRenderRotation() {
+        return new Vector3d(this.prevRenderRotation);
+    }
+
+    public void setPrevPos(Vector3d vector3d) {
+        this.prevRenderPosition.set(new Vector3d(vector3d));
+    }
+
+    public void setPrevRot(Vector3d vector3d) {
+        this.prevRenderRotation.set(new Vector3d(vector3d));
+    }
+
+    public Vector3d getPrevRenderPosition() {
+        return new Vector3d(this.prevRenderPosition);
     }
 
     public Vector3d getRenderPosition() {
@@ -244,10 +289,6 @@ public abstract class PhysicsObject implements IRenderObject, IWorldObject, IWor
         public InterpolationPoints(Vector3d startPoint, Vector3d endPoint) {
             this.startPoint = startPoint;
             this.endPoint = endPoint;
-        }
-
-        public InterpolationPoints(WorldItem worldItem) {
-            this(worldItem.getPosition(), worldItem.getPrevPosition());
         }
 
         public Vector3d interpolatedPoint(double partialTicks) {

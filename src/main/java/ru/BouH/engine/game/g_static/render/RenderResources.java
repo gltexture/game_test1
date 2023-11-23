@@ -44,10 +44,9 @@ public class RenderResources {
         RenderResources.cubeObj = Utils.loadMesh("prop/cube.obj");
         RenderResources.skyboxCubeMap = new CubeMapPNGTexture("skybox/sky1");
 
-        RenderData.RenderProperties physicalObjectProperties = new RenderData.RenderProperties(true, true, false);
-        RenderResources.entityCube = (RenderModeledData) new RenderModeledData(new RenderEntity(), bricksPng, EntityPhysicsObject.class, cubeObj, physicalObjectProperties).attachNormalMap(RenderResources.bricksNormalMap);
-        RenderResources.entityLamp = new RenderModeledData(new RenderEntity(), new Color3FA(0xffffff), PhysicsColoredLamp.class, cubeObj, physicalObjectProperties);
-        RenderResources.player = new StandardRenderData(new RenderNull(), EntityPhysicsObject.class);
+        RenderResources.entityCube = (RenderModeledData) new RenderModeledData(new RenderEntity(), bricksPng, EntityPhysicsObject.class, cubeObj).attachNormalMap(RenderResources.bricksNormalMap);
+        RenderResources.entityLamp = new RenderModeledData(new RenderEntity(), new Color3FA(0xffffff), PhysicsColoredLamp.class, cubeObj);
+        RenderResources.player = new StandardRenderData(new RenderNull(), EntityPhysicsObject.class, new RenderData.RenderProperties(true, true, false));
         RenderResources.plane = (StandardRenderData) new StandardRenderData(new RenderBrushPlane(), bricksPng, BrushPlanePhysXObject.class).setTextureScaling(new Vector2d(32.0f, 4.0f)).attachNormalMap(RenderResources.bricksNormalMap);
         RenderResources.planeBrick = (StandardRenderData) new StandardRenderData(new RenderBrushPlane(), grassPng, BrushPlanePhysXObject.class).setTextureScaling(new Vector2d(128.0f, 128.0f));
     }

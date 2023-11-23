@@ -202,7 +202,7 @@ public class Screen {
             double delta = this.getTimer().getDeltaTime();
             double updRate = (1000.0d / (this.getWindow().monitorRefreshRate() - 1)) * 0.001d;
             double sync = updRate - delta;
-            if (sync > 0.05d) {
+            if (sync > 0.1275d) {
                 updRate -= sync;
                 Game.getGame().getLogManager().warn("Slow frames. Sync: " + sync);
             }

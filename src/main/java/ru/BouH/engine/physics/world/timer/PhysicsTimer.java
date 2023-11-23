@@ -5,6 +5,7 @@ import org.bytedeco.bullet.BulletDynamics.*;
 import org.bytedeco.bullet.LinearMath.btIDebugDraw;
 import org.bytedeco.bullet.LinearMath.btVector3;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.exception.GameException;
 import ru.BouH.engine.game.g_static.profiler.SectionManager;
@@ -72,6 +73,7 @@ public class PhysicsTimer implements IPhysTimer {
                 synchronized (PhysicsTimer.lock) {
                     for (IWorldDynamic worldItem : this.world.getAllDynamicItems()) {
                         WorldItem worldItem1 = (WorldItem) worldItem;
+                        ((WorldItem) worldItem).setPrevPosition(new Vector3d(worldItem1.getPosition()));
                         worldItem.onUpdate(world1);
                     }
                     Game.getGame().getScreen().getTimer().getSyncUpdate().syncUp();

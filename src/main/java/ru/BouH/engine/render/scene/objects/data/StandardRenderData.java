@@ -19,6 +19,10 @@ public class StandardRenderData extends RenderData {
         super(renderFabric, new WorldItemTexture(sample), clazz);
     }
 
+    public StandardRenderData(RenderFabric renderFabric, @NotNull Class<? extends PhysicsObject> clazz, RenderProperties renderProperties) {
+        super(renderFabric, WorldItemTexture.standardError, clazz, renderProperties);
+    }
+
     public StandardRenderData(RenderFabric renderFabric, @NotNull Class<? extends PhysicsObject> clazz) {
         super(renderFabric, WorldItemTexture.standardError, clazz);
     }
