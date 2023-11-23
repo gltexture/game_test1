@@ -11,11 +11,9 @@ import ru.BouH.engine.render.environment.shadows.CascadeShadowBuilder;
 import ru.BouH.engine.render.scene.Scene;
 import ru.BouH.engine.render.scene.SceneRenderBase;
 import ru.BouH.engine.render.scene.components.Model3D;
-import ru.BouH.engine.render.scene.debug.jbullet.JBDebugDraw;
-import ru.BouH.engine.render.scene.mesh_forms.AbstractMeshForm;
 import ru.BouH.engine.render.scene.mesh_forms.VectorForm;
 import ru.BouH.engine.render.scene.mesh_forms.wire.AABBWireForm;
-import ru.BouH.engine.render.scene.objects.items.PhysXObject;
+import ru.BouH.engine.render.scene.objects.items.PhysicsObject;
 import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.scene.objects.texture.samples.Color3FA;
 import ru.BouH.engine.render.scene.programs.CubeMapSample;
@@ -23,11 +21,8 @@ import ru.BouH.engine.render.scene.programs.UniformBufferUtils;
 import ru.BouH.engine.render.scene.scene_render.utility.RenderGroup;
 import ru.BouH.engine.render.scene.scene_render.utility.UniformConstants;
 
-import java.util.Iterator;
-
 public class WorldRender extends SceneRenderBase {
     private final CubeMapSample cubeEnvironmentTexture;
-    public static PhysXObject physXObject;
 
     public WorldRender(Scene.SceneRenderConveyor sceneRenderConveyor) {
         super(1, sceneRenderConveyor, RenderGroup.WORLD);
@@ -64,7 +59,7 @@ public class WorldRender extends SceneRenderBase {
         this.performUniform(UniformConstants.dimensions, Game.getGame().getScreen().getWindow().getWindowDimensions());
         this.getUtils().performProjectionMatrix();
         this.renderDebugSunDirection(this);
-        for (PhysXObject entityItem : this.getSceneWorld().getFilteredEntityList()) {
+        for (PhysicsObject entityItem : this.getSceneWorld().getFilteredEntityList()) {
             this.renderHitBox(partialTicks, this, entityItem);
             if (entityItem.isHasRender()) {
                 if (entityItem.isHasModel()) {
@@ -88,11 +83,11 @@ public class WorldRender extends SceneRenderBase {
         super.onStopRender();
     }
 
-    private void setRenderTranslation(PhysXObject physXObject) {
-        Model3D model3D = physXObject.getModel3D();
-        model3D.setScale(physXObject.getScale());
-        model3D.setPosition(physXObject.getRenderPosition());
-        model3D.setRotation(physXObject.getRenderRotation());
+    private void setRenderTranslation(PhysicsObject physicsObject) {
+        Model3D model3D = physicsObject.getModel3D();
+        model3D.setScale(physicsObject.getScale());
+        model3D.setPosition(physicsObject.getRenderPosition());
+        model3D.setRotation(physicsObject.getRenderRotation());
     }
 
     public CubeMapSample getCubeEnvironmentTexture() {
@@ -115,8 +110,8 @@ public class WorldRender extends SceneRenderBase {
         this.getUtils().enableMsaa();
     }
 
-    private void renderHitBox(double partialTicks, SceneRenderBase sceneRenderBase, PhysXObject physXObject) {
-        WorldItem worldItem = physXObject.getWorldItem();
+    private void renderHitBox(double partialTicks, SceneRenderBase sceneRenderBase, PhysicsObject physicsObject) {
+        WorldItem worldItem = physicsObject.getWorldItem();
         if (worldItem instanceof JBulletEntity) {
             JBulletEntity jBulletEntity = (JBulletEntity) worldItem;
             RigidBodyObject rigidBodyObject = jBulletEntity.getRigidBodyObject();
@@ -131,7 +126,7 @@ public class WorldRender extends SceneRenderBase {
                 transform.deallocate();
                 AABBWireForm form = new AABBWireForm(min, max);
                 if (form.hasMesh()) {
-                    form.getMeshInfo().getPosition().set(physXObject.getRenderPosition());
+                    form.getMeshInfo().getPosition().set(physicsObject.getRenderPosition());
                     sceneRenderBase.getUtils().performModelViewMatrix3d(form.getMeshInfo());
                     GL30.glBindVertexArray(form.getMeshInfo().getVao());
                     GL30.glEnableVertexAttribArray(0);

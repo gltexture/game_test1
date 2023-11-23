@@ -18,10 +18,11 @@ import ru.BouH.engine.physics.entities.IRemoteController;
 import ru.BouH.engine.physics.entities.Materials;
 import ru.BouH.engine.physics.entities.PhysEntity;
 import ru.BouH.engine.physics.entities.prop.PhysEntityCube;
-import ru.BouH.engine.physics.entities.prop.PhysEntityTEST;
+import ru.BouH.engine.physics.entities.prop.PhysLightCube;
 import ru.BouH.engine.physics.jb_objects.RigidBodyObject;
 import ru.BouH.engine.physics.world.World;
 import ru.BouH.engine.proxy.IWorld;
+import ru.BouH.engine.render.environment.light.PointLight;
 
 public class EntityPlayerSP extends PhysEntity implements IRemoteController {
     private final Vector3d cameraRotation;
@@ -44,8 +45,8 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
         this.canJump = false;
     }
 
-    public void onUpdate(IWorld iWorld) {
-        super.onUpdate(iWorld);
+    public void onUpdate(IWorld world) {
+        super.onUpdate(world);
         if (this.isValid()) {
             if (this.isValidController()) {
                 if (this.isOnGround()) {
@@ -119,7 +120,7 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
 
         btConvexShape convexShape = new btBoxShape(v3);
         btCollisionWorld.ConvexResultCallback closestConvexResultCallback = new btCollisionWorld.ClosestConvexResultCallback(transform1.getOrigin(), transform2.getOrigin());
-        this.getWorld().getGameWorldTimer().getDiscreteDynamicsWorld().convexSweepTest(convexShape, transform1, transform2, closestConvexResultCallback);
+        this.getWorld().getDynamicsWorld().convexSweepTest(convexShape, transform1, transform2, closestConvexResultCallback);
 
         v1.deallocate();
         v2.deallocate();
@@ -210,15 +211,12 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
             entityPropInfo.setObjectVelocity(this.getLookVector().mul(30.0f));
         }
         if (BindingList.instance.keyBlock2.isClicked()) {
-            PhysEntityTEST entityPropInfo = new PhysEntityTEST(this.getWorld(), new Vector3d(0, 5, 0), "test");
-            entityPropInfo.setScale(5);
-            Game.getGame().getProxy().addItemInWorlds(entityPropInfo, RenderResources.entityWOBject);
-            //PhysEntityCube entityPropInfo = new PhysLightCube(this.getWorld(), RigidBodyObject.PhysProperties.createProperties(Materials.defaultMaterial, false, 1.0d), new Vector3d(1.0d), 0.5d, this.getPosition().add(this.getLookVector().mul(2.0f)), new Vector3d(0.0d));
-            //entityPropInfo.setScale(0.25d);
-            //Game.getGame().getProxy().addItemInWorlds(entityPropInfo, RenderResources.entityLamp);
-            //int a1 = Game.random.nextInt(3);
-            //entityPropInfo.setLight(new PointLight(new Vector3d(a1 == 0 ? 1.0d : Game.random.nextFloat(), a1 == 1 ? 1.0d : Game.random.nextFloat() * 0.5f, a1 == 2 ? 1.0d : Game.random.nextFloat() * 0.5f), 6.5d));
-            //entityPropInfo.setObjectVelocity(this.getLookVector().mul(20.0f));
+            PhysEntityCube entityPropInfo = new PhysLightCube(this.getWorld(), RigidBodyObject.PhysProperties.createProperties(Materials.defaultMaterial, false, 1.0d), new Vector3d(1.0d), 0.5d, this.getPosition().add(this.getLookVector().mul(2.0f)), new Vector3d(0.0d));
+            entityPropInfo.setScale(0.25d);
+            Game.getGame().getProxy().addItemInWorlds(entityPropInfo, RenderResources.entityLamp);
+            int a1 = Game.random.nextInt(3);
+            entityPropInfo.setLight(new PointLight(new Vector3d(a1 == 0 ? 1.0d : Game.random.nextFloat(), a1 == 1 ? 1.0d : Game.random.nextFloat() * 0.5f, a1 == 2 ? 1.0d : Game.random.nextFloat() * 0.5f), 6.5d));
+            entityPropInfo.setObjectVelocity(this.getLookVector().mul(20.0f));
         }
         if (BindingList.instance.keyClear.isClicked()) {
             this.getWorld().clearAllItems();

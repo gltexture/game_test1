@@ -5,10 +5,10 @@ import org.joml.Vector3d;
 import org.joml.Vector4d;
 import ru.BouH.engine.physics.world.object.IWorldDynamic;
 import ru.BouH.engine.proxy.IWorld;
-import ru.BouH.engine.render.scene.objects.items.PhysXObject;
+import ru.BouH.engine.render.scene.objects.items.PhysicsObject;
 
 public class PointLight implements ILight, IWorldDynamic {
-    private PhysXObject physXObject;
+    private PhysicsObject physicsObject;
     private Vector3d offset;
     private Vector3d lightColor;
     private Vector3d lightPos;
@@ -23,12 +23,12 @@ public class PointLight implements ILight, IWorldDynamic {
         this.lightPos = lightPos;
         this.brightness = brightness;
         this.offset = new Vector3d(0.0d);
-        this.physXObject = null;
+        this.physicsObject = null;
     }
 
-    public PointLight(Vector3d lightColor, PhysXObject physXObject, double brightness) {
-        this(lightColor, physXObject.getRenderPosition(), brightness);
-        this.physXObject = physXObject;
+    public PointLight(Vector3d lightColor, PhysicsObject physicsObject, double brightness) {
+        this(lightColor, physicsObject.getRenderPosition(), brightness);
+        this.physicsObject = physicsObject;
     }
 
     public PointLight(Vector3d lightColor, double brightness) {
@@ -51,13 +51,13 @@ public class PointLight implements ILight, IWorldDynamic {
         this.brightness = brightness;
     }
 
-    public void doAttachTo(PhysXObject physXObject) {
-        this.physXObject = physXObject;
+    public void doAttachTo(PhysicsObject physicsObject) {
+        this.physicsObject = physicsObject;
     }
 
     @Override
-    public PhysXObject attachedTo() {
-        return this.physXObject;
+    public PhysicsObject attachedTo() {
+        return this.physicsObject;
     }
 
     public Vector3d getOffset() {

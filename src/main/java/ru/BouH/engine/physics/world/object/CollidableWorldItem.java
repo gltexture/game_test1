@@ -48,7 +48,7 @@ public abstract class CollidableWorldItem extends WorldItem implements JBulletEn
     private void createRigidBody(World world, @NotNull Vector3d position, @NotNull Vector3d rotation, double scaling, RigidBodyObject.PhysProperties properties) {
         this.rigidBodyConstructor = new RigidBodyConstructor(world, startTranslation, startRotation, scaling, this.constructCollision());
         this.rigidBodyObject = this.getRigidBodyConstructor().buildRigidBody(properties);
-        world.getGameWorldTimer().addRigidBodyInWorld(this.getRigidBodyObject());
+        world.getBulletTimer().addRigidBodyInWorld(this.getRigidBodyObject());
         this.getRigidBodyObject().setTranslation(position);
         this.getRigidBodyObject().setRotation(rotation);
         this.getRigidBodyObject().updateCollisionObjectState();
@@ -58,11 +58,11 @@ public abstract class CollidableWorldItem extends WorldItem implements JBulletEn
     }
 
     public Vector3d getPosition() {
-        return this.getRigidBodyObject().getTranslation();
+        return new Vector3d(this.getRigidBodyObject().getTranslation());
     }
 
     public Vector3d getRotation() {
-        return this.getRigidBodyObject().getRotation();
+        return new Vector3d(this.getRigidBodyObject().getRotation());
     }
 
     public void setPosition(Vector3d vector3d) {

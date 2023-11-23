@@ -4,28 +4,27 @@ import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3d;
 import ru.BouH.engine.physics.jb_objects.RigidBodyObject;
 import ru.BouH.engine.physics.world.World;
-import ru.BouH.engine.physics.world.object.CollidableWorldItem;
 import ru.BouH.engine.physics.world.object.IWorldDynamic;
 import ru.BouH.engine.proxy.IWorld;
 
-public abstract class PhysEntity extends CollidableWorldItem implements IWorldDynamic {
+public abstract class PhysDynamicEntity extends PhysEntity implements IWorldDynamic {
     private final Vector3d velocityVector;
 
-    public PhysEntity(World world, String name, RigidBodyObject.PhysProperties properties, double scale, @NotNull Vector3d pos, @NotNull Vector3d rot) {
-        super(world, properties, scale, pos, rot, name);
+    public PhysDynamicEntity(World world, String name, RigidBodyObject.PhysProperties properties, double scale, @NotNull Vector3d pos, @NotNull Vector3d rot) {
+        super(world, name, properties, scale, pos, rot);
         this.velocityVector = new Vector3d(0.0d);
     }
 
-    public PhysEntity(World world, String name, RigidBodyObject.PhysProperties properties, @NotNull Vector3d pos, @NotNull Vector3d rot) {
+    public PhysDynamicEntity(World world, String name, RigidBodyObject.PhysProperties properties, @NotNull Vector3d pos, @NotNull Vector3d rot) {
         this(world, name, properties, 1.0d, pos, rot);
     }
 
-    public PhysEntity(World world, RigidBodyObject.PhysProperties properties, double scale, @NotNull Vector3d pos, @NotNull Vector3d rot) {
-        this(world, "phys_ent", properties, scale, pos, rot);
+    public PhysDynamicEntity(World world, RigidBodyObject.PhysProperties properties, double scale, @NotNull Vector3d pos, @NotNull Vector3d rot) {
+        this(world, "phys_dynamic_ent", properties, scale, pos, rot);
     }
 
-    public PhysEntity(World world, RigidBodyObject.PhysProperties properties, @NotNull Vector3d pos, @NotNull Vector3d rot) {
-        this(world, "phys_ent", properties, 1.0d, pos, rot);
+    public PhysDynamicEntity(World world, RigidBodyObject.PhysProperties properties, @NotNull Vector3d pos, @NotNull Vector3d rot) {
+        this(world, "phys_dynamic_ent", properties, 1.0d, pos, rot);
     }
 
     public Vector3d getVelocityVector() {
@@ -37,7 +36,7 @@ public abstract class PhysEntity extends CollidableWorldItem implements IWorldDy
     }
 
     @Override
-    public void onUpdate(IWorld world) {
+    public void onUpdate(IWorld iWorld) {
         if (this.isValid()) {
             this.addObjectVelocity(this.getVelocityVector());
             this.setVelocityVector(new Vector3d(0.0d));

@@ -8,19 +8,18 @@ import ru.BouH.engine.render.scene.objects.data.RenderData;
 import ru.BouH.engine.render.scene.objects.data.RenderModeledData;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 
-public class WorldObject extends PhysXObject {
+public class WorldObject extends PhysicsObject {
 
     public WorldObject(SceneWorld sceneWorld, WorldItem worldItem, RenderData renderData) {
         super(sceneWorld, worldItem, renderData);
     }
 
-    protected Model3D buildObjectModel() {
+    protected void setModel() {
         if (this.getRenderData() instanceof RenderModeledData) {
             RenderModeledData renderModeledData = (RenderModeledData) this.getRenderData();
             MeshModel meshModel = renderModeledData.getMeshModel();
-            return new Model3D(meshModel);
+            this.model3D = new Model3D(meshModel);
         }
-        return null;
     }
 
     @Override

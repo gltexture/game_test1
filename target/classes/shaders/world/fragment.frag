@@ -78,7 +78,7 @@ uniform sampler2D shadowMap_1;
 uniform sampler2D shadowMap_2;
 
 vec2 getVecTC() {
-    return out_texture * texture_scaling;
+    return texture_scaling * out_texture;
 }
 
 void main()

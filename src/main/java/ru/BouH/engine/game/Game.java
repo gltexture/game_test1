@@ -36,11 +36,11 @@ public class Game {
         this.profiler = new Profiler();
         this.physicThreadManager = new PhysicThreadManager(PhysicThreadManager.TICKS_PER_SECOND);
         this.screen = new Screen();
-        this.proxy = new Proxy(this.getPhysicThreadManager().getGameWorldTimer(), this.getScreen());
+        this.proxy = new Proxy(this.getPhysicThreadManager().getPhysicsTimer(), this.getScreen());
     }
 
     public static long systemTime() {
-        return (GLFW.glfwGetTimerValue() * 1000L) / (GLFW.glfwGetTimerFrequency() + 1);
+        return System.nanoTime();
     }
 
     public static double glfwTime() {
@@ -80,7 +80,7 @@ public class Game {
     }
 
     public World getPhysicsWorld() {
-        return this.getPhysicThreadManager().getGameWorldTimer().getWorld();
+        return this.getPhysicThreadManager().getPhysicsTimer().getWorld();
     }
 
     public SceneWorld getSceneWorld() {

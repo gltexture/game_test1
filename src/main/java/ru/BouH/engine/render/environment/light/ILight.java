@@ -1,12 +1,12 @@
 package ru.BouH.engine.render.environment.light;
 
 import org.joml.Vector3d;
-import ru.BouH.engine.render.scene.objects.items.PhysXObject;
+import ru.BouH.engine.render.scene.objects.items.PhysicsObject;
 
 public interface ILight {
-    void doAttachTo(PhysXObject physXObject);
+    void doAttachTo(PhysicsObject physicsObject);
 
-    PhysXObject attachedTo();
+    PhysicsObject attachedTo();
 
     Vector3d getOffset();
 

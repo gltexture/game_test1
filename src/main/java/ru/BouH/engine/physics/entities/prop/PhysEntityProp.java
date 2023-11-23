@@ -2,11 +2,11 @@ package ru.BouH.engine.physics.entities.prop;
 
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3d;
-import ru.BouH.engine.physics.entities.PhysEntity;
+import ru.BouH.engine.physics.entities.PhysDynamicEntity;
 import ru.BouH.engine.physics.jb_objects.RigidBodyObject;
 import ru.BouH.engine.physics.world.World;
 
-public abstract class PhysEntityProp extends PhysEntity {
+public abstract class PhysEntityProp extends PhysDynamicEntity {
     private final Vector3d size;
 
     public PhysEntityProp(World world, RigidBodyObject.PhysProperties properties, Vector3d size, double scale, @NotNull Vector3d pos, @NotNull Vector3d rot) {

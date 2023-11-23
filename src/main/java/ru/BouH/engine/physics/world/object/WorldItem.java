@@ -26,7 +26,7 @@ public abstract class WorldItem implements IWorldObject {
         this.itemName = itemName;
         this.rotation = new Vector3d(rot);
         this.position = new Vector3d(pos);
-        this.prevPosition = new Vector3d(pos);
+        this.prevPosition = new Vector3d(this.position);
         this.scale = scale;
         this.world = world;
         this.iLight = null;
@@ -54,10 +54,6 @@ public abstract class WorldItem implements IWorldObject {
         this(world, 1.0d, new Vector3d(0.0d), new Vector3d(0.0d), itemName);
     }
 
-    public void updatePrevPosition() {
-        this.prevPosition.set(new Vector3d(this.getPosition()));
-    }
-
     public void onSpawn(IWorld iWorld) {
         this.spawnTick = ((World) iWorld).getTicks();
         Game.getGame().getLogManager().log("Add entity in world - [ " + this + " ]");
@@ -71,8 +67,12 @@ public abstract class WorldItem implements IWorldObject {
         return this.getItemName() + "(" + this.getItemId() + ")";
     }
 
+    public void setPrevPosition(Vector3d vector3d) {
+        this.prevPosition.set(vector3d);
+    }
+
     public Vector3d getPrevPosition() {
-        return this.prevPosition;
+        return new Vector3d(this.prevPosition);
     }
 
     public int getTicksExisted() {

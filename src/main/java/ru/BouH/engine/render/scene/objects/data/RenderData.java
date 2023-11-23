@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2d;
 import ru.BouH.engine.physics.world.object.WorldItem;
 import ru.BouH.engine.render.scene.fabric.RenderFabric;
-import ru.BouH.engine.render.scene.objects.items.PhysXObject;
+import ru.BouH.engine.render.scene.objects.items.PhysicsObject;
 import ru.BouH.engine.render.scene.objects.texture.PictureSample;
 import ru.BouH.engine.render.scene.objects.texture.Sample;
 import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
@@ -15,15 +15,15 @@ import java.lang.reflect.InvocationTargetException;
 
 public abstract class RenderData {
     private final RenderFabric renderFabric;
-    private final Class<? extends PhysXObject> aClass;
+    private final Class<? extends PhysicsObject> aClass;
     private WorldItemTexture worldItemTexture;
     private RenderProperties renderProperties;
 
-    public RenderData(RenderFabric renderFabric, @NotNull WorldItemTexture worldItemTexture, @NotNull Class<? extends PhysXObject> clazz) {
+    public RenderData(RenderFabric renderFabric, @NotNull WorldItemTexture worldItemTexture, @NotNull Class<? extends PhysicsObject> clazz) {
         this(renderFabric, worldItemTexture, clazz, RenderProperties.defaultRenderProperties());
     }
 
-    public RenderData(RenderFabric renderFabric, @NotNull WorldItemTexture worldItemTexture, @NotNull Class<? extends PhysXObject> clazz, RenderProperties renderProperties) {
+    public RenderData(RenderFabric renderFabric, @NotNull WorldItemTexture worldItemTexture, @NotNull Class<? extends PhysicsObject> clazz, RenderProperties renderProperties) {
         this.renderFabric = renderFabric;
         this.worldItemTexture = worldItemTexture;
         this.renderProperties = renderProperties;
@@ -67,7 +67,7 @@ public abstract class RenderData {
         return this;
     }
 
-    public PhysXObject getPhysRender(SceneWorld sceneWorld, WorldItem worldItem) {
+    public PhysicsObject getPhysRender(SceneWorld sceneWorld, WorldItem worldItem) {
         try {
             return this.aClass.getDeclaredConstructor(SceneWorld.class, WorldItem.class, RenderData.class).newInstance(sceneWorld, worldItem, this.copyRenderData());
         } catch (InstantiationException | IllegalAccessException | NoSuchMethodException |
@@ -78,7 +78,7 @@ public abstract class RenderData {
 
     public abstract RenderData copyRenderData();
 
-    protected Class<? extends PhysXObject> getPOClass() {
+    protected Class<? extends PhysicsObject> getPOClass() {
         return this.aClass;
     }
 

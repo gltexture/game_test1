@@ -5,7 +5,7 @@ import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.joml.Vector4d;
 import ru.BouH.engine.game.Game;
-import ru.BouH.engine.render.scene.objects.items.PhysXObject;
+import ru.BouH.engine.render.scene.objects.items.PhysicsObject;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 
 import java.util.ArrayList;
@@ -69,8 +69,8 @@ public class LightManager {
         iLight.deactivate();
     }
 
-    public PointLight createPointLight(Vector3d lightColor, PhysXObject physXObject, double brightness) {
-        PointLight pointLight = new PointLight(lightColor, physXObject, brightness);
+    public PointLight createPointLight(Vector3d lightColor, PhysicsObject physicsObject, double brightness) {
+        PointLight pointLight = new PointLight(lightColor, physicsObject, brightness);
         int i = this.getActivePointLights().size();
         this.getPointLightList().set(i, pointLight);
         return pointLight;

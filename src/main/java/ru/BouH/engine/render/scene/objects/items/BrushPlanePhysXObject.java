@@ -4,12 +4,11 @@ import ru.BouH.engine.physics.brush.Plane4dBrush;
 import ru.BouH.engine.physics.brush.WorldBrush;
 import ru.BouH.engine.physics.world.object.WorldItem;
 import ru.BouH.engine.proxy.IWorld;
-import ru.BouH.engine.render.scene.components.Model3D;
 import ru.BouH.engine.render.scene.mesh_forms.PlaneForm;
 import ru.BouH.engine.render.scene.objects.data.RenderData;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 
-public class BrushPlanePhysXObject extends PhysXObject {
+public class BrushPlanePhysXObject extends PhysicsObject {
     private final WorldBrush worldBrush;
 
     public BrushPlanePhysXObject(SceneWorld sceneWorld, WorldItem worldItem, RenderData renderData) {
@@ -21,9 +20,10 @@ public class BrushPlanePhysXObject extends PhysXObject {
         this.worldBrush = worldBrush;
     }
 
-    protected Model3D buildObjectModel() {
+    protected void setModel() {
         Plane4dBrush plane4dBrush = (Plane4dBrush) this.getWorldBrush();
-        return new PlaneForm(plane4dBrush.getVertices()[0], plane4dBrush.getVertices()[1], plane4dBrush.getVertices()[2], plane4dBrush.getVertices()[3]).getMeshInfo();
+        PlaneForm planeForm = new PlaneForm(plane4dBrush.getVertices()[0], plane4dBrush.getVertices()[1], plane4dBrush.getVertices()[2], plane4dBrush.getVertices()[3]);
+        this.model3D = planeForm.getMeshInfo();
     }
 
     @Override

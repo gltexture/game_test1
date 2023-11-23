@@ -5,7 +5,6 @@ import ru.BouH.engine.physics.collision.AbstractCollision;
 import ru.BouH.engine.physics.collision.ConvexShape;
 import ru.BouH.engine.physics.jb_objects.RigidBodyObject;
 import ru.BouH.engine.physics.world.World;
-import ru.BouH.engine.proxy.IWorld;
 
 public class Plane4dBrush extends WorldBrush {
     private final Vector3d[] vertices;
@@ -26,10 +25,5 @@ public class Plane4dBrush extends WorldBrush {
     @Override
     protected AbstractCollision constructCollision() {
         return new ConvexShape(this.getVertices());
-    }
-
-    @Override
-    public void onUpdate(IWorld iWorld) {
-
     }
 }

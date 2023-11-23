@@ -6,8 +6,6 @@ import org.lwjgl.opengl.GL43;
 import org.lwjgl.system.MemoryUtil;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.controller.IController;
-import ru.BouH.engine.math.MathHelper;
-import ru.BouH.engine.physics.world.object.WorldItem;
 import ru.BouH.engine.physics.world.timer.PhysicThreadManager;
 import ru.BouH.engine.proxy.LocalPlayer;
 import ru.BouH.engine.render.RenderManager;
@@ -19,7 +17,7 @@ import ru.BouH.engine.render.frustum.FrustumCulling;
 import ru.BouH.engine.render.scene.components.MeshModel;
 import ru.BouH.engine.render.scene.components.Model2D;
 import ru.BouH.engine.render.scene.components.Model3D;
-import ru.BouH.engine.render.scene.objects.items.PhysXObject;
+import ru.BouH.engine.render.scene.objects.items.PhysicsObject;
 import ru.BouH.engine.render.scene.programs.FrameBufferObjectProgram;
 import ru.BouH.engine.render.scene.programs.ShaderManager;
 import ru.BouH.engine.render.scene.programs.UniformBufferUtils;
@@ -31,9 +29,7 @@ import ru.BouH.engine.render.scene.world.camera.AttachedCamera;
 import ru.BouH.engine.render.scene.world.camera.FreeCamera;
 import ru.BouH.engine.render.scene.world.camera.ICamera;
 import ru.BouH.engine.render.screen.Screen;
-import ru.BouH.engine.render.screen.timer.TestTimer;
 import ru.BouH.engine.render.screen.window.Window;
-import ru.BouH.engine.render.utils.Syncer;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -46,11 +42,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Scene {
-    public static final Syncer SYNC_UPD_POS = new Syncer();
-    public double elapsedTime;
+    private double elapsedTime;
     private final List<SceneRenderBase> sceneRenderBases;
     private final Screen screen;
     private final Window window;
@@ -60,10 +54,10 @@ public class Scene {
     private final WorldRender worldRender;
     private final FrustumCulling frustumCulling;
     private final SceneRenderConveyor sceneRenderConveyor;
+    private boolean refresh;
     private ICamera currentCamera;
 
     public Scene(Screen screen, SceneWorld sceneWorld) {
-        Scene.SYNC_UPD_POS.syncUp();
         this.sceneWorld = sceneWorld;
         this.screen = screen;
         this.window = this.getScreen().getWindow();
@@ -74,7 +68,6 @@ public class Scene {
         this.worldRender = new WorldRender(this.getSceneRenderConveyor());
         this.guiRender = new GuiRender(this.getSceneRenderConveyor());
         this.currentCamera = null;
-        this.elapsedTime = PhysicThreadManager.getFrameTime();
     }
 
     public static boolean isSceneActive() {
@@ -136,10 +129,9 @@ public class Scene {
     }
 
     public void preRender() {
-        LocalPlayer localPlayer = Game.getGame().getProxy().getLocalPlayer();
         this.getRenderWorld().setFrustumCulling(this.getFrustumCulling());
         if (LocalPlayer.VALID_PL) {
-            this.attachCameraToLocalPlayer(Game.getGame().getProxy().getLocalPlayer());
+            this.enableAttachedCamera(SceneWorld.PL);
         }
         Game.getGame().getLogManager().log("Starting scene rendering: ");
         this.getSceneRender().onStartRender();
@@ -192,49 +184,41 @@ public class Scene {
         this.setRenderCamera(new FreeCamera(controller, pos, rot));
     }
 
-    public void enableAttachedCamera(WorldItem worldItem) {
-        if (worldItem != null) {
-            this.setRenderCamera(new AttachedCamera(worldItem, this.getCurrentController()));
+    public void enableAttachedCamera(PhysicsObject physicsObject) {
+        this.setRenderCamera(new AttachedCamera(physicsObject));
+    }
+
+    public boolean isCameraAttachedToItem(PhysicsObject physicsObject) {
+        return this.getCurrentCamera() instanceof AttachedCamera && ((AttachedCamera) this.getCurrentCamera()).getPhysXObject() == physicsObject;
+    }
+
+    private double last;
+
+    @SuppressWarnings("all")
+    public void renderScene(double deltaTime) throws InterruptedException {
+        if (Scene.isSceneActive()) {
+            if (this.getCurrentCamera() != null) {
+                this.elapsedTime += deltaTime / PhysicThreadManager.getFrameTime();
+                if (this.elapsedTime > 1.0d) {
+                    this.refresh = true;
+                    synchronized (PhysicThreadManager.locker) {
+                        PhysicThreadManager.locker.notifyAll();
+                    }
+                    this.elapsedTime %= 1.0d;
+                }
+                this.renderSceneInterpolated(this.elapsedTime);
+            }
         }
-    }
-
-    public void attachCameraToLocalPlayer(LocalPlayer localPlayer) {
-        this.enableAttachedCamera(localPlayer.getEntityPlayerSP());
-    }
-
-    public IController getCurrentController() {
-        return this.getScreen().getControllerDispatcher().getCurrentController();
-    }
-
-    public boolean isCameraAttachedToItem(WorldItem worldItem) {
-        return this.getCurrentCamera() instanceof AttachedCamera && ((AttachedCamera) this.getCurrentCamera()).getWorldItem() == worldItem;
-    }
-
-    TestTimer testTimer = new TestTimer(20);
-    public void renderScene(double deltaTime) {
-        testTimer.updateTimer();
-        this.elapsedTime += deltaTime / PhysicThreadManager.getFrameTime();
-        double d1 = Math.min(this.elapsedTime, 1.0d);
-        System.out.println(d1);
-        this.renderSceneWithInterpolation(deltaTime, d1);
     }
 
     @SuppressWarnings("all")
-    private void renderSceneWithInterpolation(double deltaTicks, double partialTicks) {
-        if (Scene.isSceneActive()) {
-            if (this.getCurrentCamera() != null) {
-                while (Game.getGame().getScreen().getTimer().markSyncUpdate());
-                this.getRenderWorld().onWorldEntityUpdate(partialTicks, deltaTicks / PhysicThreadManager.getFrameTime());
-                synchronized (PhysicThreadManager.locker) {
-                    PhysicThreadManager.locker.notifyAll();
-                }
-                this.getCurrentCamera().updateCameraPosition(deltaTicks);
-                this.getCurrentCamera().updateCameraRotation(partialTicks);
-                RenderManager.instance.updateViewMatrix(this.getCurrentCamera());
-                this.getFrustumCulling().refreshFrustumCullingState(RenderManager.instance.getProjectionMatrix(), RenderManager.instance.getViewMatrix());
-                this.getSceneRender().onRender(partialTicks, this.sortedSceneList(this.getEntityRender(), this.getSkyRender()), this.sortedSceneList(this.getGuiRender()));
-            }
-        }
+    public void renderSceneInterpolated(final double partialTicks) throws InterruptedException {
+        this.getFrustumCulling().refreshFrustumCullingState(RenderManager.instance.getProjectionMatrix(), RenderManager.instance.getViewMatrix());
+        this.getRenderWorld().onWorldEntityUpdate(this.refresh, partialTicks);
+        this.getCurrentCamera().updateCamera(partialTicks);
+        RenderManager.instance.updateViewMatrix(this.getCurrentCamera());
+        this.getSceneRender().onRender(partialTicks, this.sortedSceneList(this.getEntityRender(), this.getSkyRender()), this.sortedSceneList(this.getGuiRender()));
+        this.refresh = false;
     }
 
     private List<SceneRenderBase> sortedSceneList(SceneRenderBase... s) {
@@ -302,12 +286,12 @@ public class Scene {
                 GL30.glClear(GL30.GL_DEPTH_BUFFER_BIT);
                 CascadeShadowBuilder cascadeShadowBuilder = this.cascadeShadowBuilders.get(i);
                 this.getDepthShaderManager().performUniform("projection_view_matrix", cascadeShadowBuilder.getProjectionViewMatrix());
-                for (PhysXObject physXObject : base.getSceneWorld().getEntityList()) {
-                    if (physXObject.isHasModel()) {
-                        Model3D model3D = physXObject.getModel3D();
+                for (PhysicsObject physicsObject : base.getSceneWorld().getEntityList()) {
+                    if (physicsObject.isHasModel()) {
+                        Model3D model3D = physicsObject.getModel3D();
                         Matrix4d m2 = RenderManager.instance.getModelMatrix(model3D);
                         this.getDepthShaderManager().performUniform("model_matrix", m2);
-                        physXObject.renderFabric().onRender(partialTicks, base, physXObject);
+                        physicsObject.renderFabric().onRender(partialTicks, base, physicsObject);
                     }
                 }
             }
@@ -493,7 +477,7 @@ public class Scene {
         public void onStartRender() {
             this.getBlurShader().startProgram();
             this.getPostProcessingShader().startProgram();
-            this.getShadowDispatcher().onStartRender();
+            //this.getShadowDispatcher().onStartRender();
         }
 
         public void onStopRender() {
@@ -501,7 +485,7 @@ public class Scene {
             this.sceneFbo.clearFBO();
             this.getBlurShader().destroyProgram();
             this.getPostProcessingShader().destroyProgram();
-            this.getShadowDispatcher().onStopRender();
+            //this.getShadowDispatcher().onStopRender();
         }
 
         public ShaderManager getBlurShader() {

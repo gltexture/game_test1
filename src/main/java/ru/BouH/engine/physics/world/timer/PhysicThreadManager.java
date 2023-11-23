@@ -11,24 +11,24 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class PhysicThreadManager {
     public static final Object locker = new Object();
     public static final IntPair WORLD_BORDERS = new IntPair(-750, 750);
-    public static final int TICKS_PER_SECOND = 20;
+    public static final int TICKS_PER_SECOND = 60;
     public static final int PHYS_THREADS = 1;
     private final ExecutorService executorService;
-    private final GameWorldTimer gameWorldTimer;
+    private final PhysicsTimer physicsTimer;
     private final int tps;
 
     public PhysicThreadManager(int tps) {
         this.tps = tps;
         this.executorService = Executors.newFixedThreadPool(PhysicThreadManager.PHYS_THREADS, new GamePhysicsThreadFactory("physics"));
-        this.gameWorldTimer = new GameWorldTimer();
-    }
-
-    public static long getTicksForUpdate(int TPS) {
-        return 1000L / TPS;
+        this.physicsTimer = new PhysicsTimer();
     }
 
     public static double getFrameTime() {
         return 1.0d / PhysicThreadManager.TICKS_PER_SECOND;
+    }
+
+    public static long getTicksForUpdate(int TPS) {
+        return 1000L / TPS;
     }
 
     public boolean checkActivePhysics() {
@@ -38,7 +38,7 @@ public class PhysicThreadManager {
 
     public void initService() {
         this.getExecutorService().execute(() -> {
-            this.getGameWorldTimer().updateTimer(this.getTps());
+            this.getPhysicsTimer().updateTimer(this.getTps());
         });
     }
 
@@ -50,8 +50,8 @@ public class PhysicThreadManager {
         return this.tps;
     }
 
-    public GameWorldTimer getGameWorldTimer() {
-        return this.gameWorldTimer;
+    public final PhysicsTimer getPhysicsTimer() {
+        return this.physicsTimer;
     }
 
     public final ExecutorService getExecutorService() {

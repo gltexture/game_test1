@@ -40,8 +40,9 @@ public class RigidBodyObject extends btRigidBody {
             transform.setRotation(quaternion);
             this.setWorldTransform(transform);
             this.updateCollisionObjectState();
-            this.getWorld().getGameWorldTimer().updateRigidBodyAabb(this);
+            this.getWorld().getBulletTimer().updateRigidBodyAabb(this);
         }
+        this.getWorld().getDynamicsWorld().synchronizeMotionStates();
     }
 
     public void setTranslation(Vector3d pos) {
@@ -49,8 +50,9 @@ public class RigidBodyObject extends btRigidBody {
             transform.setOrigin(new btVector3(pos.x, pos.y, pos.z));
             this.setWorldTransform(transform);
             this.updateCollisionObjectState();
-            this.getWorld().getGameWorldTimer().updateRigidBodyAabb(this);
+            this.getWorld().getBulletTimer().updateRigidBodyAabb(this);
         }
+        this.getWorld().getDynamicsWorld().synchronizeMotionStates();
     }
 
     public Vector3d getRotation() {

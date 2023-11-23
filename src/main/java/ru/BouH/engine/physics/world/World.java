@@ -8,7 +8,7 @@ import ru.BouH.engine.game.g_static.profiler.SectionManager;
 import ru.BouH.engine.physics.world.object.IWorldDynamic;
 import ru.BouH.engine.physics.jb_objects.JBulletEntity;
 import ru.BouH.engine.physics.world.object.WorldItem;
-import ru.BouH.engine.physics.world.timer.GameWorldTimer;
+import ru.BouH.engine.physics.world.timer.PhysicsTimer;
 import ru.BouH.engine.proxy.IWorld;
 import ru.BouH.engine.render.environment.light.ILight;
 
@@ -38,8 +38,8 @@ public final class World implements IWorld {
         return worldItem instanceof JBulletEntity;
     }
 
-    public GameWorldTimer getGameWorldTimer() {
-        return Game.getGame().getPhysicThreadManager().getGameWorldTimer();
+    public PhysicsTimer getBulletTimer() {
+        return Game.getGame().getPhysicThreadManager().getPhysicsTimer();
     }
 
     public void onWorldStart() {
@@ -52,14 +52,14 @@ public final class World implements IWorld {
     public void onWorldUpdate() {
         List<WorldItem> copy1 = new ArrayList<>(this.getAllWorldItems());
         if (this.collectionsWaitingRefresh) {
-            this.getAllDynamicItems().clear();
-            this.getAllDynamicItems().addAll(copy1.stream().filter(World::isItemDynamic).map(e -> (IWorldDynamic) e).collect(Collectors.toList()));
+            synchronized (PhysicsTimer.lock) {
+                this.getAllDynamicItems().clear();
+                this.getAllDynamicItems().addAll(copy1.stream().filter(World::isItemDynamic).map(e -> (IWorldDynamic) e).collect(Collectors.toList()));
+            }
             this.collectionsWaitingRefresh = false;
         }
         List<IWorldDynamic> copy2 = new ArrayList<>(this.getAllDynamicItems());
         for (IWorldDynamic iWorldDynamic : copy2) {
-            WorldItem worldItem = (WorldItem) iWorldDynamic;
-            worldItem.getPrevPosition().set(worldItem.getPosition());
             iWorldDynamic.onUpdate(this);
         }
         this.clearItemsCollection(this.toCleanItems);
@@ -86,6 +86,11 @@ public final class World implements IWorld {
     public void clearAllItems() {
         this.getAllWorldItems().forEach(WorldItem::setDead);
     }
+
+    public btDynamicsWorld getDynamicsWorld() {
+        return this.getBulletTimer().getDynamicsWorld();
+    }
+
     private void clearItemsCollection(Collection<? extends WorldItem> collection) {
         for (WorldItem worldItem : collection) {
             this.collectionsWaitingRefresh = true;
@@ -94,7 +99,7 @@ public final class World implements IWorld {
                 JBulletEntity jbItem = (JBulletEntity) worldItem;
                 btRigidBody rigidBody = jbItem.getRigidBodyObject();
                 if (rigidBody != null) {
-                    this.getGameWorldTimer().removeRigidBodyFromWorld(rigidBody);
+                    this.getBulletTimer().removeRigidBodyFromWorld(rigidBody);
                 }
             }
             this.getAllWorldItems().remove(worldItem);

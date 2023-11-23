@@ -4,8 +4,7 @@ import org.bytedeco.bullet.LinearMath.btVector3;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
-import ru.BouH.engine.math.MathHelper;
-import ru.BouH.engine.physics.entities.player.EntityPlayerSP;
+import ru.BouH.engine.physics.brush.WorldBrush;
 import ru.BouH.engine.physics.jb_objects.JBulletEntity;
 import ru.BouH.engine.physics.world.object.IWorldDynamic;
 import ru.BouH.engine.physics.world.object.IWorldObject;
@@ -14,50 +13,41 @@ import ru.BouH.engine.proxy.IWorld;
 import ru.BouH.engine.render.environment.light.ILight;
 import ru.BouH.engine.render.frustum.FrustumCulling;
 import ru.BouH.engine.render.frustum.RenderABB;
-import ru.BouH.engine.render.scene.Scene;
 import ru.BouH.engine.render.scene.components.Model3D;
 import ru.BouH.engine.render.scene.fabric.RenderFabric;
 import ru.BouH.engine.render.scene.objects.IRenderObject;
 import ru.BouH.engine.render.scene.objects.data.RenderData;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 
-public abstract class PhysXObject implements IRenderObject, IWorldObject, IWorldDynamic {
+public abstract class PhysicsObject implements IRenderObject, IWorldObject, IWorldDynamic {
     private final RenderABB renderABB;
     private final SceneWorld sceneWorld;
     private final WorldItem worldItem;
     private final RenderData renderData;
     protected Model3D model3D;
-    protected Vector3d fixedPosition;
-    protected Vector3d fixedRotation;
-    protected Vector3d renderPrevPosition;
-    protected Vector3d renderPrevRotation;
     protected Vector3d renderPosition;
     protected Vector3d renderRotation;
+    private InterpolationPoints currState;
     private boolean isObjectCulled;
     private boolean isVisible;
     private boolean isDead;
     private ILight light;
 
-    public PhysXObject(@NotNull SceneWorld sceneWorld, @NotNull WorldItem worldItem, @NotNull RenderData renderData) {
+    public PhysicsObject(@NotNull SceneWorld sceneWorld, @NotNull WorldItem worldItem, @NotNull RenderData renderData) {
         this.renderABB = new RenderABB();
         this.worldItem = worldItem;
         this.renderPosition = new Vector3d(worldItem.getPosition());
         this.renderRotation = new Vector3d(worldItem.getRotation());
-        this.fixedPosition = new Vector3d(this.renderPosition);
-        this.fixedRotation = new Vector3d(this.renderRotation);
-        this.renderPrevPosition = new Vector3d(this.renderPosition);
-        this.renderPrevRotation = new Vector3d(this.renderRotation);
         this.light = null;
         this.sceneWorld = sceneWorld;
         this.renderData = renderData;
         this.isVisible = true;
         this.isObjectCulled = false;
+        this.currState = new InterpolationPoints(PhysicsObject.this.getWorldItem());
     }
 
-    protected abstract Model3D buildObjectModel();
-
-    protected void setModel(Model3D model3D) {
-        this.model3D = model3D;
+    protected void setModel() {
+        this.model3D = null;
     }
 
     @Override
@@ -66,7 +56,7 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IWorld
         if (this.getWorldItem().hasLight()) {
             this.addLight(this.getWorldItem().getLight());
         }
-        this.setModel(this.buildObjectModel());
+        this.setModel();
         if (this.isHasRender()) {
             this.renderFabric().onStartRender(this);
         }
@@ -83,9 +73,9 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IWorld
         }
     }
 
-    protected void calcABBSize(RenderABB renderABB, WorldItem worldItem) {
-        if (renderABB == null || worldItem == null) {
-            return;
+    protected Vector3d calcABBSize(WorldItem worldItem) {
+        if (worldItem == null) {
+            return null;
         }
         if (this.getWorldItem() instanceof JBulletEntity) {
             JBulletEntity jBulletEntity = (JBulletEntity) this.getWorldItem();
@@ -93,14 +83,13 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IWorld
                 btVector3 v1 = new btVector3();
                 btVector3 v2 = new btVector3();
                 jBulletEntity.getRigidBodyObject().getAabb(v1, v2);
-                renderABB.setAABBMinMax(MathHelper.convert(v1), MathHelper.convert(v2));
+                Vector3d vector3d = new Vector3d(v2.getX() - v1.getX(), v2.getY() - v1.getY(), v2.getZ() - v1.getZ());
                 v1.deallocate();
                 v2.deallocate();
+                return vector3d;
             }
-        } else {
-            Vector3d size = new Vector3d(worldItem.getScale() + 1.0d);
-            renderABB.setAABBCenterSize(this.getRenderPosition(), size);
         }
+        return new Vector3d(worldItem.getScale() + 1.0d);
     }
 
     protected void removeLight() {
@@ -123,7 +112,7 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IWorld
     }
 
     public RenderABB getRenderABB() {
-        return this.renderABB;
+        return this.getWorldItem() instanceof WorldBrush ? null : this.renderABB;
     }
 
     public double getScale() {
@@ -147,43 +136,40 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IWorld
         if (this.getWorldItem().hasLight() && !this.hasLight()) {
             this.addLight(this.getWorldItem().getLight());
         }
-        this.calcABBSize(this.getRenderABB(), this.getWorldItem());
+        if (this.getRenderABB() != null) {
+            Vector3d size = this.calcABBSize(this.getWorldItem());
+            if (size != null) {
+                this.getRenderABB().setAbbForm(this.getRenderPosition(), size);
+            }
+        }
         if (this.getWorldItem().isDead()) {
             this.setDead();
         }
     }
 
-    private void interpolateVector(double partialTicks, Vector3d vectorCurrent, Vector3d vectorStart, Vector3d vectorEnd, double blend) {
-        Vector3d v3 = new Vector3d(vectorStart.lerp(vectorEnd, partialTicks));
-        if (blend > 0) {
-            vectorCurrent.lerp(v3, 1);
-        }
-    }
-
-    public void test() {
-        this.renderPrevPosition.set(this.getWorldItem().getPrevPosition());
-        this.renderPrevRotation.set(this.getFixedRotation());
-        this.fixedPosition.set(this.getWorldItem().getPosition());
-        this.fixedRotation.set(this.getWorldItem().getRotation());
-    }
-
-    public void updateRenderPos(double partialTicks, double blend) {
+    public void updateRenderPos(double partialTicks) {
+        Vector3d pos = this.getFixedPosition();
+        Vector3d rot = this.getFixedRotation();
 
         if (this.shouldInterpolatePos()) {
-            this.interpolateVector(partialTicks, this.renderPosition, this.getRenderPrevPosition(), this.getFixedPosition(), blend);
+            this.renderPosition.set(this.getCurrentState().interpolatedPoint(partialTicks));
         } else {
-            this.renderPosition.set(this.getFixedPosition());
+            this.renderPosition.set(pos);
         }
 
         if (this.shouldInterpolateRot()) {
-            this.interpolateVector(partialTicks, this.renderRotation, this.getRenderPrevRotation(), this.getFixedRotation(), blend);
+            this.renderRotation.set(rot);
         } else {
-            this.renderRotation.set(this.getFixedRotation());
+            this.renderRotation.set(rot);
         }
     }
 
-    public boolean isPlayer() {
-        return (this.getWorldItem() instanceof EntityPlayerSP);
+    public void refreshInterpolatingState() {
+        this.currState = new InterpolationPoints(this.getWorldItem());
+    }
+
+    private InterpolationPoints getCurrentState() {
+        return this.currState;
     }
 
     public void checkCulling(FrustumCulling frustumCulling) {
@@ -191,9 +177,6 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IWorld
     }
 
     public boolean isVisible() {
-        if (this.isPlayer()) {
-            return true;
-        }
         return !this.isObjectCulled && this.isVisible;
     }
 
@@ -202,19 +185,11 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IWorld
     }
 
     protected Vector3d getFixedPosition() {
-        return new Vector3d(this.fixedPosition);
+        return this.getWorldItem().getPosition();
     }
 
     protected Vector3d getFixedRotation() {
-        return new Vector3d(this.fixedRotation);
-    }
-
-    public Vector3d getRenderPrevPosition() {
-        return new Vector3d(this.renderPrevPosition);
-    }
-
-    public Vector3d getRenderPrevRotation() {
-        return new Vector3d(this.renderPrevRotation);
+        return this.getWorldItem().getRotation();
     }
 
     public Vector3d getRenderPosition() {
@@ -260,5 +235,32 @@ public abstract class PhysXObject implements IRenderObject, IWorldObject, IWorld
 
     public boolean isDead() {
         return this.isDead;
+    }
+
+    public static final class InterpolationPoints {
+        private final Vector3d startPoint;
+        private final Vector3d endPoint;
+
+        public InterpolationPoints(Vector3d startPoint, Vector3d endPoint) {
+            this.startPoint = startPoint;
+            this.endPoint = endPoint;
+        }
+
+        public InterpolationPoints(WorldItem worldItem) {
+            this(worldItem.getPosition(), worldItem.getPrevPosition());
+        }
+
+        public Vector3d interpolatedPoint(double partialTicks) {
+            Vector3d newP = new Vector3d(this.getEndPoint());
+            return newP.lerp(this.getStartPoint(), partialTicks);
+        }
+
+        public Vector3d getStartPoint() {
+            return this.startPoint;
+        }
+
+        public Vector3d getEndPoint() {
+            return this.endPoint;
+        }
     }
 }
