@@ -4,12 +4,10 @@ import org.bytedeco.bullet.BulletCollision.btCollisionShape;
 import org.bytedeco.bullet.BulletDynamics.btRigidBody;
 import org.bytedeco.bullet.LinearMath.btDefaultMotionState;
 import org.bytedeco.bullet.LinearMath.btMotionState;
-import org.bytedeco.bullet.LinearMath.btVector3;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3d;
 import ru.BouH.engine.physics.collision.AbstractCollision;
-import ru.BouH.engine.physics.entities.Materials;
-import ru.BouH.engine.physics.entities.PhysEntity;
+import ru.BouH.engine.physics.entities.BodyGroup;
 import ru.BouH.engine.physics.jb_objects.JBulletEntity;
 import ru.BouH.engine.physics.jb_objects.RigidBodyObject;
 import ru.BouH.engine.physics.world.World;
@@ -27,6 +25,11 @@ public abstract class CollidableWorldItem extends WorldItem implements JBulletEn
         this.properties = properties;
         this.startTranslation = startTranslation;
         this.startRotation = startRotation;
+    }
+
+    @Override
+    public BodyGroup getBodyIndex() {
+        return BodyGroup.RIGID_BODY;
     }
 
     protected abstract AbstractCollision constructCollision();
@@ -48,7 +51,8 @@ public abstract class CollidableWorldItem extends WorldItem implements JBulletEn
     private void createRigidBody(World world, @NotNull Vector3d position, @NotNull Vector3d rotation, double scaling, RigidBodyObject.PhysProperties properties) {
         this.rigidBodyConstructor = new RigidBodyConstructor(world, startTranslation, startRotation, scaling, this.constructCollision());
         this.rigidBodyObject = this.getRigidBodyConstructor().buildRigidBody(properties);
-        world.getBulletTimer().addRigidBodyInWorld(this.getRigidBodyObject());
+        world.addInBulletWorld(this.getRigidBodyObject(), this.getBodyIndex());
+        this.getRigidBodyObject().setUserIndex2(this.getItemId());
         this.getRigidBodyObject().setTranslation(position);
         this.getRigidBodyObject().setRotation(rotation);
         this.getRigidBodyObject().updateCollisionObjectState();

@@ -1,5 +1,6 @@
 package ru.BouH.engine.render.scene.fabric;
 
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.physics.world.object.WorldItem;
 import ru.BouH.engine.render.scene.SceneRenderBase;

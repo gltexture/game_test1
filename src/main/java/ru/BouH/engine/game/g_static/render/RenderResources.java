@@ -25,6 +25,7 @@ public class RenderResources {
     public static FontTexture standardFont;
     public static PNGTexture pngGuiPic1;
     public static RenderModeledData entityCube;
+    public static RenderModeledData entityLargeCube;
     public static RenderModeledData entityLamp;
     public static StandardRenderData player;
     public static StandardRenderData plane;
@@ -45,6 +46,7 @@ public class RenderResources {
         RenderResources.skyboxCubeMap = new CubeMapPNGTexture("skybox/sky1");
 
         RenderResources.entityCube = (RenderModeledData) new RenderModeledData(new RenderEntity(), bricksPng, EntityPhysicsObject.class, cubeObj).attachNormalMap(RenderResources.bricksNormalMap);
+        RenderResources.entityLargeCube = (RenderModeledData) new RenderModeledData(new RenderEntity(), bricksPng, EntityPhysicsObject.class, cubeObj).setTextureScaling(new Vector2d(32.0f, 32.0f)).attachNormalMap(RenderResources.bricksNormalMap);
         RenderResources.entityLamp = new RenderModeledData(new RenderEntity(), new Color3FA(0xffffff), PhysicsColoredLamp.class, cubeObj);
         RenderResources.player = new StandardRenderData(new RenderNull(), EntityPhysicsObject.class, new RenderData.RenderProperties(true, true, false));
         RenderResources.plane = (StandardRenderData) new StandardRenderData(new RenderBrushPlane(), bricksPng, BrushPlanePhysXObject.class).setTextureScaling(new Vector2d(32.0f, 4.0f)).attachNormalMap(RenderResources.bricksNormalMap);

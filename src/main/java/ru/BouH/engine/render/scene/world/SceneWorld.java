@@ -1,6 +1,5 @@
 package ru.BouH.engine.render.scene.world;
 
-import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.exception.GameException;
 import ru.BouH.engine.game.g_static.profiler.SectionManager;
@@ -14,7 +13,7 @@ import ru.BouH.engine.render.frustum.FrustumCulling;
 import ru.BouH.engine.render.scene.components.IMesh;
 import ru.BouH.engine.render.scene.objects.data.RenderData;
 import ru.BouH.engine.render.scene.objects.items.PhysicsObject;
-import ru.BouH.engine.render.utils.Syncer;
+import ru.BouH.engine.render.utils.synchronizing.Syncer;
 
 import java.util.*;
 import java.util.stream.Collectors;

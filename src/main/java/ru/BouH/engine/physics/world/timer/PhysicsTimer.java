@@ -9,13 +9,16 @@ import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.exception.GameException;
 import ru.BouH.engine.game.g_static.profiler.SectionManager;
+import ru.BouH.engine.physics.entities.BodyGroup;
 import ru.BouH.engine.physics.world.World;
 import ru.BouH.engine.physics.world.object.IWorldDynamic;
 import ru.BouH.engine.physics.world.object.WorldItem;
 import ru.BouH.engine.render.scene.debug.jbullet.JBDebugDraw;
+import ru.BouH.engine.render.utils.synchronizing.SyncManger;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 public class PhysicsTimer implements IPhysTimer {
     public static final Object lock = new Object();
@@ -27,9 +30,12 @@ public class PhysicsTimer implements IPhysTimer {
     private final btDiscreteDynamicsWorld discreteDynamicsWorld;
     private final btConstraintSolver constraintSolve;
     private final JBDebugDraw jbDebugDraw;
+    private final btGhostPairCallback pairCallback;
 
     public PhysicsTimer() {
         this.broadcaster = new btAxisSweep3(new btVector3(PhysicThreadManager.WORLD_BORDERS.getA1(), PhysicThreadManager.WORLD_BORDERS.getA1(), PhysicThreadManager.WORLD_BORDERS.getA1()), new btVector3(PhysicThreadManager.WORLD_BORDERS.getA2(), PhysicThreadManager.WORLD_BORDERS.getA2(), PhysicThreadManager.WORLD_BORDERS.getA2()));
+        this.pairCallback = new btGhostPairCallback();
+        this.broadcaster.getOverlappingPairCache().setInternalGhostPairCallback(this.pairCallback);
         this.collisionConfiguration = new btDefaultCollisionConfiguration();
         this.collisionDispatcher = new btCollisionDispatcher(collisionConfiguration);
         this.collisionDispatcher.setDispatcherFlags(btCollisionDispatcher.CD_STATIC_STATIC_REPORTED | btCollisionDispatcher.CD_DISABLE_CONTACTPOOL_DYNAMIC_ALLOCATION | btCollisionDispatcher.CD_USE_RELATIVE_CONTACT_BREAKING_THRESHOLD);
@@ -76,9 +82,8 @@ public class PhysicsTimer implements IPhysTimer {
                         ((WorldItem) worldItem).setPrevPosition(new Vector3d(worldItem1.getPosition()));
                         worldItem.onUpdate(world1);
                     }
-                    Game.getGame().getScreen().getTimer().getSyncUpdate().syncUp();
                     discreteDynamicsWorld1.stepSimulation(step, explicit, step / (double) explicit);
-                    Game.getGame().getScreen().getTimer().getSyncUpdate().syncDown();
+                    SyncManger.SyncPhysicsAndRender.free();
                 }
                 PhysicsTimer.TPS += 1;
             }
@@ -103,7 +108,7 @@ public class PhysicsTimer implements IPhysTimer {
     public void cleanResources() {
         Game.getGame().getLogManager().log("Cleaning physics world resources...");
         this.getDiscreteDynamicsWorld().deallocate();
-        List<WorldItem> worldItems = this.getWorld().getAllWorldItems();
+        Set<WorldItem> worldItems = this.getWorld().getAllWorldItems();
         Iterator<WorldItem> worldItemIterator = worldItems.iterator();
         while (worldItemIterator.hasNext()) {
             WorldItem worldItem = worldItemIterator.next();
@@ -112,12 +117,27 @@ public class PhysicsTimer implements IPhysTimer {
         }
     }
 
+    public synchronized btGhostPairCallback getPairCallback() {
+        return this.pairCallback;
+    }
+
     public synchronized final btDynamicsWorld getDynamicsWorld() {
         return this.getDiscreteDynamicsWorld();
     }
 
-    public synchronized final btCollisionWorld collisionWorld() {
+    public synchronized final btCollisionWorld getCollisionWorld() {
         return this.getDiscreteDynamicsWorld().getCollisionWorld();
+    }
+
+    public void addInWorld(btCollisionObject btCollisionObject, BodyGroup bodyGroup) {
+        synchronized (PhysicsTimer.lock) {
+            btCollisionObject.setUserIndex(bodyGroup.getIndex());
+            if (btCollisionObject instanceof btRigidBody) {
+                this.getDiscreteDynamicsWorld().addRigidBody((btRigidBody) btCollisionObject, bodyGroup.getGroup(), bodyGroup.getMask());
+            } else {
+                this.getDiscreteDynamicsWorld().addCollisionObject(btCollisionObject, bodyGroup.getGroup(), bodyGroup.getMask());
+            }
+        }
     }
 
     public void addRigidBodyInWorld(@NotNull btRigidBody rigidBody) {

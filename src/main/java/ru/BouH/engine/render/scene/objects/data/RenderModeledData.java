@@ -42,6 +42,6 @@ public class RenderModeledData extends RenderData {
 
     @Override
     public RenderData copyRenderData() {
-        return new RenderModeledData(this.getRenderFabric(), this.getItemTexture(), this.getPOClass(), this.getMeshModel(), this.getRenderProperties().copyRP());
+        return new RenderModeledData(this.getRenderFabric(), this.getItemTexture(), this.getPOClass(), this.getMeshModel(), this.getRenderProperties().copyProperties());
     }
 }

@@ -1,8 +1,6 @@
 package ru.BouH.engine.physics.entities.player;
 
-import org.bytedeco.bullet.BulletCollision.btBoxShape;
-import org.bytedeco.bullet.BulletCollision.btCollisionWorld;
-import org.bytedeco.bullet.BulletCollision.btConvexShape;
+import org.bytedeco.bullet.BulletCollision.*;
 import org.bytedeco.bullet.LinearMath.btTransform;
 import org.bytedeco.bullet.LinearMath.btVector3;
 import org.jetbrains.annotations.NotNull;
@@ -14,6 +12,7 @@ import ru.BouH.engine.game.g_static.binding.BindingList;
 import ru.BouH.engine.game.g_static.render.RenderResources;
 import ru.BouH.engine.physics.collision.AbstractCollision;
 import ru.BouH.engine.physics.collision.OBB;
+import ru.BouH.engine.physics.entities.BodyGroup;
 import ru.BouH.engine.physics.entities.IRemoteController;
 import ru.BouH.engine.physics.entities.Materials;
 import ru.BouH.engine.physics.entities.PhysEntity;
@@ -118,7 +117,8 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
         transform2.setOrigin(new btVector3(this.getPosition().x, v1.getY(), this.getPosition().z));
 
         btConvexShape convexShape = new btBoxShape(v3);
-        btCollisionWorld.ConvexResultCallback closestConvexResultCallback = new btCollisionWorld.ClosestConvexResultCallback(transform1.getOrigin(), transform2.getOrigin());
+        btCollisionWorld.ClosestConvexResultCallback closestConvexResultCallback = new btCollisionWorld.ClosestConvexResultCallback(transform1.getOrigin(), transform2.getOrigin());
+        closestConvexResultCallback.m_collisionFilterMask(btBroadphaseProxy.DefaultFilter & ~BodyGroup.GhostFilter);
         this.getWorld().getDynamicsWorld().convexSweepTest(convexShape, transform1, transform2, closestConvexResultCallback);
 
         v1.deallocate();
@@ -130,6 +130,11 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
 
         this.isOnGround = closestConvexResultCallback.hasHit();
         closestConvexResultCallback.deallocate();
+    }
+
+    @Override
+    public BodyGroup getBodyIndex() {
+        return BodyGroup.PLAYER;
     }
 
     public void onJump() {

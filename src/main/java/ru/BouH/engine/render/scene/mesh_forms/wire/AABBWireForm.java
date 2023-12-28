@@ -3,6 +3,7 @@ package ru.BouH.engine.render.scene.mesh_forms.wire;
 import org.bytedeco.bullet.LinearMath.btVector3;
 import org.joml.Vector3d;
 import ru.BouH.engine.math.MathHelper;
+import ru.BouH.engine.physics.triggers.ITriggerZone;
 import ru.BouH.engine.render.scene.mesh_forms.AbstractMeshForm;
 
 import java.util.ArrayList;
@@ -11,12 +12,14 @@ import java.util.List;
 public class AABBWireForm extends AbstractMeshForm {
     public AABBWireForm(btVector3 min, btVector3 max) {
         this.genBoxModel(MathHelper.convert(min), MathHelper.convert(max));
-        min.deallocate();
-        max.deallocate();
     }
 
     public AABBWireForm(Vector3d min, Vector3d max) {
         this.genBoxModel(min, max);
+    }
+
+    public AABBWireForm(ITriggerZone.Zone zone) {
+        this.genBoxModel(new Vector3d(zone.getSize()).mul(-0.5d), new Vector3d(zone.getSize()).mul(0.5d));
     }
 
     public void genBoxModel(Vector3d min, Vector3d max) {

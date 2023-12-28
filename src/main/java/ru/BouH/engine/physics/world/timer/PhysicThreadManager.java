@@ -1,7 +1,9 @@
 package ru.BouH.engine.physics.world.timer;
 
+import org.bytedeco.bullet.BulletCollision.btCollisionObject;
 import org.jetbrains.annotations.NotNull;
 import ru.BouH.engine.math.IntPair;
+import ru.BouH.engine.physics.entities.BodyGroup;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

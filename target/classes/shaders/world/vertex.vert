@@ -1,4 +1,5 @@
-#version 430
+#version 460
+precision highp float;
 
 layout (location=0) in vec3 position;
 layout (location=1) in vec2 texture;
@@ -47,6 +48,7 @@ void main()
 {
     vec4 mv_pos = model_view_matrix * vec4(position, 1.0f);
     gl_Position = projection_matrix * mv_pos;
+
     out_texture = texture;
     mv_vertex_normal = normalize(model_view_matrix * vec4(vertex_normal, 0.0f)).xyz;
     mv_vert_pos = mv_pos.xyz;

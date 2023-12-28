@@ -1,7 +1,7 @@
 package ru.BouH.engine.physics.brush;
 
-import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3d;
+import ru.BouH.engine.physics.entities.BodyGroup;
 import ru.BouH.engine.physics.entities.PhysEntity;
 import ru.BouH.engine.physics.jb_objects.RigidBodyObject;
 import ru.BouH.engine.physics.world.World;
@@ -20,6 +20,11 @@ public abstract class WorldBrush extends PhysEntity {
     public void onSpawn(IWorld iWorld) {
         super.onSpawn(iWorld);
         this.getRigidBodyObject().makeStatic();
+    }
+
+    @Override
+    public BodyGroup getBodyIndex() {
+        return BodyGroup.BRUSH;
     }
 
     public boolean canBeDestroyed() {

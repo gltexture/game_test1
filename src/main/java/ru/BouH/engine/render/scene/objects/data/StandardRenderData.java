@@ -29,6 +29,6 @@ public class StandardRenderData extends RenderData {
 
     @Override
     public RenderData copyRenderData() {
-        return new StandardRenderData(this.getRenderFabric(), this.getItemTexture(), this.getPOClass(), this.getRenderProperties().copyRP());
+        return new StandardRenderData(this.getRenderFabric(), this.getItemTexture(), this.getPOClass(), this.getRenderProperties().copyProperties());
     }
 }

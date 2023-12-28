@@ -46,6 +46,10 @@ public class RenderManager {
         this.transformationUtils.updateViewMatrix(camera);
     }
 
+    public Matrix4d getScreenMatrix2D() {
+        return RenderManager.instance.getTransform().getOrthographicMatrix(0, Game.getGame().getScreen().getWidth(), Game.getGame().getScreen().getHeight(), 0);
+    }
+
     public Matrix4d getOrthographicModelMatrix(Model2D model2D) {
         Matrix4d orthographicMatrix = RenderManager.instance.getTransform().getOrthographicMatrix(0, Game.getGame().getScreen().getWidth(), Game.getGame().getScreen().getHeight(), 0);
         return RenderManager.instance.getTransform().getOrthoModelMatrix(model2D, orthographicMatrix);

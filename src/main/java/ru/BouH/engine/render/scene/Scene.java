@@ -1,6 +1,9 @@
 package ru.BouH.engine.render.scene;
 
 import org.joml.*;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL43;
 import org.lwjgl.system.MemoryUtil;
@@ -30,6 +33,7 @@ import ru.BouH.engine.render.scene.world.camera.FreeCamera;
 import ru.BouH.engine.render.scene.world.camera.ICamera;
 import ru.BouH.engine.render.screen.Screen;
 import ru.BouH.engine.render.screen.window.Window;
+import ru.BouH.engine.render.utils.synchronizing.SyncManger;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -38,12 +42,11 @@ import java.io.IOException;
 import java.lang.Math;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public class Scene {
+    public static boolean testTrigger = false;
+
     private double elapsedTime;
     private final List<SceneRenderBase> sceneRenderBases;
     private final Screen screen;
@@ -192,7 +195,12 @@ public class Scene {
         return this.getCurrentCamera() instanceof AttachedCamera && ((AttachedCamera) this.getCurrentCamera()).getPhysXObject() == physicsObject;
     }
 
-    private double last;
+    public void test() {
+        for (PhysicsObject physicsObject : this.getRenderWorld().getEntityList()) {
+            physicsObject.setPrevPos(physicsObject.getWorldItem().getPosition());
+            physicsObject.setPrevRot(physicsObject.getWorldItem().getRotation());
+        }
+    }
 
     @SuppressWarnings("all")
     public void renderScene(double deltaTime) throws InterruptedException {
@@ -200,12 +208,14 @@ public class Scene {
             if (this.getCurrentCamera() != null) {
                 this.elapsedTime += deltaTime / PhysicThreadManager.getFrameTime();
                 if (this.elapsedTime > 1.0d) {
+                    SyncManger.SyncPhysicsAndRender.mark();
                     this.refresh = true;
                     synchronized (PhysicThreadManager.locker) {
                         PhysicThreadManager.locker.notifyAll();
                     }
                     this.elapsedTime %= 1.0d;
                 }
+                SyncManger.SyncPhysicsAndRender.blockCurrentThread();
                 this.renderSceneInterpolated(this.elapsedTime);
             }
         }
@@ -391,9 +401,7 @@ public class Scene {
 
         public void onRender(double partialTicks, List<SceneRenderBase> mainList, List<SceneRenderBase> additionalList) {
             //this.getShadowDispatcher().renderDepthBuffer(partialTicks, Scene.this.getEntityRender());
-
             Model2D model2D = this.genFrameBufferSquare((float) this.getWindowDimensions().x, (float) this.getWindowDimensions().y);
-
             this.sceneFbo.bindFBO();
             GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
             this.renderMainScene(partialTicks, mainList);
@@ -420,7 +428,7 @@ public class Scene {
             this.getPostProcessingShader().performUniform("projection_model_matrix", RenderManager.instance.getOrthographicModelMatrix(model2D));
             this.getPostProcessingShader().performUniform("texture_sampler", 0);
             this.getPostProcessingShader().performUniform("blur_sampler", 1);
-            this.getPostProcessingShader().performUniform("post_mode", this.getPostRender());
+            this.getPostProcessingShader().performUniform("post_mode", Scene.testTrigger ? 1 : this.getPostRender());
             GL30.glActiveTexture(GL30.GL_TEXTURE0);
             this.sceneFbo.bindTextureFBO();
             GL30.glActiveTexture(GL30.GL_TEXTURE1);

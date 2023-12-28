@@ -41,7 +41,7 @@ public class TransformationUtils {
     public Matrix4d getModelViewMatrix(Model3D model3D, Matrix4d viewMatrix) {
         Vector3d rotation = model3D.getRotation();
         Matrix4d m1 = new Matrix4d();
-        m1.identity().translate(model3D.getPosition()).rotateX(Math.toRadians(-rotation.x)).rotateY(Math.toRadians(-rotation.y)).rotateZ(Math.toRadians(-rotation.z)).scale(model3D.getScale());
+        m1.identity().translate(model3D.getPosition()).rotateXYZ(Math.toRadians(-rotation.x), Math.toRadians(-rotation.y), Math.toRadians(-rotation.z)).scale(model3D.getScale());
         Matrix4d viewCurr = new Matrix4d(viewMatrix);
         return viewCurr.mul(m1);
     }
@@ -50,7 +50,8 @@ public class TransformationUtils {
         Vector3d cameraPos = camera.getCamPosition();
         Vector3d cameraRot = camera.getCamRotation();
         Matrix4d m1 = new Matrix4d();
-        this.viewMatrix.set(m1.identity().rotate(Math.toRadians(cameraRot.x), new Vector3d(1.0d, 0.0d, 0.0d)).rotate(Math.toRadians(cameraRot.y), new Vector3d(0.0d, 1.0d, 0.0d)).rotate(Math.toRadians(cameraRot.z), new Vector3d(0.0d, 0.0d, 1.0d)).translate(-cameraPos.x, -cameraPos.y, -cameraPos.z));
+        m1.identity().rotateXYZ(Math.toRadians(cameraRot.x), Math.toRadians(cameraRot.y), Math.toRadians(cameraRot.z)).translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
+        this.viewMatrix.set(m1);
     }
 
     public Matrix4d getViewMatrix() {

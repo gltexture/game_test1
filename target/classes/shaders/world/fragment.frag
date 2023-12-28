@@ -1,4 +1,5 @@
-#version 430
+#version 460
+precision highp float;
 
 in vec2 out_texture;
 in vec3 mv_vertex_normal;
@@ -39,16 +40,16 @@ struct PointLight
     float brightness;
 };
 
-layout (std140, binding = 1) uniform PointLights {
-    PointLight p_l[256];
-};
-
 layout (std140, binding = 0) uniform SunLight {
     float ambient;
     float sunBright;
     float sunX;
     float sunY;
     float sunZ;
+};
+
+layout (std140, binding = 1) uniform PointLights {
+    PointLight p_l[256];
 };
 
 layout (std140, binding = 3) uniform Misc {
@@ -77,8 +78,8 @@ uniform sampler2D shadowMap_0;
 uniform sampler2D shadowMap_1;
 uniform sampler2D shadowMap_2;
 
-vec2 getVecTC() {
-    return texture_scaling * out_texture;
+vec2 get_tex_coord_scaled() {
+    return out_texture * texture_scaling;
 }
 
 void main()
@@ -107,7 +108,7 @@ vec4 calc_light() {
 }
 
 vec3 calc_normal_map(vec3 vNorm, mat4 mvm) {
-    vec3 normalMap = texture2D(normal_map, getVecTC()).rgb * 2.0 - 1.0;
+    vec3 normalMap = texture2D(normal_map, get_tex_coord_scaled()).rgb * 2.0 - 1.0;
     vec4 transformedNormal = mvm * vec4(normalMap, 0.0);
     vec3 correctedNormal = normalize(transformedNormal.xyz) + vNorm;
     return normalize(correctedNormal + vNorm);
@@ -142,7 +143,7 @@ float calc_shadows(vec4 world_pos, int idx) {
 
 vec4 setup_colors() {
     int i1 = use_texture;
-    return i1 == 0 ? texture2D(texture_sampler, getVecTC()) : i1 == 1 ? object_rgb : i1 == 2 ? get_quads(getVecTC()) : vec4(1., 0., 0., 1.);
+    return i1 == 0 ? texture2D(texture_sampler, get_tex_coord_scaled()) : i1 == 1 ? object_rgb : i1 == 2 ? get_quads(get_tex_coord_scaled()) : vec4(1., 0., 0., 1.);
 }
 
 vec4 calc_light_factor(vec3 colors, float brightness, vec3 vPos, vec3 light_dir, vec3 vNormal) {

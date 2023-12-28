@@ -27,7 +27,7 @@ public class FreeCamera extends Camera {
     @Override
     public void updateCamera(double partialTicks) {
         if (this.getController() != null) {
-            this.moveCamera(ControllerDispatcher.getOptionedXYZVec(this.getController()));
+            this.moveCamera(ControllerDispatcher.getOptionedXYZVec(this.getController()).mul(1));
             this.moveCameraRot(ControllerDispatcher.getOptionedDisplayVec(this.getController()));
         }
     }

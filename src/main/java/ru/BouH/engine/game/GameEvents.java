@@ -4,15 +4,19 @@ import org.joml.Vector3d;
 import ru.BouH.engine.game.g_static.render.RenderResources;
 import ru.BouH.engine.physics.brush.Plane4dBrush;
 import ru.BouH.engine.physics.entities.Materials;
+import ru.BouH.engine.physics.entities.player.EntityPlayerSP;
 import ru.BouH.engine.physics.entities.prop.PhysEntityCube;
 import ru.BouH.engine.physics.jb_objects.RigidBodyObject;
+import ru.BouH.engine.physics.triggers.ITriggerZone;
 import ru.BouH.engine.physics.world.World;
+import ru.BouH.engine.render.scene.Scene;
 
 public class GameEvents {
 
     public static void populate(World world) {
         GameEvents.addBrushes(world);
         GameEvents.addEntities(world);
+        GameEvents.addTriggers(world);
     }
 
     public static void addEntities(World world) {
@@ -20,7 +24,19 @@ public class GameEvents {
         Game.getGame().getProxy().addItemInWorlds(entityPropInfo, RenderResources.entityCube);
 
         PhysEntityCube entityPropInfo2 = new PhysEntityCube(world, RigidBodyObject.PhysProperties.createProperties(Materials.brickCube, false, 100.0d), new Vector3d(1, 1, 1), 100.0d, new Vector3d(0.0d, 120.0d, 300.0d), new Vector3d(0.0d));
-        Game.getGame().getProxy().addItemInWorlds(entityPropInfo2, RenderResources.entityCube);
+        Game.getGame().getProxy().addItemInWorlds(entityPropInfo2, RenderResources.entityLargeCube);
+    }
+
+    public static void addTriggers(World world) {
+        world.createSimpleTriggerZone(new ITriggerZone.Zone(new Vector3d(390.0d, 0.0d, 0.0d), new Vector3d(5.0d, 5.0d, 5.0d)), (e) -> {
+            if (e instanceof EntityPlayerSP) {
+                Scene.testTrigger = true;
+            }
+        }, (e) -> {
+            if (e instanceof EntityPlayerSP) {
+                Scene.testTrigger = false;
+            }
+        });
     }
 
     public static void addBrushes(World world) {

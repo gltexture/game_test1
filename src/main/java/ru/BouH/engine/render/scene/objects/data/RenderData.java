@@ -125,7 +125,7 @@ public abstract class RenderData {
             return new RenderProperties(true, true, true);
         }
 
-        public RenderProperties copyRP() {
+        public RenderProperties copyProperties() {
             return new RenderProperties(this.getTextureScaling(), this.isLightExposed(), this.isLerpPosition(), this.isLerpRotation());
         }
 

@@ -3,15 +3,13 @@ package ru.BouH.engine.physics.jb_objects;
 import org.bytedeco.bullet.BulletCollision.btCollisionObject;
 import org.bytedeco.bullet.BulletCollision.btCollisionShape;
 import org.bytedeco.bullet.BulletDynamics.btRigidBody;
-import org.bytedeco.bullet.LinearMath.btDefaultMotionState;
 import org.bytedeco.bullet.LinearMath.btQuaternion;
 import org.bytedeco.bullet.LinearMath.btTransform;
 import org.bytedeco.bullet.LinearMath.btVector3;
-import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3d;
-import ru.BouH.engine.game.exception.GameException;
 import ru.BouH.engine.math.MathHelper;
 import ru.BouH.engine.physics.collision.AbstractCollision;
+import ru.BouH.engine.physics.entities.BodyGroup;
 import ru.BouH.engine.physics.entities.Materials;
 import ru.BouH.engine.physics.world.World;
 
@@ -120,6 +118,10 @@ public class RigidBodyObject extends btRigidBody {
             this.setCollisionShape(abstractCollision.buildCollisionShape(scaling));
             this.updateCollisionObjectState();
         }
+    }
+
+    public void setBodyIndex(BodyGroup bodyGroup) {
+        this.setUserIndex(bodyGroup.getIndex());
     }
 
     public void setRigidBodyProperties(PhysProperties properties) {

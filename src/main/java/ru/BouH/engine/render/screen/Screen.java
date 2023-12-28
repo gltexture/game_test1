@@ -166,9 +166,12 @@ public class Screen {
 
     private void enableMSAA() {
         GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, Screen.MSAA_SAMPLES);
+        GL11.glEnable(GL11.GL_POLYGON_SMOOTH);
+        GL11.glEnable(GL11.GL_LINE_SMOOTH);
         GL11.glEnable(GL13.GL_MULTISAMPLE);
         GL11.glHint(GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST);
         GL11.glHint(GL11.GL_POLYGON_SMOOTH_HINT, GL11.GL_NICEST);
+        GLFW.glfwWindowHint(GLFW.GLFW_DEPTH_BITS, 24);
     }
 
     private void updateScreen() {
@@ -206,7 +209,7 @@ public class Screen {
                 updRate -= sync;
                 Game.getGame().getLogManager().warn("Slow frames. Sync: " + sync);
             }
-            this.inLoop(updRate);
+            this.inLoop(delta);
             fps += 1;
             if (currentTime - lastFPS >= 1.0f) {
                 Screen.PHYS2_TPS = PhysicsTimer.TPS;
@@ -231,6 +234,7 @@ public class Screen {
         GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
         GL30.glEnable(GL30.GL_CULL_FACE);
         GL30.glCullFace(GL30.GL_BACK);
+        GL11.glDepthFunc(GL11.GL_LESS);
         this.getScene().renderScene(delta);
     }
 
