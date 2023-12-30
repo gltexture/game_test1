@@ -10,7 +10,7 @@ public enum BodyGroup {
     GHOST(103, BodyGroup.GhostFilter, btBroadphaseProxy.AllFilter);
 
 
-    public static final short GhostFilter = 64;
+    public static final short GhostFilter = 1 << 8;
     private final int index;
     private final int group;
     private final int mask;

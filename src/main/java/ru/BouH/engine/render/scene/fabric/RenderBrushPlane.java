@@ -18,7 +18,6 @@ public class RenderBrushPlane implements RenderFabric {
         BrushPlanePhysXObject entityItem = (BrushPlanePhysXObject) renderItem;
         if (entityItem.isHasModel()) {
             Model3D model3D = entityItem.getModel3D();
-            sceneRenderBase.getUtils().performLightModelProjection(2, entityItem.getModel3D());
             sceneRenderBase.getUtils().performModelViewMatrix3d(model3D);
             RenderData renderData = entityItem.getRenderData();
             sceneRenderBase.getUtils().setTexture(renderData.getItemTexture());

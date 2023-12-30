@@ -8,16 +8,14 @@ import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.exception.GameException;
-import ru.BouH.engine.game.g_static.profiler.SectionManager;
 import ru.BouH.engine.physics.entities.BodyGroup;
 import ru.BouH.engine.physics.world.World;
 import ru.BouH.engine.physics.world.object.IWorldDynamic;
 import ru.BouH.engine.physics.world.object.WorldItem;
 import ru.BouH.engine.render.scene.debug.jbullet.JBDebugDraw;
-import ru.BouH.engine.render.utils.synchronizing.SyncManger;
+import ru.BouH.engine.game.synchronizing.SyncManger;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 public class PhysicsTimer implements IPhysTimer {
@@ -66,7 +64,6 @@ public class PhysicsTimer implements IPhysTimer {
         }
         try {
             Game.getGame().getLogManager().debug("Starting physics!");
-            Game.getGame().getProfiler().startSection(SectionManager.physX);
             this.getWorld().onWorldStart();
             synchronized (Game.EngineSystem.logicLocker) {
                 Game.EngineSystem.logicLocker.wait();
@@ -88,8 +85,7 @@ public class PhysicsTimer implements IPhysTimer {
                 PhysicsTimer.TPS += 1;
             }
             this.getWorld().onWorldEnd();
-            Game.getGame().getProfiler().endSection(SectionManager.physX);
-            Game.getGame().getLogManager().debug("Stopping phys-X!");
+            Game.getGame().getLogManager().debug("Stopping physics!");
         } catch (InterruptedException | GameException e) {
             throw new RuntimeException(e);
         } finally {

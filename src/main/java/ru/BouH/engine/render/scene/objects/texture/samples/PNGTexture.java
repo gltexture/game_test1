@@ -4,9 +4,9 @@ import de.matthiasmann.twl.utils.PNGDecoder;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.MemoryUtil;
 import ru.BouH.engine.game.Game;
+import ru.BouH.engine.game.resource.assets.utils.AssetsHelper;
 import ru.BouH.engine.render.scene.objects.texture.PictureSample;
 import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
-import ru.BouH.engine.render.utils.Utils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,7 +53,7 @@ public class PNGTexture implements PictureSample {
         PNGTexture PNGTexture = null;
         try {
             Game.getGame().getLogManager().log("Loading Texture " + textureName);
-            InputStream inputStream = Utils.loadTexture(textureName);
+            InputStream inputStream = AssetsHelper.loadTexture(textureName);
             if (inputStream == null) {
                 throw new IOException("Wrong texture: " + textureName);
             } else {

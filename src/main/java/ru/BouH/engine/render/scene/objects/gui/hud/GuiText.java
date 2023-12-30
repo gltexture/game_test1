@@ -1,7 +1,7 @@
 package ru.BouH.engine.render.scene.objects.gui.hud;
 
 import org.lwjgl.opengl.GL30;
-import ru.BouH.engine.game.g_static.render.RenderResources;
+import ru.BouH.engine.game.resource.ResourceManager;
 import ru.BouH.engine.render.scene.components.MeshModel;
 import ru.BouH.engine.render.scene.components.Model2D;
 import ru.BouH.engine.render.scene.fabric.RenderFabric;
@@ -19,7 +19,7 @@ public class GuiText extends AbstractGui {
     private float width;
 
     public GuiText(String text, int x, int y) {
-        this(text, RenderResources.standardFont, x, y, 0);
+        this(text, ResourceManager.instance.getRenderAssets().standardFont, x, y, 0);
     }
 
     public GuiText(String text, FontTexture fontTexture, int x, int y) {
@@ -34,7 +34,7 @@ public class GuiText extends AbstractGui {
     }
 
     public GuiText(String text, int x, int y, int zLevel) {
-        this(text, RenderResources.standardFont, x, y, zLevel);
+        this(text, ResourceManager.instance.getRenderAssets().standardFont, x, y, zLevel);
     }
 
     public String getText() {

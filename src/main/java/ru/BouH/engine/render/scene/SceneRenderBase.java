@@ -5,13 +5,12 @@ import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.math.IntPair;
 import ru.BouH.engine.render.RenderManager;
-import ru.BouH.engine.render.environment.shadows.CascadeShadowBuilder;
 import ru.BouH.engine.render.scene.components.Model3D;
 import ru.BouH.engine.render.scene.objects.data.RenderData;
 import ru.BouH.engine.render.scene.objects.texture.PictureSample;
 import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.scene.programs.CubeMapSample;
-import ru.BouH.engine.render.scene.programs.ShaderManager;
+import ru.BouH.engine.render.scene.programs.shaders.ShaderManager;
 import ru.BouH.engine.render.scene.programs.UniformBufferProgram;
 import ru.BouH.engine.render.scene.programs.UniformBufferUtils;
 import ru.BouH.engine.render.scene.scene_render.utility.RenderGroup;
@@ -21,7 +20,6 @@ import ru.BouH.engine.render.scene.world.camera.ICamera;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.util.List;
 
 public abstract class SceneRenderBase {
     private final int renderPriority;
@@ -153,10 +151,6 @@ public abstract class SceneRenderBase {
         return this.sceneRenderConveyor;
     }
 
-    public Scene.ShadowDispatcher getShadowDispatcher() {
-        return this.getSceneRenderConveyor().getShadowDispatcher();
-    }
-
     public SceneWorld getSceneWorld() {
         return this.getSceneRenderConveyor().getRenderWorld();
     }
@@ -199,19 +193,6 @@ public abstract class SceneRenderBase {
 
         public void performModelMatrix3d(Model3D model3D) {
             SceneRenderBase.this.performUniform(UniformConstants.model_matrix, RenderManager.instance.getModelMatrix(model3D));
-        }
-
-        public void performLightModelProjection(int start, Model3D model3D) {
-            this.performModelMatrix3d(model3D);
-            Scene.ShadowDispatcher shadowDispatcher = SceneRenderBase.this.getShadowDispatcher();
-            List<CascadeShadowBuilder> cascadeShadowBuilders = shadowDispatcher.getCascadeShadowBuilders();
-            for (int i = 0; i < CascadeShadowBuilder.SHADOW_CASCADE_MAX; i++) {
-                CascadeShadowBuilder cascadeShadowBuilder = cascadeShadowBuilders.get(i);
-                SceneRenderBase.this.performUniform("shadowMap_" + i, start + i);
-                SceneRenderBase.this.performUniform("CShadows[" + i + "]" + ".projection_view_matrix", cascadeShadowBuilder.getProjectionViewMatrix());
-                SceneRenderBase.this.performUniform("CShadows[" + i + "]" + ".split_distance", (float) cascadeShadowBuilder.getSplitDistance());
-            }
-            shadowDispatcher.getDepthMap().bindTextures(GL30.GL_TEXTURE1);
         }
 
         public void performProperties(RenderData.RenderProperties renderProperties) {

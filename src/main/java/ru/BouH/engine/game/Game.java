@@ -1,12 +1,9 @@
 package ru.BouH.engine.game;
 
 import org.lwjgl.glfw.GLFW;
-import ru.BouH.engine.game.g_static.profiler.SectionManager;
-import ru.BouH.engine.game.g_static.render.RenderResources;
 import ru.BouH.engine.game.jframe.ProgressBar;
 import ru.BouH.engine.game.logger.GameLogging;
-import ru.BouH.engine.game.profiler.Profiler;
-import ru.BouH.engine.game.profiler.Section;
+import ru.BouH.engine.game.resource.ResourceManager;
 import ru.BouH.engine.physics.entities.player.EntityPlayerSP;
 import ru.BouH.engine.physics.world.World;
 import ru.BouH.engine.physics.world.timer.PhysicThreadManager;
@@ -22,7 +19,6 @@ public class Game {
     public static Random random;
     private static Game startScreen;
     private final GameLogging logManager;
-    private final Profiler profiler;
     private final Screen screen;
     private final PhysicThreadManager physicThreadManager;
     private final Proxy proxy;
@@ -33,7 +29,6 @@ public class Game {
         Game.rngSeed = Game.systemTime();
         Game.random = new Random(Game.rngSeed);
         this.logManager = new GameLogging();
-        this.profiler = new Profiler();
         this.physicThreadManager = new PhysicThreadManager(PhysicThreadManager.TICKS_PER_SECOND);
         this.screen = new Screen();
         this.proxy = new Proxy(this.getPhysicThreadManager().getPhysicsTimer(), this.getScreen());
@@ -70,15 +65,6 @@ public class Game {
         return this.shouldBeClosed;
     }
 
-    public void displayProfilerResult(Profiler profiler) {
-        Game.getGame().getLogManager().debug("=======================================");
-        Game.getGame().getLogManager().debug("[ PROFILER OUTPUT ]");
-        Game.getGame().getLogManager().debug("======================================");
-        for (Section section : profiler.allSections()) {
-            Game.getGame().getLogManager().debug(section.toString());
-        }
-    }
-
     public World getPhysicsWorld() {
         return this.getPhysicThreadManager().getPhysicsTimer().getWorld();
     }
@@ -89,10 +75,6 @@ public class Game {
 
     public EntityPlayerSP getPlayerSP() {
         return this.getProxy().getPlayerSP();
-    }
-
-    public Profiler getProfiler() {
-        return this.profiler;
     }
 
     public GameLogging getLogManager() {
@@ -113,14 +95,12 @@ public class Game {
 
     public static class EngineSystem {
         public static final Object logicLocker = new Object();
-        private final RenderResources renderResources;
         private Thread thread;
         private boolean threadHasStarted;
 
         public EngineSystem() {
             this.thread = null;
             this.threadHasStarted = false;
-            this.renderResources = new RenderResources();
         }
 
         @SuppressWarnings("all")
@@ -131,41 +111,28 @@ public class Game {
             }
             this.thread = new Thread(() -> {
                 try {
-                    Game.getGame().getProfiler().startSection(SectionManager.startSystem);
                     Game.getGame().shouldBeClosed = false;
-                    Game.getGame().getProfiler().startSection(SectionManager.game);
                     Game.getGame().getPhysicThreadManager().initService();
-                    Game.getGame().getProfiler().startSection(SectionManager.preLoading);
                     this.preLoading();
-                    Game.getGame().getProfiler().endSection(SectionManager.preLoading);
                     this.postLoading();
-                    Game.getGame().getProfiler().endSection(SectionManager.startSystem);
                     Game.getGame().getScreen().startScreen();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 } finally {
-                    Game.getGame().getPhysicThreadManager().destroy();
                     synchronized (PhysicThreadManager.locker) {
                         PhysicThreadManager.locker.notifyAll();
                     }
+                    Game.getGame().getPhysicThreadManager().destroy();
                     synchronized (Game.EngineSystem.logicLocker) {
                         Game.EngineSystem.logicLocker.notifyAll();
                     }
-                    while (Game.getGame().getPhysicThreadManager().checkActivePhysics()) {
-                        try {
-                            Thread.sleep(25);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                    Game.getGame().getProfiler().endSection(SectionManager.game);
-                    Game.getGame().getProfiler().stopAllSections();
-                    Game.getGame().displayProfilerResult(Game.getGame().getProfiler());
                 }
             });
             this.thread.setName("game");
             this.thread.start();
         }
 
-        private void preLoading() {
+        private void preLoading() throws InterruptedException {
             ProgressBar progressBar = new ProgressBar();
             progressBar.setProgress(0);
             progressBar.showBar();
@@ -196,7 +163,7 @@ public class Game {
 
         private void preLoadingResources() {
             Game.getGame().getLogManager().log("Loading rendering resources...");
-            this.renderResources.preLoad();
+            ResourceManager.instance.loadAllAssets();
             Game.getGame().getLogManager().log("Rendering resources loaded!");
         }
     }

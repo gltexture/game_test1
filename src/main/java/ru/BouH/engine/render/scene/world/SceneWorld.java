@@ -2,7 +2,6 @@ package ru.BouH.engine.render.scene.world;
 
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.exception.GameException;
-import ru.BouH.engine.game.g_static.profiler.SectionManager;
 import ru.BouH.engine.physics.entities.player.EntityPlayerSP;
 import ru.BouH.engine.physics.world.World;
 import ru.BouH.engine.physics.world.object.WorldItem;
@@ -13,7 +12,7 @@ import ru.BouH.engine.render.frustum.FrustumCulling;
 import ru.BouH.engine.render.scene.components.IMesh;
 import ru.BouH.engine.render.scene.objects.data.RenderData;
 import ru.BouH.engine.render.scene.objects.items.PhysicsObject;
-import ru.BouH.engine.render.utils.synchronizing.Syncer;
+import ru.BouH.engine.game.synchronizing.Syncer;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -106,7 +105,6 @@ public final class SceneWorld implements IWorld {
 
     @Override
     public void onWorldStart() {
-        Game.getGame().getProfiler().startSection(SectionManager.renderWorld);
     }
 
     public void onWorldUpdate() {
@@ -116,7 +114,6 @@ public final class SceneWorld implements IWorld {
 
     @Override
     public void onWorldEnd() {
-        Game.getGame().getProfiler().endSection(SectionManager.renderWorld);
         Game.getGame().getLogManager().log("Cleaning meshes!");
         this.removeAllEntities();
         SceneWorld.toCleanSet.forEach(IMesh::cleanMesh);

@@ -1,9 +1,8 @@
 package ru.BouH.engine.render.scene;
 
-import org.joml.*;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL13;
+import org.joml.Vector2d;
+import org.joml.Vector2i;
+import org.joml.Vector3d;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL43;
 import org.lwjgl.system.MemoryUtil;
@@ -13,16 +12,13 @@ import ru.BouH.engine.physics.world.timer.PhysicThreadManager;
 import ru.BouH.engine.proxy.LocalPlayer;
 import ru.BouH.engine.render.RenderManager;
 import ru.BouH.engine.render.environment.light.LightManager;
-import ru.BouH.engine.render.environment.shadows.CascadeShadowBuilder;
-import ru.BouH.engine.render.environment.shadows.DepthBuffer;
-import ru.BouH.engine.render.environment.shadows.DepthTexture;
 import ru.BouH.engine.render.frustum.FrustumCulling;
 import ru.BouH.engine.render.scene.components.MeshModel;
 import ru.BouH.engine.render.scene.components.Model2D;
-import ru.BouH.engine.render.scene.components.Model3D;
 import ru.BouH.engine.render.scene.objects.items.PhysicsObject;
 import ru.BouH.engine.render.scene.programs.FrameBufferObjectProgram;
-import ru.BouH.engine.render.scene.programs.ShaderManager;
+import ru.BouH.engine.game.resource.assets.ShaderAssets;
+import ru.BouH.engine.render.scene.programs.shaders.ShaderManager;
 import ru.BouH.engine.render.scene.programs.UniformBufferUtils;
 import ru.BouH.engine.render.scene.scene_render.GuiRender;
 import ru.BouH.engine.render.scene.scene_render.SkyRender;
@@ -33,20 +29,23 @@ import ru.BouH.engine.render.scene.world.camera.FreeCamera;
 import ru.BouH.engine.render.scene.world.camera.ICamera;
 import ru.BouH.engine.render.screen.Screen;
 import ru.BouH.engine.render.screen.window.Window;
-import ru.BouH.engine.render.utils.synchronizing.SyncManger;
+import ru.BouH.engine.game.synchronizing.SyncManger;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.lang.Math;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
 public class Scene {
     public static boolean testTrigger = false;
 
+    private final ShaderAssets shaderAssets;
     private double elapsedTime;
     private final List<SceneRenderBase> sceneRenderBases;
     private final Screen screen;
@@ -70,7 +69,12 @@ public class Scene {
         this.skyRender = new SkyRender(this.getSceneRenderConveyor());
         this.worldRender = new WorldRender(this.getSceneRenderConveyor());
         this.guiRender = new GuiRender(this.getSceneRenderConveyor());
+        this.shaderAssets = new ShaderAssets();
         this.currentCamera = null;
+    }
+
+    public ShaderAssets getShaderLoader() {
+        return this.shaderAssets;
     }
 
     public static boolean isSceneActive() {
@@ -260,89 +264,9 @@ public class Scene {
         Game.getGame().getLogManager().log("Scene rendering stopped");
     }
 
-    public static class ShadowDispatcher {
-        private final DepthBuffer depthMap;
-        private final List<CascadeShadowBuilder> cascadeShadowBuilders;
-        private final ShaderManager depthShaderManager;
-        private final int numCascades;
-        private final SceneWorld sceneWorld;
-
-        public ShadowDispatcher(SceneWorld sceneWorld, int cascadeCount) {
-            this.numCascades = cascadeCount;
-            this.sceneWorld = sceneWorld;
-            this.depthMap = new DepthBuffer();
-            this.cascadeShadowBuilders = new ArrayList<>();
-            for (int i = 0; i < cascadeCount; i++) {
-                CascadeShadowBuilder cascadeShadowBuilder = new CascadeShadowBuilder();
-                cascadeShadowBuilders.add(cascadeShadowBuilder);
-            }
-            this.depthShaderManager = new ShaderManager("shadows");
-            this.initShaders();
-        }
-
-        private void initShaders() {
-            this.getDepthShaderManager().addUniform("model_matrix");
-            this.getDepthShaderManager().addUniform("projection_view_matrix");
-        }
-
-        private void renderDepthBuffer(double partialTicks, SceneRenderBase base) {
-            Vector3f sunPos = this.getSceneWorld().getEnvironment().getSunPosition();
-            CascadeShadowBuilder.updateCascadeShadow(this.getCascadeShadowBuilders(), new Vector4d(sunPos, 0.0d), RenderManager.instance.getViewMatrix(), RenderManager.instance.getProjectionMatrix());
-            GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, this.depthMap.getDepthFbo());
-            Screen.setViewport(new Vector2i(DepthTexture.MAP_DIMENSIONS));
-            this.getDepthShaderManager().bind();
-            for (int i = 0; i < this.getNumCascades(); i++) {
-                GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL30.GL_TEXTURE_2D, this.depthMap.getDepthTexture().getId()[i], 0);
-                GL30.glClear(GL30.GL_DEPTH_BUFFER_BIT);
-                CascadeShadowBuilder cascadeShadowBuilder = this.cascadeShadowBuilders.get(i);
-                this.getDepthShaderManager().performUniform("projection_view_matrix", cascadeShadowBuilder.getProjectionViewMatrix());
-                for (PhysicsObject physicsObject : base.getSceneWorld().getEntityList()) {
-                    if (physicsObject.isHasModel()) {
-                        Model3D model3D = physicsObject.getModel3D();
-                        Matrix4d m2 = RenderManager.instance.getModelMatrix(model3D);
-                        this.getDepthShaderManager().performUniform("model_matrix", m2);
-                        physicsObject.renderFabric().onRender(partialTicks, base, physicsObject);
-                    }
-                }
-            }
-            this.getDepthShaderManager().unBind();
-            GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
-        }
-
-        public SceneWorld getSceneWorld() {
-            return this.sceneWorld;
-        }
-
-        public void onStartRender() {
-            this.getDepthShaderManager().startProgram();
-        }
-
-        public void onStopRender() {
-            this.getDepthShaderManager().destroyProgram();
-            this.getDepthMap().cleanBuffer();
-        }
-
-        public ShaderManager getDepthShaderManager() {
-            return this.depthShaderManager;
-        }
-
-        public DepthBuffer getDepthMap() {
-            return this.depthMap;
-        }
-
-        public int getNumCascades() {
-            return this.numCascades;
-        }
-
-        public List<CascadeShadowBuilder> getCascadeShadowBuilders() {
-            return this.cascadeShadowBuilders;
-        }
-    }
-
     public class SceneRenderConveyor {
         private final ShaderManager postProcessingShader;
         private final ShaderManager blurShader;
-        private final ShadowDispatcher shadowDispatcher;
         private final FrameBufferObjectProgram fboBlur;
         private final FrameBufferObjectProgram sceneFbo;
         private final float[] blurKernel;
@@ -355,7 +279,6 @@ public class Scene {
             this.fboBlur = new FrameBufferObjectProgram();
             this.sceneFbo = new FrameBufferObjectProgram();
             this.blurKernel = this.blurKernels(8.0f, 7);
-            this.shadowDispatcher = new ShadowDispatcher(Scene.this.getRenderWorld(), CascadeShadowBuilder.SHADOW_CASCADE_MAX);
             this.initShaders();
         }
 
@@ -400,7 +323,6 @@ public class Scene {
         }
 
         public void onRender(double partialTicks, List<SceneRenderBase> mainList, List<SceneRenderBase> additionalList) {
-            //this.getShadowDispatcher().renderDepthBuffer(partialTicks, Scene.this.getEntityRender());
             Model2D model2D = this.genFrameBufferSquare((float) this.getWindowDimensions().x, (float) this.getWindowDimensions().y);
             this.sceneFbo.bindFBO();
             GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
@@ -471,10 +393,6 @@ public class Scene {
             }
         }
 
-        public ShadowDispatcher getShadowDispatcher() {
-            return this.shadowDispatcher;
-        }
-
         private void renderMainScene(double partialTicks, List<SceneRenderBase> mainList) {
             Screen.setViewport(Scene.this.getWindowDimensions());
             for (SceneRenderBase sceneRenderBase : mainList) {
@@ -485,7 +403,6 @@ public class Scene {
         public void onStartRender() {
             this.getBlurShader().startProgram();
             this.getPostProcessingShader().startProgram();
-            //this.getShadowDispatcher().onStartRender();
         }
 
         public void onStopRender() {
@@ -493,7 +410,6 @@ public class Scene {
             this.sceneFbo.clearFBO();
             this.getBlurShader().destroyProgram();
             this.getPostProcessingShader().destroyProgram();
-            //this.getShadowDispatcher().onStopRender();
         }
 
         public ShaderManager getBlurShader() {

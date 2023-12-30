@@ -9,7 +9,6 @@ import ru.BouH.engine.physics.jb_objects.JBulletEntity;
 import ru.BouH.engine.physics.jb_objects.RigidBodyObject;
 import ru.BouH.engine.physics.triggers.ITriggerZone;
 import ru.BouH.engine.physics.world.object.WorldItem;
-import ru.BouH.engine.render.environment.shadows.CascadeShadowBuilder;
 import ru.BouH.engine.render.scene.Scene;
 import ru.BouH.engine.render.scene.SceneRenderBase;
 import ru.BouH.engine.render.scene.components.Model3D;
@@ -46,16 +45,10 @@ public class WorldRender extends SceneRenderBase {
         this.addUniform(UniformConstants.texture_scaling);
         this.addUniform(UniformConstants.quads_c1);
         this.addUniform(UniformConstants.quads_c2);
+        this.addUniform(UniformConstants.model_matrix);
         this.addUniformBuffer(UniformBufferUtils.UBO_SUN);
         this.addUniformBuffer(UniformBufferUtils.UBO_POINT_LIGHTS);
         this.addUniformBuffer(UniformBufferUtils.UBO_MISC);
-
-        this.addUniform(UniformConstants.model_matrix);
-        for (int i = 0; i < CascadeShadowBuilder.SHADOW_CASCADE_MAX; i++) {
-            this.addUniform("shadowMap_" + i);
-            this.addUniform("CShadows[" + i + "]" + ".projection_view_matrix");
-            this.addUniform("CShadows[" + i + "]" + ".split_distance");
-        }
     }
 
     public void onRender(double partialTicks) {

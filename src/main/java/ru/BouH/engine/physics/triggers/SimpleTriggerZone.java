@@ -3,9 +3,6 @@ package ru.BouH.engine.physics.triggers;
 import org.bytedeco.bullet.BulletCollision.*;
 import org.bytedeco.bullet.LinearMath.btTransform;
 import org.bytedeco.bullet.LinearMath.btVector3;
-import org.bytedeco.bullet.global.BulletCollision;
-import org.bytedeco.javacpp.annotation.ByRef;
-import org.bytedeco.javacpp.annotation.Const;
 import org.jetbrains.annotations.NotNull;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.physics.world.World;
@@ -89,7 +86,7 @@ public class SimpleTriggerZone implements ITriggerZone {
         this.getTriggerLeaving().trigger(collidableWorldItem);
     }
 
-    public void setTriggerLeaving(ITrigger ITrigger) {
+    public void setTriggerLeaving(@NotNull ITrigger ITrigger) {
         this.ITriggerLeaving = ITrigger;
     }
 

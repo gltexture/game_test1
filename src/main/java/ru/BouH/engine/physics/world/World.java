@@ -1,6 +1,5 @@
 package ru.BouH.engine.physics.world;
 
-import org.bytedeco.bullet.BulletCollision.btBroadphaseProxy;
 import org.bytedeco.bullet.BulletCollision.btCollisionObject;
 import org.bytedeco.bullet.BulletCollision.btCollisionWorld;
 import org.bytedeco.bullet.BulletCollision.btGhostObject;
@@ -8,7 +7,6 @@ import org.bytedeco.bullet.BulletDynamics.btDynamicsWorld;
 import org.bytedeco.bullet.BulletDynamics.btRigidBody;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.exception.GameException;
-import ru.BouH.engine.game.g_static.profiler.SectionManager;
 import ru.BouH.engine.physics.entities.BodyGroup;
 import ru.BouH.engine.physics.triggers.ITrigger;
 import ru.BouH.engine.physics.triggers.ITriggerZone;
@@ -58,7 +56,6 @@ public final class World implements IWorld {
     }
 
     public void onWorldStart() {
-        Game.getGame().getProfiler().startSection(SectionManager.physWorld);
         Game.getGame().getLogManager().log("Creating local player");
         Game.getGame().getProxy().createLocalPlayer();
         Game.getGame().getLogManager().log("Local player created!");
@@ -89,7 +86,6 @@ public final class World implements IWorld {
     }
 
     public void onWorldEnd() {
-        Game.getGame().getProfiler().endSection(SectionManager.physWorld);
     }
 
     public void addLight(ILight iLight) {

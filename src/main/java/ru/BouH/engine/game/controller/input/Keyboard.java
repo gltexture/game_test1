@@ -2,7 +2,7 @@ package ru.BouH.engine.game.controller.input;
 
 import org.lwjgl.glfw.GLFW;
 import ru.BouH.engine.game.Game;
-import ru.BouH.engine.game.controller.Binding;
+import ru.BouH.engine.game.controller.binding.Binding;
 import ru.BouH.engine.game.controller.components.Key;
 import ru.BouH.engine.render.screen.window.Window;
 

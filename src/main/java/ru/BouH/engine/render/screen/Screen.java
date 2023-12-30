@@ -11,7 +11,6 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.controller.ControllerDispatcher;
-import ru.BouH.engine.game.g_static.profiler.SectionManager;
 import ru.BouH.engine.physics.world.timer.PhysicsTimer;
 import ru.BouH.engine.proxy.LocalPlayer;
 import ru.BouH.engine.render.scene.Scene;
@@ -176,7 +175,6 @@ public class Screen {
 
     private void updateScreen() {
         GL11.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        Game.getGame().getProfiler().startSection(SectionManager.renderE);
         this.getRenderWorld().onWorldStart();
         this.getScene().preRender();
         if (LocalPlayer.VALID_PL) {
@@ -189,7 +187,6 @@ public class Screen {
         }
         this.getScene().postRender();
         this.getRenderWorld().onWorldEnd();
-        Game.getGame().getProfiler().endSection(SectionManager.renderE);
     }
 
     private void renderLoop() throws InterruptedException {

@@ -3,7 +3,6 @@ package ru.BouH.engine.game.logger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.BouH.engine.game.Game;
-import ru.BouH.engine.game.g_static.profiler.SectionManager;
 
 import javax.swing.*;
 
@@ -36,8 +35,6 @@ public class GameLogging {
         StackTraceElement[] trace = Thread.currentThread().getStackTrace();
         StringBuilder stringBuilder = this.getStringBuilder(message, objects, trace);
         this.log.fatal(stringBuilder.toString());
-        Game.getGame().getProfiler().crashSection(SectionManager.game);
-        Game.getGame().getProfiler().stopAllSections();
         JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
         Game.getGame().destroyGame();
     }

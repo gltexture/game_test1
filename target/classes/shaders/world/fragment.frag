@@ -1,5 +1,4 @@
 #version 460
-precision highp float;
 
 in vec2 out_texture;
 in vec3 mv_vertex_normal;
@@ -22,7 +21,6 @@ uniform vec4 object_rgb;
 uniform sampler2D texture_sampler;
 uniform sampler2D normal_map;
 uniform samplerCube cube_map_sampler;
-uniform sampler2D shadow_map_sampler;
 
 uniform vec2 texture_scaling;
 uniform int use_texture;
@@ -68,16 +66,6 @@ float texture_proj(vec4, vec2, int);
 vec3 calc_normal_map(vec3, mat4);
 int calc_cascade_index();
 
-struct CascadeShadow {
-    mat4 projection_view_matrix;
-    float split_distance;
-};
-
-uniform CascadeShadow CShadows[3];
-uniform sampler2D shadowMap_0;
-uniform sampler2D shadowMap_1;
-uniform sampler2D shadowMap_2;
-
 vec2 get_tex_coord_scaled() {
     return out_texture * texture_scaling;
 }
@@ -112,33 +100,6 @@ vec3 calc_normal_map(vec3 vNorm, mat4 mvm) {
     vec4 transformedNormal = mvm * vec4(normalMap, 0.0);
     vec3 correctedNormal = normalize(transformedNormal.xyz) + vNorm;
     return normalize(correctedNormal + vNorm);
-}
-
-int calc_cascade_index() {
-    int cascadeIndex;
-    cascadeIndex = int(out_view_position.z < CShadows[0].split_distance) + int(out_view_position.z < CShadows[1].split_distance);
-    return cascadeIndex;
-}
-
-float calc_dist_proj_shadow(vec4 shadow_coord, vec2 offset, int idx) {
-    float shadow = 1.0;
-    float dist = texture(idx == 0 ? shadowMap_0 : idx == 1 ? shadowMap_1 : shadowMap_2, vec2(shadow_coord.xy + offset)).r;
-    return shadow_coord.w > 0 && dist < shadow_coord.z - 0.0005 ? 0.25 : shadow;
-}
-
-float texture_proj(vec4 shadow_coord, vec2 offset, int idx) {
-    return shadow_coord.z > -1.0 && shadow_coord.z < 1.0 ? calc_dist_proj_shadow(shadow_coord, offset, idx) : 1.0;
-}
-
-float calc_shadows(vec4 world_pos, int idx) {
-    vec4 shadow_map_pos = CShadows[idx].projection_view_matrix * world_pos;
-    float shadow = 1.0;
-    vec4 shadow_coord = (shadow_map_pos / shadow_map_pos.w) * 0.5 + 0.5;
-    shadow = texture_proj(shadow_coord, vec2(0), idx);
-    if (shadow_map_pos.z > 1.0) {
-        shadow = 1.0;
-    }
-    return shadow;
 }
 
 vec4 setup_colors() {

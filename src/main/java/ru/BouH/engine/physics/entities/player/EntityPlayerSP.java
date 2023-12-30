@@ -8,8 +8,8 @@ import org.joml.Vector2d;
 import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.controller.IController;
-import ru.BouH.engine.game.g_static.binding.BindingList;
-import ru.BouH.engine.game.g_static.render.RenderResources;
+import ru.BouH.engine.game.controller.binding.BindingList;
+import ru.BouH.engine.game.resource.ResourceManager;
 import ru.BouH.engine.physics.collision.AbstractCollision;
 import ru.BouH.engine.physics.collision.OBB;
 import ru.BouH.engine.physics.entities.BodyGroup;
@@ -21,6 +21,7 @@ import ru.BouH.engine.physics.entities.prop.PhysLightCube;
 import ru.BouH.engine.physics.jb_objects.RigidBodyObject;
 import ru.BouH.engine.physics.world.World;
 import ru.BouH.engine.proxy.IWorld;
+import ru.BouH.engine.render.RenderManager;
 import ru.BouH.engine.render.environment.light.PointLight;
 
 public class EntityPlayerSP extends PhysEntity implements IRemoteController {
@@ -211,13 +212,13 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
     public void performController(Vector2d rotationInput, Vector3d xyzInput) {
         if (BindingList.instance.keyBlock1.isClicked()) {
             PhysEntityCube entityPropInfo = new PhysEntityCube(this.getWorld(), RigidBodyObject.PhysProperties.createProperties(Materials.brickCube, false, 50.0d), new Vector3d(1.0d), 1.5d, this.getPosition().add(this.getLookVector().mul(2.0f)), new Vector3d(0.0d));
-            Game.getGame().getProxy().addItemInWorlds(entityPropInfo, RenderResources.entityCube);
+            Game.getGame().getProxy().addItemInWorlds(entityPropInfo, ResourceManager.instance.getRenderAssets().entityCube);
             entityPropInfo.setObjectVelocity(this.getLookVector().mul(30.0f));
         }
         if (BindingList.instance.keyBlock2.isClicked()) {
             PhysEntityCube entityPropInfo = new PhysLightCube(this.getWorld(), RigidBodyObject.PhysProperties.createProperties(Materials.defaultMaterial, false, 1.0d), new Vector3d(1.0d), 0.5d, this.getPosition().add(this.getLookVector().mul(2.0f)), new Vector3d(0.0d));
             entityPropInfo.setScale(0.25d);
-            Game.getGame().getProxy().addItemInWorlds(entityPropInfo, RenderResources.entityLamp);
+            Game.getGame().getProxy().addItemInWorlds(entityPropInfo, ResourceManager.instance.getRenderAssets().entityLamp);
             int a1 = Game.random.nextInt(3);
             entityPropInfo.setLight(new PointLight(new Vector3d(a1 == 0 ? 1.0d : Game.random.nextFloat(), a1 == 1 ? 1.0d : Game.random.nextFloat() * 0.5f, a1 == 2 ? 1.0d : Game.random.nextFloat() * 0.5f), 6.5d));
             entityPropInfo.setObjectVelocity(this.getLookVector().mul(20.0f));
