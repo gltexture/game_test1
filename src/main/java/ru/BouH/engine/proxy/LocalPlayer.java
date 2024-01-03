@@ -20,7 +20,7 @@ public class LocalPlayer {
     }
 
     public void addPlayerInWorlds(Proxy proxy) {
-        proxy.addItemInWorlds(this.getEntityPlayerSP(), ResourceManager.instance.getRenderAssets().player);
+        proxy.addItemInWorlds(this.getEntityPlayerSP(), ResourceManager.renderAssets.player);
         LocalPlayer.VALID_PL = true;
     }
 }

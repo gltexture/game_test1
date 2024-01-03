@@ -2,9 +2,10 @@ package ru.BouH.engine.render.scene.objects.gui.hud;
 
 import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.game.resource.ResourceManager;
+import ru.BouH.engine.game.resource.assets.shaders.ShaderManager;
 import ru.BouH.engine.render.scene.components.MeshModel;
 import ru.BouH.engine.render.scene.components.Model2D;
-import ru.BouH.engine.render.scene.fabric.RenderFabric;
+import ru.BouH.engine.render.scene.fabric.base.RenderFabric;
 import ru.BouH.engine.render.scene.fabric.RenderGui;
 import ru.BouH.engine.render.scene.objects.gui.AbstractGui;
 import ru.BouH.engine.render.scene.objects.gui.font.FontTexture;
@@ -18,23 +19,23 @@ public class GuiText extends AbstractGui {
     private String text;
     private float width;
 
-    public GuiText(String text, int x, int y) {
-        this(text, ResourceManager.instance.getRenderAssets().standardFont, x, y, 0);
+    public GuiText(String text, ShaderManager shaderManager, int x, int y) {
+        this(text, shaderManager, ResourceManager.renderAssets.standardFont, x, y, 0);
     }
 
-    public GuiText(String text, FontTexture fontTexture, int x, int y) {
-        this(text, fontTexture, x, y, 0);
+    public GuiText(String text, ShaderManager shaderManager, FontTexture fontTexture, int x, int y) {
+        this(text, shaderManager, fontTexture, x, y, 0);
     }
 
-    public GuiText(String text, FontTexture fontTexture, int x, int y, int zLevel) {
-        super("gui_text: " + text, zLevel);
+    public GuiText(String text, ShaderManager shaderManager, FontTexture fontTexture, int x, int y, int zLevel) {
+        super("gui_text: " + text, shaderManager, zLevel);
         this.fontTexture = fontTexture;
         this.setText(text);
         this.getModel2DInfo().setPosition(x, y);
     }
 
-    public GuiText(String text, int x, int y, int zLevel) {
-        this(text, ResourceManager.instance.getRenderAssets().standardFont, x, y, zLevel);
+    public GuiText(String text, ShaderManager shaderManager, int x, int y, int zLevel) {
+        this(text, shaderManager, ResourceManager.renderAssets.standardFont, x, y, zLevel);
     }
 
     public String getText() {

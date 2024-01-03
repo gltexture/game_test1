@@ -1,4 +1,3 @@
-#version 430
 in vec2 out_texture;
 layout (location = 0) out vec4 frag_color;
 

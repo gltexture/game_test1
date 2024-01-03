@@ -1,5 +1,3 @@
-#version 430
-
 in vec3 out_texture;
 layout (location = 0) out vec4 frag_color;
 layout (location = 1) out vec4 bright_color;
@@ -15,7 +13,7 @@ layout (std140, binding = 0) uniform SunLight {
 
 void main()
 {
-    frag_color = vec4(texture(cube_map_sampler, out_texture)) * sunBright;
+    frag_color = vec4(texture(cube_map_sampler, out_texture)) * max(sunBright, 0.5);
 
     float brightness = frag_color.r + frag_color.g + frag_color.b;
     bright_color = brightness >= 3.0 ? frag_color : vec4(0., 0., 0., 1.);

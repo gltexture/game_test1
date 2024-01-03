@@ -1,5 +1,3 @@
-#version 460
-
 layout (location=0) in vec3 position;
 layout (location=1) in vec2 texture;
 layout (location=2) in vec3 vertex_normal;
@@ -24,10 +22,10 @@ layout (std140, binding = 0) uniform SunLight {
 };
 
 layout (std140, binding = 1) uniform PointLights {
-    PointLight p_l[256];
+    PointLight p_l[1024];
 };
 
-layout (std140, binding = 3) uniform Misc {
+layout (std140, binding = 2) uniform Misc {
     float w_tick;
 };
 

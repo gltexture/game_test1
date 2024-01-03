@@ -1,4 +1,4 @@
-package ru.BouH.engine.render.scene.programs.shaders;
+package ru.BouH.engine.game.resource.assets.shaders;
 
 import ru.BouH.engine.game.Game;
 
@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Shader {
-    public static final String VERSION = "#version 460\n";
-    private final List<String> uniforms;
+    public static final String VERSION = "#version 460\n\n";
+    private final List<Uniform> uniforms;
     private String shaderText;
     private final String shaderName;
     private final ShaderType shaderType;
@@ -37,7 +37,13 @@ public class Shader {
                 while ((line = reader.readLine()) != null) {
                     String[] subStrings = line.split(" ");
                     if (subStrings[0].equals("uniform")) {
-                        this.getUniforms().add(subStrings[2].replace(";", ""));
+                        String arg = subStrings[2].replace(";", "");
+                        if (arg.contains("[")) {
+                            String cut = arg.substring(arg.indexOf('[') + 1).replace("]", "");
+                            this.getUniforms().add(new Uniform(arg.substring(0, arg.indexOf('[')), Integer.parseInt(cut)));
+                        } else {
+                            this.getUniforms().add(new Uniform(subStrings[2].replace(";", ""), 1));
+                        }
                     }
                     shaderSource.append(line).append("\n");
                 }
@@ -58,7 +64,7 @@ public class Shader {
         return shader;
     }
 
-    public List<String> getUniforms() {
+    public List<Uniform> getUniforms() {
         return this.uniforms;
     }
 

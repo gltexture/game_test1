@@ -5,9 +5,8 @@ import org.jetbrains.annotations.NotNull;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
+import ru.BouH.engine.game.resource.assets.shaders.ShaderManager;
 import ru.BouH.engine.physics.brush.WorldBrush;
-import ru.BouH.engine.physics.entities.player.EntityPlayerSP;
-import ru.BouH.engine.physics.entities.prop.PhysEntityCube;
 import ru.BouH.engine.physics.jb_objects.JBulletEntity;
 import ru.BouH.engine.physics.world.object.IWorldDynamic;
 import ru.BouH.engine.physics.world.object.IWorldObject;
@@ -17,7 +16,7 @@ import ru.BouH.engine.render.environment.light.ILight;
 import ru.BouH.engine.render.frustum.FrustumCulling;
 import ru.BouH.engine.render.frustum.RenderABB;
 import ru.BouH.engine.render.scene.components.Model3D;
-import ru.BouH.engine.render.scene.fabric.RenderFabric;
+import ru.BouH.engine.render.scene.fabric.base.RenderFabric;
 import ru.BouH.engine.render.scene.objects.IRenderObject;
 import ru.BouH.engine.render.scene.objects.data.RenderData;
 import ru.BouH.engine.render.scene.world.SceneWorld;
@@ -99,6 +98,10 @@ public abstract class PhysicsObject implements IRenderObject, IWorldObject, IWor
             }
         }
         return new Vector3d(worldItem.getScale() + 1.0d);
+    }
+
+    public ShaderManager getShaderManager() {
+        return this.getRenderData().getShaderManager();
     }
 
     protected void removeLight() {

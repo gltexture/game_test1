@@ -3,7 +3,7 @@ package ru.BouH.engine.render.environment.sky;
 import ru.BouH.engine.render.scene.components.MeshModel;
 import ru.BouH.engine.render.scene.components.Model3D;
 import ru.BouH.engine.render.scene.objects.texture.samples.CubeMapPNGTexture;
-import ru.BouH.engine.render.scene.programs.CubeMapSample;
+import ru.BouH.engine.render.scene.programs.CubeMapProgram;
 
 public class SkyBox {
     private static final float[] skyboxPos = {
@@ -25,18 +25,18 @@ public class SkyBox {
             7, 6, 4, 7, 4, 5
     };
     private final Model3D model3D;
-    private final CubeMapSample cubeMap;
+    private final CubeMapProgram cubeMap;
 
     public SkyBox(CubeMapPNGTexture cubeMapPNGTexture) {
         this.model3D = new Model3D(new MeshModel(SkyBox.skyboxPos, SkyBox.skyboxInd));
-        this.cubeMap = new CubeMapSample(cubeMapPNGTexture);
+        this.cubeMap = new CubeMapProgram(cubeMapPNGTexture);
     }
 
     public Model3D getModel3DInfo() {
         return this.model3D;
     }
 
-    public CubeMapSample getCubeMap() {
+    public CubeMapProgram getCubeMap() {
         return this.cubeMap;
     }
 }

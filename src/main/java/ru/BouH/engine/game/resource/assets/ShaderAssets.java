@@ -1,49 +1,77 @@
 package ru.BouH.engine.game.resource.assets;
 
 import ru.BouH.engine.game.Game;
-import ru.BouH.engine.render.scene.programs.shaders.Shader;
+import ru.BouH.engine.game.resource.assets.shaders.Shader;
+import ru.BouH.engine.game.resource.assets.shaders.ShaderGroup;
+import ru.BouH.engine.game.resource.assets.shaders.ShaderManager;
+import ru.BouH.engine.game.resource.assets.shaders.UniformBufferObject;
+import ru.BouH.engine.render.environment.light.LightManager;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class ShaderAssets implements IAssets {
-    public static final Set<ShaderGroup> allShaders = new HashSet<>();
+    public static final List<ShaderManager> allShaders = new ArrayList<>();
+    public static final List<UniformBufferObject> allUniformBuffers = new ArrayList<>();
 
-    public final ShaderGroup guiShader;
-    public final ShaderGroup post_blur;
-    public final ShaderGroup post_render_1;
-    public final ShaderGroup skybox;
-    public final ShaderGroup world;
+    public final UniformBufferObject SunLight;
+    public final UniformBufferObject PointLights;
+    public final UniformBufferObject Misc;
+
+    public final ShaderManager gameUbo;
+    public final ShaderManager guiShader;
+    public final ShaderManager post_blur;
+    public final ShaderManager post_render_1;
+    public final ShaderManager skybox;
+    public final ShaderManager world;
 
     public ShaderAssets() {
-        Game.getGame().getLogManager().log("Shader loader!");
-        this.guiShader = this.createShaderGroup("gui", Shader.ShaderType.FRAGMENT_BIT | Shader.ShaderType.VERTEX_BIT);
-        this.post_blur = this.createShaderGroup("post_blur", Shader.ShaderType.FRAGMENT_BIT | Shader.ShaderType.VERTEX_BIT);
-        this.post_render_1 = this.createShaderGroup("post_render_1", Shader.ShaderType.FRAGMENT_BIT | Shader.ShaderType.VERTEX_BIT);
-        this.skybox = this.createShaderGroup("skybox", Shader.ShaderType.FRAGMENT_BIT | Shader.ShaderType.VERTEX_BIT);
-        this.world = this.createShaderGroup("world", Shader.ShaderType.FRAGMENT_BIT | Shader.ShaderType.VERTEX_BIT);
+        this.SunLight = this.createUBO("SunLight", 0, 20);
+        this.PointLights = this.createUBO("PointLights", 1, 32 * LightManager.MAX_POINT_LIGHTS);
+        this.Misc = this.createUBO("Misc", 2, 4);
+
+        this.guiShader = this.createShaderManager("gui", Shader.ShaderType.FRAGMENT_BIT | Shader.ShaderType.VERTEX_BIT);
+        this.post_blur = this.createShaderManager("post_blur", Shader.ShaderType.FRAGMENT_BIT | Shader.ShaderType.VERTEX_BIT);
+        this.post_render_1 = this.createShaderManager("post_render_1", Shader.ShaderType.FRAGMENT_BIT | Shader.ShaderType.VERTEX_BIT).addUBO(this.Misc);
+        this.skybox = this.createShaderManager("skybox", Shader.ShaderType.FRAGMENT_BIT | Shader.ShaderType.VERTEX_BIT).addUBO(this.SunLight);
+        this.world = this.createShaderManager("world", Shader.ShaderType.FRAGMENT_BIT | Shader.ShaderType.VERTEX_BIT).addUBO(this.SunLight).addUBO(this.Misc).addUBO(this.PointLights);
+
+        this.gameUbo = this.createShaderManager("gameubo", Shader.ShaderType.FRAGMENT_BIT | Shader.ShaderType.VERTEX_BIT).addUBO(this.SunLight).addUBO(this.Misc).addUBO(this.PointLights);
     }
 
-    public ShaderGroup createShaderGroup(String shader, int types) {
+    public UniformBufferObject createUBO(String id, int binding, int bsize) {
+        UniformBufferObject uniformBufferObject = new UniformBufferObject(id, binding, bsize);
+        ShaderAssets.allUniformBuffers.add(uniformBufferObject);
+        return uniformBufferObject;
+    }
+
+    public ShaderManager createShaderManager(String shader, int types) {
         Game.getGame().getLogManager().log("Creating shader " + shader);
-        ShaderGroup shaderGroup = new ShaderGroup(shader, types);
-        ShaderAssets.allShaders.add(shaderGroup);
-        return shaderGroup;
+        ShaderManager shaderManager = new ShaderManager(new ShaderGroup(shader, types));
+        ShaderAssets.allShaders.add(shaderManager);
+        return shaderManager;
+    }
+
+    public void startShaders() {
+        Game.getGame().getLogManager().log("Compiling shaders!");
+        for (ShaderManager shaderManager : ShaderAssets.allShaders) {
+            shaderManager.startProgram();
+        }
+    }
+
+    public void destroyShaders() {
+        Game.getGame().getLogManager().log("Destroying shaders!");
+        for (ShaderManager shaderManager : ShaderAssets.allShaders) {
+            shaderManager.destroyProgram();
+        }
     }
 
     public void load() {
-        for (ShaderGroup shaderGroup : ShaderAssets.allShaders) {
-            if (shaderGroup.getFragmentShader() != null) {
-                Game.getGame().getLogManager().log("Initializing " + shaderGroup.getFragmentShader().getShaderName() + shaderGroup.getFragmentShader().getShaderType().getFile());
-                shaderGroup.getFragmentShader().init();
-            }
-            if (shaderGroup.getVertexShader() != null) {
-                Game.getGame().getLogManager().log("Initializing " + shaderGroup.getVertexShader().getShaderName() + shaderGroup.getVertexShader().getShaderType().getFile());
-                shaderGroup.getVertexShader().init();
-            }
-            if (shaderGroup.getGeometricShader() != null) {
-                Game.getGame().getLogManager().log("Initializing " + shaderGroup.getGeometricShader().getShaderName() + shaderGroup.getGeometricShader().getShaderType().getFile());
-                shaderGroup.getGeometricShader().init();
+        for (ShaderManager shaderManager : ShaderAssets.allShaders) {
+            if (shaderManager.getShaderGroup().getFragmentShader() != null) {
+                shaderManager.getShaderGroup().initAll();
             }
         }
     }
@@ -51,41 +79,5 @@ public class ShaderAssets implements IAssets {
     @Override
     public boolean parallelLoading() {
         return true;
-    }
-
-    public static class ShaderGroup {
-        private final Shader vertexShader;
-        private final Shader fragmentShader;
-        private final Shader geometricShader;
-
-        private ShaderGroup(String shader, int types) {
-            Shader geometricShader1 = null;
-            Shader vertexShader1 = null;
-            Shader fragmentShader1 = null;
-            if ((types & Shader.ShaderType.FRAGMENT_BIT) != 0) {
-                fragmentShader1 = new Shader(Shader.ShaderType.FRAGMENT, shader);
-            }
-            if ((types & Shader.ShaderType.VERTEX_BIT) != 0) {
-                vertexShader1 = new Shader(Shader.ShaderType.VERTEX, shader);
-            }
-            if ((types & Shader.ShaderType.GEOMETRIC_BIT) != 0) {
-                geometricShader1 = new Shader(Shader.ShaderType.GEOMETRIC, shader);
-            }
-            this.vertexShader = vertexShader1;
-            this.fragmentShader = fragmentShader1;
-            this.geometricShader = geometricShader1;
-        }
-
-        public Shader getFragmentShader() {
-            return this.fragmentShader;
-        }
-
-        public Shader getGeometricShader() {
-            return this.geometricShader;
-        }
-
-        public Shader getVertexShader() {
-            return this.vertexShader;
-        }
     }
 }

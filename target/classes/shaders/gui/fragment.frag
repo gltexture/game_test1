@@ -1,5 +1,3 @@
-#version 430
-
 in vec2 out_texture;
 out vec4 frag_color;
 

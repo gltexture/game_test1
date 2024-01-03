@@ -2,44 +2,52 @@ package ru.BouH.engine.render.scene.scene_render;
 
 import org.joml.Matrix4d;
 import org.lwjgl.opengl.GL30;
+import ru.BouH.engine.game.resource.ResourceManager;
 import ru.BouH.engine.render.RenderManager;
 import ru.BouH.engine.render.environment.sky.SkyBox;
 import ru.BouH.engine.render.scene.Scene;
 import ru.BouH.engine.render.scene.SceneRenderBase;
 import ru.BouH.engine.render.scene.programs.UniformBufferUtils;
+import ru.BouH.engine.game.resource.assets.shaders.ShaderManager;
 import ru.BouH.engine.render.scene.scene_render.utility.RenderGroup;
-import ru.BouH.engine.render.scene.scene_render.utility.UniformConstants;
 
 public class SkyRender extends SceneRenderBase {
+    private final ShaderManager skyShaders;
+
     public SkyRender(Scene.SceneRenderConveyor sceneRenderConveyor) {
         super(0, sceneRenderConveyor, RenderGroup.SKYBOX);
-        this.addUniform(UniformConstants.projection_matrix);
-        this.addUniform(UniformConstants.model_view_matrix);
-        this.addUniform(UniformConstants.cube_map_sampler);
-        this.addUniformBuffer(UniformBufferUtils.UBO_SUN);
+        this.skyShaders = ResourceManager.shaderAssets.skybox;
     }
 
     public void onRender(double partialTicks) {
         SkyBox skyBox = this.getSceneWorld().getEnvironment().getSky().getSkyBox();
         if (skyBox != null) {
-            this.bindProgram();
+            this.skyShaders.bind();
             GL30.glDisable(GL30.GL_CULL_FACE);
             GL30.glDepthFunc(GL30.GL_LEQUAL);
-            this.getUtils().performProjectionMatrix();
+            this.skyShaders.getUtils().performProjectionMatrix();
             Matrix4d matrix4d = RenderManager.instance.getModelViewMatrix(skyBox.getModel3DInfo());
             matrix4d.m30(0);
             matrix4d.m31(0);
             matrix4d.m32(0);
-            this.getUtils().performModelViewMatrix3d(matrix4d);
+            this.skyShaders.getUtils().performModelViewMatrix3d(matrix4d);
             GL30.glBindVertexArray(skyBox.getModel3DInfo().getVao());
             GL30.glEnableVertexAttribArray(0);
-            this.getUtils().setCubeMapTexture(skyBox.getCubeMap());
+            this.skyShaders.getUtils().setCubeMapTexture(skyBox.getCubeMap());
             GL30.glDrawElements(GL30.GL_TRIANGLES, skyBox.getModel3DInfo().getVertexCount(), GL30.GL_UNSIGNED_INT, 0);
             GL30.glDisableVertexAttribArray(0);
             GL30.glBindVertexArray(0);
-            this.unBindProgram();
+            this.skyShaders.unBind();
             GL30.glDepthFunc(GL30.GL_LESS);
             GL30.glEnable(GL30.GL_CULL_FACE);
         }
+    }
+
+    @Override
+    public void onStartRender() {
+    }
+
+    @Override
+    public void onStopRender() {
     }
 }

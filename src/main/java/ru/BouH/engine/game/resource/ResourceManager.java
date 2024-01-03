@@ -7,17 +7,24 @@ import ru.BouH.engine.game.resource.assets.ShaderAssets;
 import java.util.*;
 
 public class ResourceManager {
-    public static final ResourceManager instance = new ResourceManager();
     private final List<IAssets> assetsObjects;
-    private final RenderAssets renderAssets;
-    private final ShaderAssets shaderAssets;
+    public static RenderAssets renderAssets = null;
+    public static ShaderAssets shaderAssets = null;
 
     public ResourceManager() {
         this.assetsObjects = new ArrayList<>();
-        this.renderAssets = new RenderAssets();
-        this.shaderAssets = new ShaderAssets();
-        this.addAsset(this.renderAssets);
-        this.addAsset(this.shaderAssets);
+        this.init();
+    }
+
+    public void init() {
+        ResourceManager.renderAssets = new RenderAssets();
+        ResourceManager.shaderAssets = new ShaderAssets();
+        this.addAsset(ResourceManager.renderAssets);
+        this.addAsset(ResourceManager.shaderAssets);
+    }
+
+    public List<IAssets> getAssetsObjects() {
+        return this.assetsObjects;
     }
 
     private void addAsset(IAssets asset) {
@@ -51,17 +58,5 @@ public class ResourceManager {
                 throw new RuntimeException(ex);
             }
         });
-
-        for (String s : this.getShaderAssets().world.getFragmentShader().getUniforms()) {
-            System.out.println(s);
-        }
-    }
-
-    public RenderAssets getRenderAssets() {
-        return this.renderAssets;
-    }
-
-    public ShaderAssets getShaderAssets() {
-        return this.shaderAssets;
     }
 }

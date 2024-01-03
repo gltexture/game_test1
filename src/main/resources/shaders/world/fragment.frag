@@ -1,5 +1,3 @@
-#version 460
-
 in vec2 out_texture;
 in vec3 mv_vertex_normal;
 in vec3 mv_vert_pos;
@@ -47,10 +45,10 @@ layout (std140, binding = 0) uniform SunLight {
 };
 
 layout (std140, binding = 1) uniform PointLights {
-    PointLight p_l[256];
+    PointLight p_l[1024];
 };
 
-layout (std140, binding = 3) uniform Misc {
+layout (std140, binding = 2) uniform Misc {
     float w_tick;
 };
 

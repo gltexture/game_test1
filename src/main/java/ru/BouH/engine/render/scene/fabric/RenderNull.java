@@ -1,6 +1,7 @@
 package ru.BouH.engine.render.scene.fabric;
 
 import ru.BouH.engine.render.scene.SceneRenderBase;
+import ru.BouH.engine.render.scene.fabric.base.RenderFabric;
 import ru.BouH.engine.render.scene.objects.IRenderObject;
 
 public class RenderNull implements RenderFabric {

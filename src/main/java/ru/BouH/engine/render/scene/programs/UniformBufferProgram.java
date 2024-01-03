@@ -22,13 +22,15 @@ public class UniformBufferProgram {
         this.name = name;
     }
 
-    public void createUniformBuffer(int binding, int bytes) {
+    public boolean createUniformBuffer(int binding, int bytes) {
         int uniformLocation = this.getLocation();
         this.binding = binding;
         if (uniformLocation < 0) {
             Game.getGame().getLogManager().warn("Could not find uniform-buffer " + this.getName());
+            return false;
         }
         this.setupUniformBuffer(bytes, binding);
+        return true;
     }
 
     private void setupUniformBuffer(int bytes, int binding) {

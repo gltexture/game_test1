@@ -3,28 +3,31 @@ package ru.BouH.engine.render.scene.objects.data;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2d;
 import ru.BouH.engine.physics.world.object.WorldItem;
-import ru.BouH.engine.render.scene.fabric.RenderFabric;
+import ru.BouH.engine.render.scene.fabric.base.RenderFabric;
 import ru.BouH.engine.render.scene.objects.items.PhysicsObject;
 import ru.BouH.engine.render.scene.objects.texture.PictureSample;
 import ru.BouH.engine.render.scene.objects.texture.Sample;
 import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
 import ru.BouH.engine.render.scene.objects.texture.samples.PNGTexture;
+import ru.BouH.engine.game.resource.assets.shaders.ShaderManager;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 
 import java.lang.reflect.InvocationTargetException;
 
 public abstract class RenderData {
     private final RenderFabric renderFabric;
+    private final ShaderManager shaderManager;
     private final Class<? extends PhysicsObject> aClass;
     private WorldItemTexture worldItemTexture;
     private RenderProperties renderProperties;
 
-    public RenderData(RenderFabric renderFabric, @NotNull WorldItemTexture worldItemTexture, @NotNull Class<? extends PhysicsObject> clazz) {
-        this(renderFabric, worldItemTexture, clazz, RenderProperties.defaultRenderProperties());
+    public RenderData(RenderFabric renderFabric, @NotNull WorldItemTexture worldItemTexture, @NotNull Class<? extends PhysicsObject> clazz, ShaderManager shaderManager) {
+        this(renderFabric, worldItemTexture, clazz, shaderManager, RenderProperties.defaultRenderProperties());
     }
 
-    public RenderData(RenderFabric renderFabric, @NotNull WorldItemTexture worldItemTexture, @NotNull Class<? extends PhysicsObject> clazz, RenderProperties renderProperties) {
+    public RenderData(RenderFabric renderFabric, @NotNull WorldItemTexture worldItemTexture, @NotNull Class<? extends PhysicsObject> clazz, ShaderManager shaderManager, RenderProperties renderProperties) {
         this.renderFabric = renderFabric;
+        this.shaderManager = shaderManager;
         this.worldItemTexture = worldItemTexture;
         this.renderProperties = renderProperties;
         this.aClass = clazz;
@@ -33,6 +36,10 @@ public abstract class RenderData {
     public RenderData attachNormalMap(String mapPath) {
         this.getItemTexture().setNormalMap(mapPath);
         return this;
+    }
+
+    public ShaderManager getShaderManager() {
+        return this.shaderManager;
     }
 
     public Vector2d getTextureScaling() {
@@ -70,15 +77,14 @@ public abstract class RenderData {
     public PhysicsObject getPhysRender(SceneWorld sceneWorld, WorldItem worldItem) {
         try {
             return this.aClass.getDeclaredConstructor(SceneWorld.class, WorldItem.class, RenderData.class).newInstance(sceneWorld, worldItem, this.copyRenderData());
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException |
-                 InvocationTargetException e) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
     }
 
     public abstract RenderData copyRenderData();
 
-    protected Class<? extends PhysicsObject> getPOClass() {
+    protected Class<? extends PhysicsObject> getPhysObjectClass() {
         return this.aClass;
     }
 
@@ -105,7 +111,7 @@ public abstract class RenderData {
     }
 
     public static class RenderProperties {
-        private Vector2d textureScaling;
+        private final Vector2d textureScaling;
         private boolean lightExposed;
         private boolean lerpPosition;
         private boolean lerpRotation;
@@ -130,11 +136,11 @@ public abstract class RenderData {
         }
 
         public Vector2d getTextureScaling() {
-            return this.textureScaling;
+            return new Vector2d(this.textureScaling);
         }
 
         public void setTextureScaling(Vector2d textureScaling) {
-            this.textureScaling = textureScaling;
+            this.textureScaling.set(textureScaling);
         }
 
         public boolean isLerpPosition() {

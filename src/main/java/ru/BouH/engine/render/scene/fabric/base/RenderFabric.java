@@ -1,4 +1,4 @@
-package ru.BouH.engine.render.scene.fabric;
+package ru.BouH.engine.render.scene.fabric.base;
 
 import ru.BouH.engine.render.scene.SceneRenderBase;
 import ru.BouH.engine.render.scene.objects.IRenderObject;

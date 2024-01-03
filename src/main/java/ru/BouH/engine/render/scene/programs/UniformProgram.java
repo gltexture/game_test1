@@ -3,6 +3,7 @@ package ru.BouH.engine.render.scene.programs;
 import org.joml.*;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryStack;
+import ru.BouH.engine.game.Game;
 
 import java.nio.FloatBuffer;
 import java.util.HashMap;
@@ -85,6 +86,11 @@ public class UniformProgram {
     }
 
     public void setUniform(String uniformName, float value) {
-        GL20.glUniform1f(this.uniforms.get(uniformName), value);
+        Integer a = this.uniforms.get(uniformName);
+        if (a == null) {
+            Game.getGame().getLogManager().warn("Uniform " + uniformName + " is doesn't located in shader!");
+        } else {
+            GL20.glUniform1f(this.uniforms.get(uniformName), value);
+        }
     }
 }

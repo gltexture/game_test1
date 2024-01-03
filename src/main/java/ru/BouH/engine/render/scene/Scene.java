@@ -5,24 +5,24 @@ import org.joml.Vector2i;
 import org.joml.Vector3d;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL43;
-import org.lwjgl.system.MemoryUtil;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.controller.IController;
+import ru.BouH.engine.game.resource.ResourceManager;
 import ru.BouH.engine.physics.world.timer.PhysicThreadManager;
 import ru.BouH.engine.proxy.LocalPlayer;
 import ru.BouH.engine.render.RenderManager;
-import ru.BouH.engine.render.environment.light.LightManager;
 import ru.BouH.engine.render.frustum.FrustumCulling;
 import ru.BouH.engine.render.scene.components.MeshModel;
 import ru.BouH.engine.render.scene.components.Model2D;
 import ru.BouH.engine.render.scene.objects.items.PhysicsObject;
 import ru.BouH.engine.render.scene.programs.FrameBufferObjectProgram;
 import ru.BouH.engine.game.resource.assets.ShaderAssets;
-import ru.BouH.engine.render.scene.programs.shaders.ShaderManager;
+import ru.BouH.engine.game.resource.assets.shaders.ShaderManager;
 import ru.BouH.engine.render.scene.programs.UniformBufferUtils;
 import ru.BouH.engine.render.scene.scene_render.GuiRender;
 import ru.BouH.engine.render.scene.scene_render.SkyRender;
 import ru.BouH.engine.render.scene.scene_render.WorldRender;
+import ru.BouH.engine.render.scene.scene_render.utility.UniformConstants;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 import ru.BouH.engine.render.scene.world.camera.AttachedCamera;
 import ru.BouH.engine.render.scene.world.camera.FreeCamera;
@@ -36,7 +36,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -45,7 +44,6 @@ import java.util.List;
 public class Scene {
     public static boolean testTrigger = false;
 
-    private final ShaderAssets shaderAssets;
     private double elapsedTime;
     private final List<SceneRenderBase> sceneRenderBases;
     private final Screen screen;
@@ -69,12 +67,7 @@ public class Scene {
         this.skyRender = new SkyRender(this.getSceneRenderConveyor());
         this.worldRender = new WorldRender(this.getSceneRenderConveyor());
         this.guiRender = new GuiRender(this.getSceneRenderConveyor());
-        this.shaderAssets = new ShaderAssets();
         this.currentCamera = null;
-    }
-
-    public ShaderAssets getShaderLoader() {
-        return this.shaderAssets;
     }
 
     public static boolean isSceneActive() {
@@ -136,6 +129,7 @@ public class Scene {
     }
 
     public void preRender() {
+        ResourceManager.shaderAssets.startShaders();
         this.getRenderWorld().setFrustumCulling(this.getFrustumCulling());
         if (LocalPlayer.VALID_PL) {
             this.enableAttachedCamera(SceneWorld.PL);
@@ -147,28 +141,6 @@ public class Scene {
             sceneRenderBase.onStartRender();
             Game.getGame().getLogManager().log("Scene " + sceneRenderBase.getRenderGroup().name() + " successfully started!");
         }
-        Game.getGame().getLogManager().log("Filling light buffer!");
-        this.initLights();
-        Game.getGame().getLogManager().log("Scene rendering started");
-    }
-
-    private void initLights() {
-        this.initPointLights(this.getEntityRender(), UniformBufferUtils.UBO_POINT_LIGHTS.getName());
-    }
-
-    private void initPointLights(SceneRenderBase sceneRenderBase, String bufferName) {
-        FloatBuffer value1Buffer = MemoryUtil.memAllocFloat(7 * LightManager.MAX_POINT_LIGHTS);
-        value1Buffer.put(0.0f);
-        value1Buffer.put(0.0f);
-        value1Buffer.put(0.0f);
-        value1Buffer.put(0.0f);
-        value1Buffer.put(0.0f);
-        value1Buffer.put(0.0f);
-        value1Buffer.put(0.0f);
-        for (int i = 0; i < LightManager.MAX_POINT_LIGHTS; i++) {
-            sceneRenderBase.performUniformBuffer(bufferName, i * 32, value1Buffer);
-        }
-        MemoryUtil.memFree(value1Buffer);
     }
 
     public void onWindowResize(Vector2i dim) {
@@ -187,6 +159,10 @@ public class Scene {
         this.getSceneRender().setPostRender(a);
     }
 
+    public ShaderManager getGameUboShader() {
+        return ResourceManager.shaderAssets.gameUbo;
+    }
+
     public void enableFreeCamera(IController controller, Vector3d pos, Vector3d rot) {
         this.setRenderCamera(new FreeCamera(controller, pos, rot));
     }
@@ -197,13 +173,6 @@ public class Scene {
 
     public boolean isCameraAttachedToItem(PhysicsObject physicsObject) {
         return this.getCurrentCamera() instanceof AttachedCamera && ((AttachedCamera) this.getCurrentCamera()).getPhysXObject() == physicsObject;
-    }
-
-    public void test() {
-        for (PhysicsObject physicsObject : this.getRenderWorld().getEntityList()) {
-            physicsObject.setPrevPos(physicsObject.getWorldItem().getPosition());
-            physicsObject.setPrevRot(physicsObject.getWorldItem().getRotation());
-        }
     }
 
     @SuppressWarnings("all")
@@ -261,12 +230,11 @@ public class Scene {
             sceneRenderBase.onStopRender();
             Game.getGame().getLogManager().log("Scene " + sceneRenderBase.getRenderGroup().name() + " successfully stopped!");
         }
+        ResourceManager.shaderAssets.destroyShaders();
         Game.getGame().getLogManager().log("Scene rendering stopped");
     }
 
     public class SceneRenderConveyor {
-        private final ShaderManager postProcessingShader;
-        private final ShaderManager blurShader;
         private final FrameBufferObjectProgram fboBlur;
         private final FrameBufferObjectProgram sceneFbo;
         private final float[] blurKernel;
@@ -274,8 +242,6 @@ public class Scene {
         private boolean wantsTakeScreenshot;
 
         public SceneRenderConveyor() {
-            this.postProcessingShader = new ShaderManager("post_render_1");
-            this.blurShader = new ShaderManager("post_blur");
             this.fboBlur = new FrameBufferObjectProgram();
             this.sceneFbo = new FrameBufferObjectProgram();
             this.blurKernel = this.blurKernels(8.0f, 7);
@@ -284,16 +250,6 @@ public class Scene {
 
         private void initShaders() {
             this.attachFBO(new Vector2i((int) this.getWindowDimensions().x, (int) this.getWindowDimensions().y));
-            for (int i = 0; i < this.blurKernel.length; i++) {
-                this.getBlurShader().addUniform("kernel[" + i + "]");
-            }
-            this.getBlurShader().addUniform("projection_model_matrix");
-            this.getBlurShader().addUniform("texture_sampler");
-            this.getPostProcessingShader().addUniform("projection_model_matrix");
-            this.getPostProcessingShader().addUniform("texture_sampler");
-            this.getPostProcessingShader().addUniform("blur_sampler");
-            this.getPostProcessingShader().addUniform("post_mode");
-            this.getPostProcessingShader().addUniformBuffer(UniformBufferUtils.UBO_MISC);
         }
 
         private float[] blurKernels(float sigma, int kernelC) {
@@ -323,6 +279,8 @@ public class Scene {
         }
 
         public void onRender(double partialTicks, List<SceneRenderBase> mainList, List<SceneRenderBase> additionalList) {
+            UniformBufferUtils.updateLightBuffers(Scene.this);
+            Scene.this.getGameUboShader().bind();
             Model2D model2D = this.genFrameBufferSquare((float) this.getWindowDimensions().x, (float) this.getWindowDimensions().y);
             this.sceneFbo.bindFBO();
             GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
@@ -331,11 +289,11 @@ public class Scene {
 
             this.fboBlur.bindFBO();
             this.getBlurShader().bind();
-            this.getBlurShader().performUniform("projection_model_matrix", RenderManager.instance.getOrthographicModelMatrix(model2D));
-            this.getBlurShader().performUniform("texture_sampler", 0);
+            this.getBlurShader().performUniform(UniformConstants.projection_model_matrix, RenderManager.instance.getOrthographicModelMatrix(model2D));
+            this.getBlurShader().performUniform(UniformConstants.texture_sampler, 0);
 
             for (int i = 0; i < this.blurKernel.length; i++) {
-                this.getBlurShader().performUniform("kernel[" + i + "]", this.blurKernel[i]);
+                this.getBlurShader().performUniform("kernel", i, this.blurKernel[i]);
             }
 
             GL30.glActiveTexture(GL30.GL_TEXTURE0);
@@ -347,8 +305,8 @@ public class Scene {
             this.fboBlur.unBindFBO();
 
             this.getPostProcessingShader().bind();
-            this.getPostProcessingShader().performUniform("projection_model_matrix", RenderManager.instance.getOrthographicModelMatrix(model2D));
-            this.getPostProcessingShader().performUniform("texture_sampler", 0);
+            this.getPostProcessingShader().performUniform(UniformConstants.projection_model_matrix, RenderManager.instance.getOrthographicModelMatrix(model2D));
+            this.getPostProcessingShader().performUniform(UniformConstants.texture_sampler, 0);
             this.getPostProcessingShader().performUniform("blur_sampler", 1);
             this.getPostProcessingShader().performUniform("post_mode", Scene.testTrigger ? 1 : this.getPostRender());
             GL30.glActiveTexture(GL30.GL_TEXTURE0);
@@ -362,9 +320,7 @@ public class Scene {
             this.getPostProcessingShader().unBind();
 
             for (SceneRenderBase sceneRenderBase : additionalList) {
-                sceneRenderBase.bindProgram();
                 sceneRenderBase.onRender(partialTicks);
-                sceneRenderBase.unBindProgram();
             }
 
             if (this.wantsTakeScreenshot) {
@@ -372,6 +328,7 @@ public class Scene {
                 this.wantsTakeScreenshot = false;
             }
             model2D.clean();
+            Scene.this.getGameUboShader().unBind();
         }
 
         public Vector2d getWindowDimensions() {
@@ -401,23 +358,19 @@ public class Scene {
         }
 
         public void onStartRender() {
-            this.getBlurShader().startProgram();
-            this.getPostProcessingShader().startProgram();
         }
 
         public void onStopRender() {
             this.fboBlur.clearFBO();
             this.sceneFbo.clearFBO();
-            this.getBlurShader().destroyProgram();
-            this.getPostProcessingShader().destroyProgram();
         }
 
         public ShaderManager getBlurShader() {
-            return this.blurShader;
+            return ResourceManager.shaderAssets.post_blur;
         }
 
         public ShaderManager getPostProcessingShader() {
-            return this.postProcessingShader;
+            return ResourceManager.shaderAssets.post_render_1;
         }
 
         private void writeBufferInFile() {

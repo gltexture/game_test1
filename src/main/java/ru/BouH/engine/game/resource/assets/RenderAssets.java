@@ -46,12 +46,12 @@ public class RenderAssets implements IAssets {
         this.cubeObj = AssetsHelper.loadMesh("prop/cube.obj");
         this.skyboxCubeMap = new CubeMapPNGTexture("skybox/sky1");
 
-        this.entityCube = new RenderModeledData(new RenderEntity(), bricksPng, EntityPhysicsObject.class, cubeObj).attachNormalMap(ResourceManager.instance.getRenderAssets().bricksNormalMap);
-        this.entityLargeCube = new RenderModeledData(new RenderEntity(), bricksPng, EntityPhysicsObject.class, cubeObj).setTextureScaling(new Vector2d(32.0f, 32.0f)).attachNormalMap(ResourceManager.instance.getRenderAssets().bricksNormalMap);
-        this.entityLamp = new RenderModeledData(new RenderEntity(), new Color3FA(0xffffff), PhysicsColoredLamp.class, cubeObj);
-        this.player = new StandardRenderData(new RenderNull(), EntityPhysicsObject.class, new RenderData.RenderProperties(true, true, false));
-        this.plane = new StandardRenderData(new RenderBrushPlane(), bricksPng, BrushPlanePhysXObject.class).setTextureScaling(new Vector2d(32.0f, 4.0f)).attachNormalMap(ResourceManager.instance.getRenderAssets().bricksNormalMap);
-        this.planeBrick = new StandardRenderData(new RenderBrushPlane(), grassPng, BrushPlanePhysXObject.class).setTextureScaling(new Vector2d(128.0f, 128.0f));
+        this.entityCube = new RenderModeledData(new RenderEntity(), bricksPng, EntityPhysicsObject.class, ResourceManager.shaderAssets.world, cubeObj).attachNormalMap(ResourceManager.renderAssets.bricksNormalMap);
+        this.entityLargeCube = new RenderModeledData(new RenderEntity(), bricksPng, EntityPhysicsObject.class, ResourceManager.shaderAssets.world, cubeObj).setTextureScaling(new Vector2d(32.0f, 32.0f)).attachNormalMap(ResourceManager.renderAssets.bricksNormalMap);
+        this.entityLamp = new RenderModeledData(new RenderEntity(), new Color3FA(0xffffff), PhysicsColoredLamp.class, ResourceManager.shaderAssets.world, cubeObj);
+        this.player = new StandardRenderData(new RenderNull(), EntityPhysicsObject.class, ResourceManager.shaderAssets.world, new RenderData.RenderProperties(true, true, false));
+        this.plane = new StandardRenderData(new RenderBrushPlane(), bricksPng, BrushPlanePhysXObject.class, ResourceManager.shaderAssets.world).setTextureScaling(new Vector2d(32.0f, 4.0f)).attachNormalMap(ResourceManager.renderAssets.bricksNormalMap);
+        this.planeBrick = new StandardRenderData(new RenderBrushPlane(), grassPng, BrushPlanePhysXObject.class, ResourceManager.shaderAssets.world).setTextureScaling(new Vector2d(128.0f, 128.0f));
     }
 
     @Override

@@ -1,17 +1,32 @@
 package ru.BouH.engine.render.scene.programs;
 
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL43;
 import ru.BouH.engine.game.Game;
+import ru.BouH.engine.game.resource.assets.shaders.ShaderGroup;
 
 public class ShaderProgram {
     private final int programId;
     private int vertexShaderId;
     private int fragmentShaderId;
+    private int geometricShaderId;
 
     public ShaderProgram() {
         this.programId = GL20.glCreateProgram();
         if (this.programId == 0) {
             Game.getGame().getLogManager().error("Could not create shader program!");
+        }
+    }
+
+    public void createShader(ShaderGroup shaderGroup) {
+        if (shaderGroup.getFragmentShader() != null) {
+            this.createFragmentShader(shaderGroup.getFragmentShader().getShaderText());
+        }
+        if (shaderGroup.getVertexShader() != null) {
+            this.createVertexShader(shaderGroup.getVertexShader().getShaderText());
+        }
+        if (shaderGroup.getGeometricShader() != null) {
+            this.createGeometricShader(shaderGroup.getGeometricShader().getShaderText());
         }
     }
 
@@ -21,6 +36,10 @@ public class ShaderProgram {
 
     public void createFragmentShader(String shader) {
         this.fragmentShaderId = this.createShader(shader, GL20.GL_FRAGMENT_SHADER);
+    }
+
+    public void createGeometricShader(String shader) {
+        this.geometricShaderId = this.createShader(shader, GL43.GL_GEOMETRY_SHADER);
     }
 
     private int createShader(String shader, int type) {
@@ -37,10 +56,11 @@ public class ShaderProgram {
         return id;
     }
 
-    public void link() {
+    public boolean link() {
         GL20.glLinkProgram(this.programId);
         if (GL20.glGetProgrami(this.programId, GL20.GL_LINK_STATUS) == 0) {
-            Game.getGame().getLogManager().error("Could not link Shader " + GL20.glGetShaderInfoLog(this.programId, 4096));
+            Game.getGame().getLogManager().warn("Could not link Shader " + GL20.glGetShaderInfoLog(this.programId, 4096));
+            return false;
         }
         if (this.vertexShaderId != 0) {
             GL20.glDetachShader(this.programId, this.vertexShaderId);
@@ -48,10 +68,15 @@ public class ShaderProgram {
         if (this.fragmentShaderId != 0) {
             GL20.glDetachShader(this.programId, this.fragmentShaderId);
         }
+        if (this.geometricShaderId != 0) {
+            GL20.glDetachShader(this.programId, this.geometricShaderId);
+        }
         GL20.glValidateProgram(this.programId);
         if (GL20.glGetProgrami(this.programId, GL20.GL_VALIDATE_STATUS) == 0) {
             Game.getGame().getLogManager().warn("Could not validate Shader " + GL20.glGetShaderInfoLog(this.programId, 4096));
+            return false;
         }
+        return true;
     }
 
     public void bind() {

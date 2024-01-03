@@ -34,6 +34,10 @@ public class Game {
         this.proxy = new Proxy(this.getPhysicThreadManager().getPhysicsTimer(), this.getScreen());
     }
 
+    public ResourceManager getResourceManager() {
+        return this.getEngineSystem().getResourceManager();
+    }
+
     public static long systemTime() {
         return System.nanoTime();
     }
@@ -48,6 +52,7 @@ public class Game {
 
     public static void main(String[] args) throws InterruptedException {
         Game.startScreen = new Game();
+        Game.getGame().getLogManager().log("Starting game!");
         Game.getGame().engineSystem = new EngineSystem();
         Game.getGame().engineSystem.startSystem();
     }
@@ -97,10 +102,16 @@ public class Game {
         public static final Object logicLocker = new Object();
         private Thread thread;
         private boolean threadHasStarted;
+        private final ResourceManager resourceManager;
 
         public EngineSystem() {
             this.thread = null;
             this.threadHasStarted = false;
+            this.resourceManager = new ResourceManager();
+        }
+
+        public ResourceManager getResourceManager() {
+            return this.resourceManager;
         }
 
         @SuppressWarnings("all")
@@ -163,7 +174,7 @@ public class Game {
 
         private void preLoadingResources() {
             Game.getGame().getLogManager().log("Loading rendering resources...");
-            ResourceManager.instance.loadAllAssets();
+            Game.getGame().getResourceManager().loadAllAssets();
             Game.getGame().getLogManager().log("Rendering resources loaded!");
         }
     }

@@ -18,7 +18,7 @@ public class Environment {
     public Environment(SceneWorld sceneWorld) {
         this.sceneWorld = sceneWorld;
         this.lightManager = new LightManager(sceneWorld);
-        this.sky = new Sky(ResourceManager.instance.getRenderAssets().skyboxCubeMap);
+        this.sky = new Sky(ResourceManager.renderAssets.skyboxCubeMap);
         Vector3f vector3f = this.getSunPosition();
         this.sunDebugVector = new VectorForm(new Vector3d(0.0f, 0.0f, 0.0f), new Vector3d(vector3f).mul(100));
     }

@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class LightManager {
-    public static final int MAX_POINT_LIGHTS = 256;
+    public static final int MAX_POINT_LIGHTS = 1024;
     private final SceneWorld sceneWorld;
     private final Sun sun;
     private final List<PointLight> pointLightList;

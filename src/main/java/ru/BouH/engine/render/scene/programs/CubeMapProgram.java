@@ -4,14 +4,14 @@ import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.render.scene.objects.texture.samples.CubeMapPNGTexture;
 import ru.BouH.engine.render.scene.objects.texture.samples.PNGTexture;
 
-public class CubeMapSample {
+public class CubeMapProgram {
     private int textureId;
 
-    public CubeMapSample(String textureNamePng) {
+    public CubeMapProgram(String textureNamePng) {
         this.generateTexture(textureNamePng);
     }
 
-    public CubeMapSample(CubeMapPNGTexture cubeMapPNGTexture) {
+    public CubeMapProgram(CubeMapPNGTexture cubeMapPNGTexture) {
         this.generateTexture(cubeMapPNGTexture);
     }
 

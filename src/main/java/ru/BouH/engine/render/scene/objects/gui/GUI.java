@@ -6,6 +6,7 @@ import org.lwjgl.glfw.GLFW;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.controller.binding.Binding;
 import ru.BouH.engine.game.controller.input.Keyboard;
+import ru.BouH.engine.game.resource.ResourceManager;
 import ru.BouH.engine.physics.entities.player.EntityPlayerSP;
 import ru.BouH.engine.render.RenderManager;
 import ru.BouH.engine.render.scene.SceneRenderBase;
@@ -14,28 +15,28 @@ import ru.BouH.engine.render.scene.objects.gui.hud.GuiPicture;
 import ru.BouH.engine.render.scene.objects.gui.hud.GuiText;
 import ru.BouH.engine.render.scene.objects.texture.samples.Color3FA;
 import ru.BouH.engine.render.scene.objects.texture.samples.PNGTexture;
+import ru.BouH.engine.render.scene.scene_render.utility.UniformConstants;
 import ru.BouH.engine.render.screen.Screen;
 
 public class GUI {
-    private static final SceneRenderBase sceneRenderBase = Game.getGame().getScreen().getScene().getGuiRender();
 
-    public static void renderGUI(double partialTicks) {
+    public static void renderGUI(SceneRenderBase sceneRenderBase, double partialTicks) {
         double width = Game.getGame().getScreen().getWidth();
         double height = Game.getGame().getScreen().getHeight();
         final EntityPlayerSP entityPlayerSP = Game.getGame().getPlayerSP();
-        GUI.renderText(partialTicks, 0, 0, "FPS: " + Screen.FPS + " | TPS: " + Screen.PHYS2_TPS, 0xffffff);
-        GUI.renderText(partialTicks, 0, 20, "entities: " + Game.getGame().getPhysicsWorld().countItems(), 0xffffff);
-        GUI.renderText(partialTicks, 0, 40, String.format("%s %s %s", (int) entityPlayerSP.getPosition().x, (int) entityPlayerSP.getPosition().y, (int) entityPlayerSP.getPosition().z), 0xffffff);
+        GUI.renderText(sceneRenderBase, partialTicks, 0, 0, "FPS: " + Screen.FPS + " | TPS: " + Screen.PHYS2_TPS, 0xffffff);
+        GUI.renderText(sceneRenderBase, partialTicks, 0, 20, "entities: " + Game.getGame().getPhysicsWorld().countItems(), 0xffffff);
+        GUI.renderText(sceneRenderBase, partialTicks, 0, 40, String.format("%s %s %s", (int) entityPlayerSP.getPosition().x, (int) entityPlayerSP.getPosition().y, (int) entityPlayerSP.getPosition().z), 0xffffff);
         int i1 = 60;
         if (!Keyboard.isPressedKey(GLFW.GLFW_KEY_LEFT_CONTROL)) {
-            GUI.renderText(partialTicks, 0, i1, "Управление LCTRL", 0xffffff);
+            GUI.renderText(sceneRenderBase, partialTicks, 0, i1, "Управление LCTRL", 0xffffff);
         } else {
             for (Binding keyBinding : Binding.getBindingList()) {
-                GUI.renderText(partialTicks, 0, i1, keyBinding.toString(), 0xffffff);
+                GUI.renderText(sceneRenderBase, partialTicks, 0, i1, keyBinding.toString(), 0xffffff);
                 i1 += 20;
             }
         }
-        GUI.renderText(partialTicks, 0, i1 + 20, "speed: " + String.format("%.2f", entityPlayerSP.getObjectSpeed()), 0xffffff);
+        GUI.renderText(sceneRenderBase, partialTicks, 0, i1 + 20, "speed: " + String.format("%.2f", entityPlayerSP.getObjectSpeed()), 0xffffff);
         //Vector2d vector2d = GUI.getScaledPictureDimensions(RenderResources.pngGuiPic1, 0.1f);
         //GUI.renderPicture(partialTicks, (int) (width - vector2d.x - 2), 2, (int) vector2d.x, (int) vector2d.y, RenderResources.pngGuiPic1);
     }
@@ -51,32 +52,36 @@ public class GUI {
         return new Vector2d(PNGTexture.getWidth() * picScale, PNGTexture.getHeight() * picScale);
     }
 
-    private static void performMatrix(Model2D model2D) {
-        sceneRenderBase.performUniform("projection_model_matrix", RenderManager.instance.getOrthographicModelMatrix(model2D));
-    }
-
-    private static void renderPicture(double partialTicks, int x, int y, int w, int h, PNGTexture PNGTexture) {
+    private static void renderPicture(SceneRenderBase sceneRenderBase, double partialTicks, int x, int y, int w, int h, PNGTexture PNGTexture) {
         if (PNGTexture == null) {
             return;
         }
-        GuiPicture guiPicture = new GuiPicture(PNGTexture, x, y, w, h);
+        GuiPicture guiPicture = new GuiPicture(PNGTexture, ResourceManager.shaderAssets.guiShader, x, y, w, h);
         Model2D model2D = guiPicture.getModel2DInfo();
         if (model2D != null) {
-            GUI.performMatrix(guiPicture.getModel2DInfo());
-            sceneRenderBase.performUniform("colour", new Vector4d(1.0f, 1.0f, 1.0f, 1.0f));
-            guiPicture.renderFabric().onRender(partialTicks, GUI.sceneRenderBase, guiPicture);
+            guiPicture.getShaderManager().bind();
+            GUI.performMatrix(guiPicture, guiPicture.getModel2DInfo());
+            guiPicture.getShaderManager().performUniform(UniformConstants.colour, new Vector4d(1.0f, 1.0f, 1.0f, 1.0f));
+            guiPicture.renderFabric().onRender(partialTicks, sceneRenderBase, guiPicture);
+            guiPicture.getShaderManager().unBind();
             guiPicture.getModel2DInfo().clean();
         } else {
             Game.getGame().getLogManager().warn("Invalid Texture!");
         }
     }
 
-    private static void renderText(double partialTicks, int x, int y, String s, int HEX) {
-        GuiText guiText = new GuiText(s, x, y);
-        GUI.performMatrix(guiText.getModel2DInfo());
+    private static void renderText(SceneRenderBase sceneRenderBase, double partialTicks, int x, int y, String s, int HEX) {
+        GuiText guiText = new GuiText(s, ResourceManager.shaderAssets.guiShader, x, y);
+        guiText.getShaderManager().bind();
+        GUI.performMatrix(guiText, guiText.getModel2DInfo());
         float[] hex = Color3FA.HEX2RGB(HEX);
-        sceneRenderBase.performUniform("colour", new Vector4d(hex[0], hex[1], hex[2], 1.0f));
-        guiText.renderFabric().onRender(partialTicks, GUI.sceneRenderBase, guiText);
+        guiText.getShaderManager().performUniform(UniformConstants.colour, new Vector4d(hex[0], hex[1], hex[2], 1.0f));
+        guiText.renderFabric().onRender(partialTicks, sceneRenderBase, guiText);
+        guiText.getShaderManager().unBind();
         guiText.getModel2DInfo().clean();
+    }
+
+    private static void performMatrix(AbstractGui abstractGui, Model2D model2D) {
+        abstractGui.getShaderManager().performUniform(UniformConstants.projection_model_matrix, RenderManager.instance.getOrthographicModelMatrix(model2D));
     }
 }

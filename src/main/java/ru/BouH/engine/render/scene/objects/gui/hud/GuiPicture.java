@@ -2,9 +2,10 @@ package ru.BouH.engine.render.scene.objects.gui.hud;
 
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL30;
+import ru.BouH.engine.game.resource.assets.shaders.ShaderManager;
 import ru.BouH.engine.render.scene.components.MeshModel;
 import ru.BouH.engine.render.scene.components.Model2D;
-import ru.BouH.engine.render.scene.fabric.RenderFabric;
+import ru.BouH.engine.render.scene.fabric.base.RenderFabric;
 import ru.BouH.engine.render.scene.fabric.RenderGui;
 import ru.BouH.engine.render.scene.objects.gui.AbstractGui;
 import ru.BouH.engine.render.scene.objects.texture.samples.PNGTexture;
@@ -18,22 +19,22 @@ public class GuiPicture extends AbstractGui {
     private float width;
     private float height;
 
-    public GuiPicture(@NotNull PNGTexture PNGTexture, int x, int y, float w, float h, int zLevel) {
-        super("gui_picture", zLevel);
+    public GuiPicture(@NotNull PNGTexture PNGTexture, ShaderManager shaderManager, int x, int y, float w, float h, int zLevel) {
+        super("gui_picture", shaderManager, zLevel);
         this.setPicture(PNGTexture, x, y, w, h);
     }
 
-    public GuiPicture(@NotNull PNGTexture PNGTexture, int x, int y, float w, float h) {
-        this(PNGTexture, x, y, w, h, 0);
+    public GuiPicture(@NotNull PNGTexture PNGTexture, ShaderManager shaderManager, int x, int y, float w, float h) {
+        this(PNGTexture, shaderManager, x, y, w, h, 0);
     }
 
-    public GuiPicture(@NotNull PNGTexture PNGTexture, int x, int y, int zLevel) {
-        super("gui_picture", zLevel);
+    public GuiPicture(@NotNull PNGTexture PNGTexture, ShaderManager shaderManager, int x, int y, int zLevel) {
+        super("gui_picture", shaderManager, zLevel);
         this.setPicture(PNGTexture, x, y);
     }
 
-    public GuiPicture(@NotNull PNGTexture PNGTexture, int x, int y) {
-        this(PNGTexture, x, y, 0);
+    public GuiPicture(@NotNull PNGTexture PNGTexture, ShaderManager shaderManager, int x, int y) {
+        this(PNGTexture, shaderManager, x, y, 0);
     }
 
     public void setPicture(PNGTexture PNGTexture, int x, int y) {
