@@ -14,7 +14,7 @@ public abstract class SceneRenderBase {
         this.renderPriority = renderPriority;
         this.renderGroup = renderGroup;
         this.sceneRenderConveyor = sceneRenderConveyor;
-        Game.getGame().getLogManager().log("Scene \"" + renderGroup.getPath() + "\" init");
+        Game.getGame().getLogManager().log("Scene \"" + renderGroup.getId() + "\" init");
     }
 
     public ICamera getCamera() {

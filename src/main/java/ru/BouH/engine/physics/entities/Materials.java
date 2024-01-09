@@ -7,15 +7,15 @@ import ru.BouH.engine.physics.jb_objects.RigidBodyObject;
 public class Materials {
     public static MaterialProperties defaultMaterial = new MaterialProperties("defaultMaterial");
     public static MaterialProperties grassGround = new MaterialProperties("grassGround").setFriction(5.0d).setRestitution(0.0d);
-    public static MaterialProperties brickCube = new MaterialProperties("brickCube").setFriction(5.0d).setRestitution(0.0d);
+    public static MaterialProperties brickCube = new MaterialProperties("brickCube").setFriction(7.5d).setRestitution(0.0d);
 
     public static class MaterialProperties {
         public static final double DEFAULT_FRICTION_X = 1.0d;
         public static final double DEFAULT_FRICTION_Y = 0.0d;
         public static final double DEFAULT_FRICTION_Z = 1.0d;
         public static final double DEFAULT_FRICTION = 1.0d;
-        public static final double DEFAULT_LINEAR_DAMPING = 0.35d;
-        public static final double DEFAULT_ANGULAR_DAMPING = 0.35d;
+        public static final double DEFAULT_LINEAR_DAMPING = 0.5d;
+        public static final double DEFAULT_ANGULAR_DAMPING = 0.5d;
         public static final double DEFAULT_RESTITUTION = 0.0d;
 
         private final String materialName;

@@ -1,10 +1,10 @@
 package ru.BouH.engine.render.scene.objects.items;
 
+import ru.BouH.engine.game.resource.assets.models.basic.MeshHelper;
 import ru.BouH.engine.physics.brush.Plane4dBrush;
 import ru.BouH.engine.physics.brush.WorldBrush;
 import ru.BouH.engine.physics.world.object.WorldItem;
 import ru.BouH.engine.proxy.IWorld;
-import ru.BouH.engine.render.scene.mesh_forms.PlaneForm;
 import ru.BouH.engine.render.scene.objects.data.RenderData;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 
@@ -22,8 +22,7 @@ public class BrushPlanePhysXObject extends PhysicsObject {
 
     protected void setModel() {
         Plane4dBrush plane4dBrush = (Plane4dBrush) this.getWorldBrush();
-        PlaneForm planeForm = new PlaneForm(plane4dBrush.getVertices()[0], plane4dBrush.getVertices()[1], plane4dBrush.getVertices()[2], plane4dBrush.getVertices()[3]);
-        this.model3D = planeForm.getMeshInfo();
+        this.mesh = MeshHelper.generatePlane3DMesh(plane4dBrush.getVertices()[0], plane4dBrush.getVertices()[1], plane4dBrush.getVertices()[2], plane4dBrush.getVertices()[3]);
     }
 
     @Override

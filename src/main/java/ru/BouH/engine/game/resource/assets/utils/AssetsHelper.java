@@ -1,12 +1,13 @@
 package ru.BouH.engine.game.resource.assets.utils;
 
+import ru.BouH.engine.game.resource.assets.models.Mesh;
+import ru.BouH.engine.game.resource.assets.models.formats.Format3D;
 import ru.BouH.engine.game.resource.assets.obj.OBJLoader;
-import ru.BouH.engine.render.scene.components.MeshModel;
 
 import java.io.InputStream;
 
 public class AssetsHelper {
-    public static MeshModel loadMesh(String path) {
+    public static Mesh<Format3D> loadMesh(String path) {
         return OBJLoader.loadMesh(path);
     }
 

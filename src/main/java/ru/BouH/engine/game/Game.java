@@ -14,7 +14,7 @@ import ru.BouH.engine.render.screen.Screen;
 import java.util.Random;
 
 public class Game {
-    public static final String build = "29.12.2023";
+    public static final String build = "04.01.2024";
     public static long rngSeed;
     public static Random random;
     private static Game startScreen;

@@ -5,6 +5,8 @@ import org.jetbrains.annotations.NotNull;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
+import ru.BouH.engine.game.resource.assets.models.Mesh;
+import ru.BouH.engine.game.resource.assets.models.formats.Format3D;
 import ru.BouH.engine.game.resource.assets.shaders.ShaderManager;
 import ru.BouH.engine.physics.brush.WorldBrush;
 import ru.BouH.engine.physics.jb_objects.JBulletEntity;
@@ -15,7 +17,6 @@ import ru.BouH.engine.proxy.IWorld;
 import ru.BouH.engine.render.environment.light.ILight;
 import ru.BouH.engine.render.frustum.FrustumCulling;
 import ru.BouH.engine.render.frustum.RenderABB;
-import ru.BouH.engine.render.scene.components.Model3D;
 import ru.BouH.engine.render.scene.fabric.base.RenderFabric;
 import ru.BouH.engine.render.scene.objects.IRenderObject;
 import ru.BouH.engine.render.scene.objects.data.RenderData;
@@ -26,7 +27,7 @@ public abstract class PhysicsObject implements IRenderObject, IWorldObject, IWor
     private final SceneWorld sceneWorld;
     private final WorldItem worldItem;
     private final RenderData renderData;
-    protected Model3D model3D;
+    protected Mesh<Format3D> mesh;
     protected Vector3d prevRenderPosition;
     protected Vector3d prevRenderRotation;
     protected Vector3d renderPosition;
@@ -55,7 +56,7 @@ public abstract class PhysicsObject implements IRenderObject, IWorldObject, IWor
     }
 
     protected void setModel() {
-        this.model3D = null;
+        this.mesh = null;
     }
 
     @Override
@@ -171,7 +172,7 @@ public abstract class PhysicsObject implements IRenderObject, IWorldObject, IWor
 
         if (this.shouldInterpolateRot()) {
             Vector3d newRotation = new Vector3d();
-            Quaterniond result = getQuaternionInterpolated(partialTicks);
+            Quaterniond result = this.getQuaternionInterpolated(partialTicks);
             result.getEulerAnglesXYZ(newRotation);
             this.renderRotation.set(new Vector3d(Math.toDegrees(newRotation.x), Math.toDegrees(newRotation.y), Math.toDegrees(newRotation.z)));
         } else {
@@ -187,7 +188,7 @@ public abstract class PhysicsObject implements IRenderObject, IWorldObject, IWor
         end.rotateXYZ(Math.toRadians(this.getCurrentRotState().getEndPoint().x), Math.toRadians(this.getCurrentRotState().getEndPoint().y), Math.toRadians(this.getCurrentRotState().getEndPoint().z));
 
         Quaterniond res = new Quaterniond();
-        start.slerp(end, partialTicks, res);
+        end.slerp(start, partialTicks, res);
         return res;
     }
 
@@ -248,8 +249,8 @@ public abstract class PhysicsObject implements IRenderObject, IWorldObject, IWor
         return new Vector3d(this.renderRotation);
     }
 
-    public Model3D getModel3D() {
-        return this.model3D;
+    public Mesh<Format3D> getModel3D() {
+        return this.mesh;
     }
 
     @Override

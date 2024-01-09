@@ -2,9 +2,9 @@ package ru.BouH.engine.render.scene.objects.gui.hud;
 
 import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.game.resource.ResourceManager;
+import ru.BouH.engine.game.resource.assets.models.Mesh;
+import ru.BouH.engine.game.resource.assets.models.formats.Format2D;
 import ru.BouH.engine.game.resource.assets.shaders.ShaderManager;
-import ru.BouH.engine.render.scene.components.MeshModel;
-import ru.BouH.engine.render.scene.components.Model2D;
 import ru.BouH.engine.render.scene.fabric.base.RenderFabric;
 import ru.BouH.engine.render.scene.fabric.RenderGui;
 import ru.BouH.engine.render.scene.objects.gui.AbstractGui;
@@ -31,7 +31,7 @@ public class GuiText extends AbstractGui {
         super("gui_text: " + text, shaderManager, zLevel);
         this.fontTexture = fontTexture;
         this.setText(text);
-        this.getModel2DInfo().setPosition(x, y);
+        this.getModel2DInfo().getFormat().getPosition().set(x, y);
     }
 
     public GuiText(String text, ShaderManager shaderManager, int x, int y, int zLevel) {
@@ -58,69 +58,51 @@ public class GuiText extends AbstractGui {
         return this.width;
     }
 
-    private Model2D createModel() {
+    private Mesh<Format2D> createModel() {
+        Mesh<Format2D> mesh = new Mesh<>(new Format2D());
         char[] chars = this.getText().toCharArray();
-        List<Float> positions = new ArrayList<>();
-        List<Float> textureCoordinates = new ArrayList<>();
-        List<Integer> indices = new ArrayList<>();
 
         float startX = 0.0f;
         for (int i = 0; i < chars.length; i++) {
             FontTexture.CharInfo charInfo = this.fontTexture.getCharInfo(chars[i]);
 
-            positions.add(startX);
-            positions.add(0.0f);
-            positions.add((float) this.getzLevel());
-            textureCoordinates.add((float) charInfo.getStartX() / (float) this.fontTexture.getWidth());
-            textureCoordinates.add(0.0f);
-            indices.add(i * 4);
+            mesh.putPositionValue(startX);
+            mesh.putPositionValue(0.0f);
+            mesh.putPositionValue((float) this.getzLevel());
+            mesh.putTextureCoordinateValue((float) charInfo.getStartX() / (float) this.fontTexture.getWidth());
+            mesh.putTextureCoordinateValue(0.0f);
+            mesh.putIndexValue(i * 4);
 
-            positions.add(startX);
-            positions.add((float) this.fontTexture.getHeight());
-            positions.add((float) this.getzLevel());
-            textureCoordinates.add((float) charInfo.getStartX() / (float) this.fontTexture.getWidth());
-            textureCoordinates.add(1.0f);
-            indices.add(i * 4 + 1);
+            mesh.putPositionValue(startX);
+            mesh.putPositionValue((float) this.fontTexture.getHeight());
+            mesh.putPositionValue((float) this.getzLevel());
+            mesh.putTextureCoordinateValue((float) charInfo.getStartX() / (float) this.fontTexture.getWidth());
+            mesh.putTextureCoordinateValue(1.0f);
+            mesh.putIndexValue(i * 4 + 1);
 
-            positions.add(startX + charInfo.getWidth());
-            positions.add((float) this.fontTexture.getHeight());
-            positions.add((float) this.getzLevel());
-            textureCoordinates.add((float) (charInfo.getStartX() + charInfo.getWidth()) / (float) this.fontTexture.getWidth());
-            textureCoordinates.add(1.0f);
-            indices.add(i * 4 + 2);
+            mesh.putPositionValue(startX + charInfo.getWidth());
+            mesh.putPositionValue((float) this.fontTexture.getHeight());
+            mesh.putPositionValue((float) this.getzLevel());
+            mesh.putTextureCoordinateValue((float) (charInfo.getStartX() + charInfo.getWidth()) / (float) this.fontTexture.getWidth());
+            mesh.putTextureCoordinateValue(1.0f);
+            mesh.putIndexValue(i * 4 + 2);
 
-            positions.add(startX + charInfo.getWidth());
-            positions.add(0.0f);
-            positions.add((float) this.getzLevel());
-            textureCoordinates.add((float) (charInfo.getStartX() + charInfo.getWidth()) / (float) this.fontTexture.getWidth());
-            textureCoordinates.add(0.0f);
-            indices.add(i * 4 + 3);
+            mesh.putPositionValue(startX + charInfo.getWidth());
+            mesh.putPositionValue(0.0f);
+            mesh.putPositionValue((float) this.getzLevel());
+            mesh.putTextureCoordinateValue((float) (charInfo.getStartX() + charInfo.getWidth()) / (float) this.fontTexture.getWidth());
+            mesh.putTextureCoordinateValue(0.0f);
+            mesh.putIndexValue(i * 4 + 3);
 
-            indices.add(i * 4);
-            indices.add(i * 4 + 2);
+            mesh.putIndexValue(i * 4);
+            mesh.putIndexValue(i * 4 + 2);
 
             startX += charInfo.getWidth();
         }
-
         this.width = startX;
+        mesh.bakeMesh();
 
-        float[] f1 = new float[positions.size()];
-        int[] i1 = new int[indices.size()];
-        float[] f2 = new float[textureCoordinates.size()];
-
-        for (int i = 0; i < f1.length; i++) {
-            f1[i] = positions.get(i);
-        }
-
-        for (int i = 0; i < i1.length; i++) {
-            i1[i] = indices.get(i);
-        }
-
-        for (int i = 0; i < f2.length; i++) {
-            f2[i] = textureCoordinates.get(i);
-        }
-
-        return new Model2D(new MeshModel(f1, i1, f2));
+        return mesh;
     }
 
     @Override

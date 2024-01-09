@@ -1,14 +1,15 @@
 package ru.BouH.engine.render.scene.objects.gui;
 
+import ru.BouH.engine.game.resource.assets.models.Mesh;
+import ru.BouH.engine.game.resource.assets.models.formats.Format2D;
 import ru.BouH.engine.game.resource.assets.shaders.ShaderManager;
-import ru.BouH.engine.render.scene.components.Model2D;
 import ru.BouH.engine.render.scene.objects.IRenderObject;
 
 public abstract class AbstractGui implements IRenderObject {
     private final String id;
     private final ShaderManager shaderManager;
     private final int zLevel;
-    private Model2D model2D;
+    private Mesh<Format2D> model2D;
 
     public AbstractGui(String id, ShaderManager shaderManager, int zLevel) {
         this.id = id;
@@ -20,11 +21,11 @@ public abstract class AbstractGui implements IRenderObject {
         return this.shaderManager;
     }
 
-    public Model2D getModel2DInfo() {
+    public Mesh<Format2D> getModel2DInfo() {
         return this.model2D;
     }
 
-    public void setModel2DInfo(Model2D model2D) {
+    public void setModel2DInfo(Mesh<Format2D> model2D) {
         this.model2D = model2D;
     }
 

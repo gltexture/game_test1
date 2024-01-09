@@ -24,7 +24,7 @@ float rand(vec2 co)
 
 void main()
 {
-    frag_color = hdr(choose_mode(post_mode), 2.5, 0.6);
+    frag_color = hdr(choose_mode(post_mode), 2.5, 0.6) * min(w_tick, 1.0);
 }
 
 vec4 hdr(vec4 in_col, float exposure, float gamma) {

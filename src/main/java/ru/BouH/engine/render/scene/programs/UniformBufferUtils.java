@@ -8,10 +8,8 @@ import ru.BouH.engine.game.resource.assets.shaders.UniformBufferObject;
 import ru.BouH.engine.math.IntPair;
 import ru.BouH.engine.render.RenderManager;
 import ru.BouH.engine.render.environment.light.LightManager;
-import ru.BouH.engine.render.environment.light.LightType;
 import ru.BouH.engine.render.environment.light.PointLight;
 import ru.BouH.engine.render.scene.Scene;
-import ru.BouH.engine.render.scene.SceneRenderBase;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 
 import java.nio.FloatBuffer;
@@ -20,7 +18,7 @@ import java.util.List;
 public class UniformBufferUtils {
 
     public static void updateLightBuffers(Scene scene) {
-        SceneWorld sceneWorld1 = scene.getRenderWorld();
+        SceneWorld sceneWorld1 = scene.getSceneWorld();
         LightManager lightManager = sceneWorld1.getEnvironment().getLightManager();
         Matrix4d view = RenderManager.instance.getViewMatrix();
         Vector3f getAngle = lightManager.getNormalisedSunAngle(view);
@@ -45,7 +43,7 @@ public class UniformBufferUtils {
 
     private static void updatePointLightBuffer(Scene scene, Matrix4d view, UniformBufferObject uniformBufferObject) {
         FloatBuffer value1Buffer = MemoryUtil.memAllocFloat(7 * LightManager.MAX_POINT_LIGHTS);
-        List<PointLight> pointLightList = scene.getRenderWorld().getEnvironment().getLightManager().getPointLightList();
+        List<PointLight> pointLightList = scene.getSceneWorld().getEnvironment().getLightManager().getPointLightList();
         int activeLights = pointLightList.size();
         for (int i = 0; i < activeLights; i++) {
             PointLight pointLight = pointLightList.get(i);

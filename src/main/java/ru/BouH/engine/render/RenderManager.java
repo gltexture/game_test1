@@ -2,9 +2,9 @@ package ru.BouH.engine.render;
 
 import org.joml.Matrix4d;
 import ru.BouH.engine.game.Game;
-import ru.BouH.engine.render.scene.components.Model2D;
-import ru.BouH.engine.render.scene.components.Model3D;
-import ru.BouH.engine.render.scene.components.TransformationUtils;
+import ru.BouH.engine.game.resource.assets.models.Mesh;
+import ru.BouH.engine.game.resource.assets.models.formats.Format2D;
+import ru.BouH.engine.game.resource.assets.models.formats.Format3D;
 import ru.BouH.engine.render.scene.world.camera.ICamera;
 
 public class RenderManager {
@@ -30,16 +30,16 @@ public class RenderManager {
         return RenderManager.instance.getTransform().getViewMatrix();
     }
 
-    public Matrix4d getModelViewMatrix(Matrix4d matrix4d, Model3D model3D) {
-        return RenderManager.instance.getTransform().getModelViewMatrix(model3D, matrix4d);
+    public Matrix4d getModelViewMatrix(Matrix4d matrix4d, Mesh<Format3D> mesh) {
+        return RenderManager.instance.getTransform().getModelViewMatrix(mesh, matrix4d);
     }
 
-    public Matrix4d getModelViewMatrix(Model3D model3D) {
-        return RenderManager.instance.getTransform().getModelViewMatrix(model3D, RenderManager.instance.getTransform().getViewMatrix());
+    public Matrix4d getModelViewMatrix(Mesh<Format3D> mesh) {
+        return RenderManager.instance.getTransform().getModelViewMatrix(mesh, RenderManager.instance.getTransform().getViewMatrix());
     }
 
-    public Matrix4d getModelMatrix(Model3D model3D) {
-        return RenderManager.instance.getTransform().getModelMatrix(model3D);
+    public Matrix4d getModelMatrix(Mesh<Format3D> mesh) {
+        return RenderManager.instance.getTransform().getModelMatrix(mesh);
     }
 
     public void updateViewMatrix(ICamera camera) {
@@ -50,8 +50,8 @@ public class RenderManager {
         return RenderManager.instance.getTransform().getOrthographicMatrix(0, Game.getGame().getScreen().getWidth(), Game.getGame().getScreen().getHeight(), 0);
     }
 
-    public Matrix4d getOrthographicModelMatrix(Model2D model2D) {
+    public Matrix4d getOrthographicModelMatrix(Mesh<Format2D> mesh) {
         Matrix4d orthographicMatrix = RenderManager.instance.getTransform().getOrthographicMatrix(0, Game.getGame().getScreen().getWidth(), Game.getGame().getScreen().getHeight(), 0);
-        return RenderManager.instance.getTransform().getOrthoModelMatrix(model2D, orthographicMatrix);
+        return RenderManager.instance.getTransform().getOrthoModelMatrix(mesh, orthographicMatrix);
     }
 }

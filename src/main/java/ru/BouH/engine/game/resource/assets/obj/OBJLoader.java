@@ -3,10 +3,11 @@ package ru.BouH.engine.game.resource.assets.obj;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import ru.BouH.engine.game.Game;
+import ru.BouH.engine.game.resource.assets.models.Mesh;
+import ru.BouH.engine.game.resource.assets.models.formats.Format3D;
 import ru.BouH.engine.game.resource.assets.obj.components.Face;
 import ru.BouH.engine.game.resource.assets.obj.components.IdxGroup;
 import ru.BouH.engine.game.resource.assets.utils.AssetsHelper;
-import ru.BouH.engine.render.scene.components.MeshModel;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OBJLoader {
-    public static MeshModel loadMesh(String path) {
+    public static Mesh<Format3D> loadMesh(String path) {
         List<Vector3f> vert = new ArrayList<>();
         List<Vector2f> text = new ArrayList<>();
         List<Vector3f> norm = new ArrayList<>();
@@ -63,7 +64,7 @@ public class OBJLoader {
         return OBJLoader.reorderLists(vert, text, norm, faces);
     }
 
-    private static MeshModel reorderLists(List<Vector3f> posList, List<Vector2f> textCoordList, List<Vector3f> normList, List<Face> facesList) {
+    private static Mesh<Format3D> reorderLists(List<Vector3f> posList, List<Vector2f> textCoordList, List<Vector3f> normList, List<Face> facesList) {
         List<Integer> indices = new ArrayList<>();
         float[] posArr = new float[posList.size() * 3];
         int i = 0;
@@ -83,7 +84,13 @@ public class OBJLoader {
         }
         int[] indicesArr;
         indicesArr = indices.stream().mapToInt((Integer v) -> v).toArray();
-        return new MeshModel(posArr, indicesArr, textCoordArr, normArr);
+        Mesh<Format3D> mesh = new Mesh<>(new Format3D());
+        mesh.putPositionValues(posArr);
+        mesh.putIndexValues(indicesArr);
+        mesh.putTextureCoordinateValues(textCoordArr);
+        mesh.putNormalValues(normArr);
+        mesh.bakeMesh();
+        return mesh;
     }
 
     private static void processFaceVertex(IdxGroup indices, List<Vector2f> textCoordList, List<Vector3f> normList, List<Integer> indicesList, float[] texCoordArr, float[] normArr) {

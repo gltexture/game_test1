@@ -12,7 +12,6 @@ import ru.BouH.engine.physics.entities.BodyGroup;
 import ru.BouH.engine.physics.world.World;
 import ru.BouH.engine.physics.world.object.IWorldDynamic;
 import ru.BouH.engine.physics.world.object.WorldItem;
-import ru.BouH.engine.render.scene.debug.jbullet.JBDebugDraw;
 import ru.BouH.engine.game.synchronizing.SyncManger;
 
 import java.util.Iterator;
@@ -27,7 +26,6 @@ public class PhysicsTimer implements IPhysTimer {
     private final btCollisionDispatcher collisionDispatcher;
     private final btDiscreteDynamicsWorld discreteDynamicsWorld;
     private final btConstraintSolver constraintSolve;
-    private final JBDebugDraw jbDebugDraw;
     private final btGhostPairCallback pairCallback;
 
     public PhysicsTimer() {
@@ -47,9 +45,6 @@ public class PhysicsTimer implements IPhysTimer {
         this.discreteDynamicsWorld.getDispatchInfo().m_allowedCcdPenetration(0.0d);
         this.discreteDynamicsWorld.performDiscreteCollisionDetection();
 
-        this.jbDebugDraw = new JBDebugDraw();
-        this.jbDebugDraw.setDebugMode(btIDebugDraw.DBG_DrawWireframe | btIDebugDraw.DBG_DrawAabb);
-        this.discreteDynamicsWorld.setDebugDrawer(this.jbDebugDraw);
         this.world = new World();
     }
 
@@ -95,10 +90,6 @@ public class PhysicsTimer implements IPhysTimer {
 
     public World getWorld() {
         return this.world;
-    }
-
-    public JBDebugDraw getJbDebugDraw() {
-        return this.jbDebugDraw;
     }
 
     public void cleanResources() {

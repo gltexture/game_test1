@@ -26,12 +26,14 @@ public class ShaderAssets implements IAssets {
     public final ShaderManager post_render_1;
     public final ShaderManager skybox;
     public final ShaderManager world;
+    public final ShaderManager debug;
 
     public ShaderAssets() {
         this.SunLight = this.createUBO("SunLight", 0, 20);
         this.PointLights = this.createUBO("PointLights", 1, 32 * LightManager.MAX_POINT_LIGHTS);
         this.Misc = this.createUBO("Misc", 2, 4);
 
+        this.debug = this.createShaderManager("debug", Shader.ShaderType.FRAGMENT_BIT | Shader.ShaderType.VERTEX_BIT);
         this.guiShader = this.createShaderManager("gui", Shader.ShaderType.FRAGMENT_BIT | Shader.ShaderType.VERTEX_BIT);
         this.post_blur = this.createShaderManager("post_blur", Shader.ShaderType.FRAGMENT_BIT | Shader.ShaderType.VERTEX_BIT);
         this.post_render_1 = this.createShaderManager("post_render_1", Shader.ShaderType.FRAGMENT_BIT | Shader.ShaderType.VERTEX_BIT).addUBO(this.Misc);

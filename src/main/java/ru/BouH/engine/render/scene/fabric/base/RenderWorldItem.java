@@ -2,7 +2,6 @@ package ru.BouH.engine.render.scene.fabric.base;
 
 import ru.BouH.engine.render.scene.objects.IRenderObject;
 import ru.BouH.engine.render.scene.objects.items.PhysicsObject;
-import ru.BouH.engine.render.scene.objects.items.WorldObject;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 
 public abstract class RenderWorldItem implements RenderFabric {
@@ -10,7 +9,7 @@ public abstract class RenderWorldItem implements RenderFabric {
     public void onStartRender(IRenderObject renderItem) {
         PhysicsObject entityItem = (PhysicsObject) renderItem;
         if (entityItem.isHasModel()) {
-            entityItem.getModel3D().setPosition(entityItem.getWorldItem().getPosition());
+            entityItem.getModel3D().getFormat().getPosition().set(entityItem.getWorldItem().getPosition());
         }
     }
 
@@ -18,7 +17,7 @@ public abstract class RenderWorldItem implements RenderFabric {
     public void onStopRender(IRenderObject renderItem) {
         PhysicsObject entityItem = (PhysicsObject) renderItem;
         if (entityItem.isHasModel()) {
-            SceneWorld.toCleanSet.add(entityItem.getModel3D().getMeshModel());
+            SceneWorld.toCleanSet.add(entityItem.getModel3D());
         }
     }
 }

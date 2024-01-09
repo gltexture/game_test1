@@ -4,8 +4,10 @@ import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4d;
 import org.lwjgl.opengl.GL30;
 import ru.BouH.engine.game.Game;
+import ru.BouH.engine.game.resource.assets.models.Mesh;
+import ru.BouH.engine.game.resource.assets.models.formats.Format2D;
+import ru.BouH.engine.game.resource.assets.models.formats.Format3D;
 import ru.BouH.engine.render.RenderManager;
-import ru.BouH.engine.render.scene.components.Model3D;
 import ru.BouH.engine.render.scene.objects.data.RenderData;
 import ru.BouH.engine.render.scene.objects.texture.PictureSample;
 import ru.BouH.engine.render.scene.objects.texture.WorldItemTexture;
@@ -107,6 +109,12 @@ public final class ShaderManager {
         }
         if (!this.getUniformProgram().setUniform(uniform, o)) {
             Game.getGame().getLogManager().warn("[" + this.getShaderGroup().getId() + "] Wrong arguments! U: " + uniform);
+        }
+    }
+
+    public void performArrayUniform(String uniform, float[] objects) {
+        for (int i = 0; i < objects.length; i++) {
+            this.performUniform(uniform, i, objects[i]);
         }
     }
 
@@ -235,8 +243,8 @@ public final class ShaderManager {
             ShaderManager.this.performUniform(UniformConstants.projection_matrix, RenderManager.instance.getProjectionMatrix());
         }
 
-        public void performModelViewMatrix3d(Model3D model3D) {
-            ShaderManager.this.performUniform(UniformConstants.model_view_matrix, RenderManager.instance.getModelViewMatrix(model3D));
+        public void performModelViewMatrix3d(Mesh<Format3D> mesh) {
+            ShaderManager.this.performUniform(UniformConstants.model_view_matrix, RenderManager.instance.getModelViewMatrix(mesh));
         }
 
         public void performModelViewMatrix3d(Matrix4d matrix4d) {
@@ -247,8 +255,8 @@ public final class ShaderManager {
             ShaderManager.this.performUniform(UniformConstants.view_matrix, matrix4d);
         }
 
-        public void performModelMatrix3d(Model3D model3D) {
-            ShaderManager.this.performUniform(UniformConstants.model_matrix, RenderManager.instance.getModelMatrix(model3D));
+        public void performModelMatrix3d(Mesh<Format3D> mesh) {
+            ShaderManager.this.performUniform(UniformConstants.model_matrix, RenderManager.instance.getModelMatrix(mesh));
         }
 
         public void performProperties(RenderData.RenderProperties renderProperties) {

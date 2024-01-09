@@ -15,7 +15,7 @@ public class SkyRender extends SceneRenderBase {
     private final ShaderManager skyShaders;
 
     public SkyRender(Scene.SceneRenderConveyor sceneRenderConveyor) {
-        super(0, sceneRenderConveyor, RenderGroup.SKYBOX);
+        super(0, sceneRenderConveyor, new RenderGroup("SKYBOX", true));
         this.skyShaders = ResourceManager.shaderAssets.skybox;
     }
 
@@ -34,7 +34,7 @@ public class SkyRender extends SceneRenderBase {
             GL30.glBindVertexArray(skyBox.getModel3DInfo().getVao());
             GL30.glEnableVertexAttribArray(0);
             this.skyShaders.getUtils().setCubeMapTexture(skyBox.getCubeMap());
-            GL30.glDrawElements(GL30.GL_TRIANGLES, skyBox.getModel3DInfo().getVertexCount(), GL30.GL_UNSIGNED_INT, 0);
+            GL30.glDrawElements(GL30.GL_TRIANGLES, skyBox.getModel3DInfo().getTotalVertices(), GL30.GL_UNSIGNED_INT, 0);
             GL30.glDisableVertexAttribArray(0);
             GL30.glBindVertexArray(0);
             this.skyShaders.unBind();

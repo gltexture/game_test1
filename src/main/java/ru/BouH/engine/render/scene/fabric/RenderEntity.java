@@ -1,8 +1,9 @@
 package ru.BouH.engine.render.scene.fabric;
 
 import org.lwjgl.opengl.GL30;
+import ru.BouH.engine.game.resource.assets.models.Mesh;
+import ru.BouH.engine.game.resource.assets.models.formats.Format3D;
 import ru.BouH.engine.render.scene.SceneRenderBase;
-import ru.BouH.engine.render.scene.components.Model3D;
 import ru.BouH.engine.render.scene.fabric.base.RenderWorldItem;
 import ru.BouH.engine.render.scene.objects.IRenderObject;
 import ru.BouH.engine.render.scene.objects.data.RenderData;
@@ -17,15 +18,14 @@ public class RenderEntity extends RenderWorldItem {
         WorldObject entityItem = (WorldObject) renderItem;
         if (entityItem.isHasModel()) {
             RenderData renderData = entityItem.getRenderData();
-            Model3D model3D = entityItem.getModel3D();
+            Mesh<Format3D> model3D = entityItem.getModel3D();
             renderData.getShaderManager().getUtils().performModelViewMatrix3d(model3D);
             renderData.getShaderManager().getUtils().setTexture(renderData.getItemTexture());
             GL30.glBindVertexArray(model3D.getVao());
             GL30.glEnableVertexAttribArray(0);
             GL30.glEnableVertexAttribArray(1);
             GL30.glEnableVertexAttribArray(2);
-            GL30.glEnable(GL30.GL_DEPTH_TEST);
-            GL30.glDrawElements(GL30.GL_TRIANGLES, model3D.getVertexCount(), GL30.GL_UNSIGNED_INT, 0);
+            GL30.glDrawElements(GL30.GL_TRIANGLES, model3D.getTotalVertices(), GL30.GL_UNSIGNED_INT, 0);
             GL30.glDisableVertexAttribArray(0);
             GL30.glDisableVertexAttribArray(1);
             GL30.glDisableVertexAttribArray(2);

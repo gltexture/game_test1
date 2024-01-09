@@ -28,7 +28,7 @@ public class GameEvents {
     }
 
     public static void addTriggers(World world) {
-        world.createSimpleTriggerZone(new ITriggerZone.Zone(new Vector3d(390.0d, 0.0d, 0.0d), new Vector3d(5.0d, 5.0d, 5.0d)), (e) -> {
+        world.createSimpleTriggerZone(new ITriggerZone.Zone(new Vector3d(350.0d, 0.0d, 0.0d), new Vector3d(5.0d, 5.0d, 5.0d)), (e) -> {
             if (e instanceof EntityPlayerSP) {
                 Scene.testTrigger = true;
             }

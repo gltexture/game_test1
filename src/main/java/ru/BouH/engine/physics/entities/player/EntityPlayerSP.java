@@ -216,12 +216,16 @@ public class EntityPlayerSP extends PhysEntity implements IRemoteController {
             entityPropInfo.setObjectVelocity(this.getLookVector().mul(30.0f));
         }
         if (BindingList.instance.keyBlock2.isClicked()) {
-            PhysEntityCube entityPropInfo = new PhysLightCube(this.getWorld(), RigidBodyObject.PhysProperties.createProperties(Materials.defaultMaterial, false, 1.0d), new Vector3d(1.0d), 0.5d, this.getPosition().add(this.getLookVector().mul(2.0f)), new Vector3d(0.0d));
-            entityPropInfo.setScale(0.25d);
+            PhysEntityCube entityPropInfo = new PhysLightCube(this.getWorld(), RigidBodyObject.PhysProperties.createProperties(Materials.defaultMaterial, false, 1.0d), new Vector3d(1.0d), 0.25d, this.getPosition().add(this.getLookVector().mul(2.0f)), new Vector3d(0.0d));
             Game.getGame().getProxy().addItemInWorlds(entityPropInfo, ResourceManager.renderAssets.entityLamp);
             int a1 = Game.random.nextInt(3);
             entityPropInfo.setLight(new PointLight(new Vector3d(a1 == 0 ? 1.0d : Game.random.nextFloat(), a1 == 1 ? 1.0d : Game.random.nextFloat() * 0.5f, a1 == 2 ? 1.0d : Game.random.nextFloat() * 0.5f), 6.5d));
             entityPropInfo.setObjectVelocity(this.getLookVector().mul(20.0f));
+        }
+        if (BindingList.instance.keyBlock3.isClicked()) {
+            PhysEntityCube entityPropInfo = new PhysEntityCube(this.getWorld(), RigidBodyObject.PhysProperties.createProperties(Materials.brickCube, true, 50.0d), new Vector3d(1.0d), 1.3d, this.getPosition().add(this.getLookVector().mul(2.0f)), new Vector3d(0.0d));
+            Game.getGame().getProxy().addItemInWorlds(entityPropInfo, ResourceManager.renderAssets.entityCube2);
+            entityPropInfo.setObjectVelocity(this.getLookVector().mul(50.0f));
         }
         if (BindingList.instance.keyClear.isClicked()) {
             this.getWorld().clearAllItems();

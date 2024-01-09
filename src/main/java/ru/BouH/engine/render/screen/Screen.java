@@ -14,6 +14,10 @@ import ru.BouH.engine.game.controller.ControllerDispatcher;
 import ru.BouH.engine.physics.world.timer.PhysicsTimer;
 import ru.BouH.engine.proxy.LocalPlayer;
 import ru.BouH.engine.render.scene.Scene;
+import ru.BouH.engine.render.scene.scene_render.DebugRender;
+import ru.BouH.engine.render.scene.scene_render.GuiRender;
+import ru.BouH.engine.render.scene.scene_render.SkyRender;
+import ru.BouH.engine.render.scene.scene_render.WorldRender;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 import ru.BouH.engine.render.scene.world.camera.ICamera;
 import ru.BouH.engine.render.screen.timer.Timer;
@@ -61,9 +65,16 @@ public class Screen {
     public void initScreen() {
         this.isInFocus = false;
         this.scene = new Scene(this, new SceneWorld(Game.getGame().getPhysicsWorld()));
-        this.scene.init();
+        this.fillScene(this.getScene());
         this.setWindowCallbacks();
         this.createControllerDispatcher(this.getWindow());
+    }
+
+    private void fillScene(Scene scene) {
+        scene.addSceneRenderBase(new WorldRender(scene.getSceneRenderConveyor()));
+        scene.addSceneRenderBase(new SkyRender(scene.getSceneRenderConveyor()));
+        scene.addSceneRenderBase(new GuiRender(scene.getSceneRenderConveyor()));
+        scene.addSceneRenderBase(new DebugRender(scene.getSceneRenderConveyor()));
     }
 
     public void buildScreen() {
@@ -156,7 +167,7 @@ public class Screen {
     }
 
     public SceneWorld getRenderWorld() {
-        return this.getScene().getRenderWorld();
+        return this.getScene().getSceneWorld();
     }
 
     public ICamera getCamera() {

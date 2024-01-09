@@ -1,17 +1,14 @@
 package ru.BouH.engine.render.scene.objects.gui.hud;
 
 import org.jetbrains.annotations.NotNull;
+import org.joml.Vector2d;
 import org.lwjgl.opengl.GL30;
+import ru.BouH.engine.game.resource.assets.models.basic.MeshHelper;
 import ru.BouH.engine.game.resource.assets.shaders.ShaderManager;
-import ru.BouH.engine.render.scene.components.MeshModel;
-import ru.BouH.engine.render.scene.components.Model2D;
 import ru.BouH.engine.render.scene.fabric.base.RenderFabric;
 import ru.BouH.engine.render.scene.fabric.RenderGui;
 import ru.BouH.engine.render.scene.objects.gui.AbstractGui;
 import ru.BouH.engine.render.scene.objects.texture.samples.PNGTexture;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class GuiPicture extends AbstractGui {
     private static final RenderGui renderGui = new RenderGui();
@@ -49,8 +46,7 @@ public class GuiPicture extends AbstractGui {
             }
             this.width = w;
             this.height = h;
-            this.setModel2DInfo(this.createModel(PNGTexture));
-            this.getModel2DInfo().setPosition(x, y);
+            this.setModel2DInfo(MeshHelper.generateVector2DMesh(new Vector2d(x, y), new Vector2d(x + w, y + h)));
         }
     }
 
@@ -64,61 +60,6 @@ public class GuiPicture extends AbstractGui {
 
     public PNGTexture getTexture() {
         return this.PNGTexture;
-    }
-
-    private Model2D createModel(PNGTexture PNGTexture) {
-        List<Float> positions = new ArrayList<>();
-        List<Float> textureCoordinates = new ArrayList<>();
-        List<Integer> indices = new ArrayList<>();
-
-        positions.add(0.0f);
-        positions.add(0.0f);
-        positions.add((float) this.getzLevel());
-        textureCoordinates.add(0.0f);
-        textureCoordinates.add(0.0f);
-
-        positions.add(this.getWidth());
-        positions.add(0.0f);
-        positions.add((float) this.getzLevel());
-        textureCoordinates.add(1.0f);
-        textureCoordinates.add(0.0f);
-
-        positions.add(0.0f);
-        positions.add(this.getHeight());
-        positions.add((float) this.getzLevel());
-        textureCoordinates.add(0.0f);
-        textureCoordinates.add(1.0f);
-
-        positions.add(this.getWidth());
-        positions.add(this.getHeight());
-        positions.add((float) this.getzLevel());
-        textureCoordinates.add(1.0f);
-        textureCoordinates.add(1.0f);
-
-        indices.add(1);
-        indices.add(2);
-        indices.add(3);
-        indices.add(0);
-        indices.add(2);
-        indices.add(1);
-
-        float[] f1 = new float[positions.size()];
-        int[] i1 = new int[indices.size()];
-        float[] f2 = new float[textureCoordinates.size()];
-
-        for (int i = 0; i < f1.length; i++) {
-            f1[i] = positions.get(i);
-        }
-
-        for (int i = 0; i < i1.length; i++) {
-            i1[i] = indices.get(i);
-        }
-
-        for (int i = 0; i < f2.length; i++) {
-            f2[i] = textureCoordinates.get(i);
-        }
-
-        return new Model2D(new MeshModel(f1, i1, f2));
     }
 
     @Override

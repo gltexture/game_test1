@@ -1,17 +1,19 @@
 package ru.BouH.engine.render.scene.scene_render.utility;
 
-public enum RenderGroup {
-    GUI("gui"),
-    WORLD("world"),
-    SKYBOX("skybox");
+public class RenderGroup {
+    private final String id;
+    private final boolean mainSceneGroup;
 
-    private final String path;
-
-    RenderGroup(String path) {
-        this.path = path;
+    public RenderGroup(String id, boolean mainSceneGroup) {
+        this.id = id;
+        this.mainSceneGroup = mainSceneGroup;
     }
 
-    public String getPath() {
-        return this.path;
+    public boolean isMainSceneGroup() {
+        return this.mainSceneGroup;
+    }
+
+    public String getId() {
+        return this.id;
     }
 }

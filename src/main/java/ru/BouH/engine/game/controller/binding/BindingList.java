@@ -23,6 +23,7 @@ public class BindingList {
     public Key keyDown = new Key(GLFW.GLFW_KEY_LEFT_SHIFT);
     public Key keyBlock1 = new Key(GLFW.GLFW_KEY_F);
     public Key keyBlock2 = new Key(GLFW.GLFW_KEY_C);
+    public Key keyBlock3 = new Key(GLFW.GLFW_KEY_G);
     public Key keyClear = new Key(GLFW.GLFW_KEY_X);
 
     public Key keySCS = new FunctionalKey(e -> {
@@ -38,9 +39,15 @@ public class BindingList {
 
     public Key keyY = new FunctionalKey(e -> {
         if (e == IKeyAction.KeyAction.CLICK) {
-            Scene.setPostRender(Scene.getPostRender() + 1);
+            Scene.setScenePostRender(Scene.getPostRender() + 1);
         }
     }, GLFW.GLFW_KEY_Y);
+
+    public Key keyZ = new FunctionalKey(e -> {
+        if (e == IKeyAction.KeyAction.CLICK) {
+            Scene.setSceneDebugMode(Scene.getDebugMode() + 1);
+        }
+    }, GLFW.GLFW_KEY_Z);
 
     public Key keyR = new FunctionalKey(e -> {
         if (e == IKeyAction.KeyAction.CLICK) {
@@ -81,8 +88,10 @@ public class BindingList {
         Binding.createBinding(this.keyR, "Режим камеры");
         Binding.createBinding(this.keySCS, "Скриншот");
         Binding.createBinding(this.keyY, "Переключить пост-обработку");
+        Binding.createBinding(this.keyZ, "Режим отладки");
         Binding.createBinding(this.keyClear, "Очистка");
-        Binding.createBinding(this.keyBlock1, "Славянский выстрел блоком");
-        Binding.createBinding(this.keyBlock2, "Славянский выстрел фонариком");
+        Binding.createBinding(this.keyBlock1, "Куб статичный");
+        Binding.createBinding(this.keyBlock2, "Куб-фонарь");
+        Binding.createBinding(this.keyBlock3, "Куб реалистичный");
     }
 }

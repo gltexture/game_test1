@@ -123,7 +123,7 @@ vec4 calc_light_factor(vec3 colors, float brightness, vec3 vPos, vec3 light_dir,
 
     vec4 reflected = texture(cube_map_sampler, reflectionF);
 
-    return dot(vNormal, from_light) + 0.0001 >= 0 ? (diffuseC + specularC * reflected) : vec4(0.);
+    return dot(vNormal, from_light) + 0.0001 >= 0 ? (diffuseC + specularC) : vec4(0.);
 }
 
 vec4 calc_sun_light(vec3 sunPos, vec3 vPos, vec3 vNormal) {

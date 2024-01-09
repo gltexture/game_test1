@@ -132,10 +132,10 @@ public class RigidBodyObject extends btRigidBody {
         this.setFriction(properties.getMaterialProperties().getFriction());
         this.setLinearAngularDamping(properties.getMaterialProperties().getL_damping(), properties.getMaterialProperties().getA_damping());
         this.setRestitution(properties.getMaterialProperties().getRestitution());
-        this.setMass(properties.getMass());
-        if (properties.isRealisticInertia()) {
+        if (properties.isRealisticInertia() && !this.isStaticObject()) {
             this.setRealisticInertia();
         } else {
+            this.setMass(properties.getMass());
             this.setInertia(new Vector3d(0.0d));
         }
         this.enableCCD(1.0e-3d, this.calcCCDRadius());

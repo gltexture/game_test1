@@ -2,6 +2,7 @@ package ru.BouH.engine.render.scene.world;
 
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.exception.GameException;
+import ru.BouH.engine.game.resource.assets.models.Mesh;
 import ru.BouH.engine.physics.entities.player.EntityPlayerSP;
 import ru.BouH.engine.physics.world.World;
 import ru.BouH.engine.physics.world.object.WorldItem;
@@ -9,7 +10,6 @@ import ru.BouH.engine.proxy.IWorld;
 import ru.BouH.engine.render.environment.Environment;
 import ru.BouH.engine.render.environment.light.ILight;
 import ru.BouH.engine.render.frustum.FrustumCulling;
-import ru.BouH.engine.render.scene.components.IMesh;
 import ru.BouH.engine.render.scene.objects.data.RenderData;
 import ru.BouH.engine.render.scene.objects.items.PhysicsObject;
 import ru.BouH.engine.game.synchronizing.Syncer;
@@ -18,7 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public final class SceneWorld implements IWorld {
-    public static Set<IMesh> toCleanSet = new HashSet<>();
+    public static Set<Mesh<?>> toCleanSet = new HashSet<>();
     public static float elapsedRenderTicks;
     private final List<PhysicsObject> entityList = new ArrayList<>();
     private final Environment environment;
@@ -116,7 +116,7 @@ public final class SceneWorld implements IWorld {
     public void onWorldEnd() {
         Game.getGame().getLogManager().log("Cleaning meshes!");
         this.removeAllEntities();
-        SceneWorld.toCleanSet.forEach(IMesh::cleanMesh);
+        SceneWorld.toCleanSet.forEach(Mesh::clean);
         Game.getGame().getLogManager().log("Successfully cleaned meshes!");
     }
 
