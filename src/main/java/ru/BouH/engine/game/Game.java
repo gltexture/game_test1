@@ -3,7 +3,7 @@ package ru.BouH.engine.game;
 import org.lwjgl.glfw.GLFW;
 import ru.BouH.engine.game.jframe.ProgressBar;
 import ru.BouH.engine.game.logger.GameLogging;
-import ru.BouH.engine.game.resource.ResourceManager;
+import ru.BouH.engine.game.resources.ResourceManager;
 import ru.BouH.engine.physics.entities.player.EntityPlayerSP;
 import ru.BouH.engine.physics.world.World;
 import ru.BouH.engine.physics.world.timer.PhysicThreadManager;
@@ -11,10 +11,12 @@ import ru.BouH.engine.proxy.Proxy;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 import ru.BouH.engine.render.screen.Screen;
 
+import java.io.File;
+import java.io.InputStream;
 import java.util.Random;
 
 public class Game {
-    public static final String build = "04.01.2024";
+    public static final String build = "17.01.2024";
     public static long rngSeed;
     public static Random random;
     private static Game startScreen;
@@ -22,7 +24,7 @@ public class Game {
     private final Screen screen;
     private final PhysicThreadManager physicThreadManager;
     private final Proxy proxy;
-    private EngineSystem engineSystem;
+    private EngineStarter engineStarter;
     private boolean shouldBeClosed = false;
 
     private Game() {
@@ -32,6 +34,18 @@ public class Game {
         this.physicThreadManager = new PhysicThreadManager(PhysicThreadManager.TICKS_PER_SECOND);
         this.screen = new Screen();
         this.proxy = new Proxy(this.getPhysicThreadManager().getPhysicsTimer(), this.getScreen());
+    }
+
+    public static String getGamePath() {
+        return new File(Game.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParent();
+    }
+
+    public static InputStream loadFileJar(String path) {
+        return Game.class.getResourceAsStream(path);
+    }
+
+    public static InputStream loadFileJar(String folder, String path) {
+        return Game.loadFileJar("/" + folder + "/" + path);
     }
 
     public ResourceManager getResourceManager() {
@@ -53,12 +67,12 @@ public class Game {
     public static void main(String[] args) throws InterruptedException {
         Game.startScreen = new Game();
         Game.getGame().getLogManager().log("Starting game!");
-        Game.getGame().engineSystem = new EngineSystem();
-        Game.getGame().engineSystem.startSystem();
+        Game.getGame().engineStarter = new EngineStarter();
+        Game.getGame().engineStarter.startSystem();
     }
 
-    public EngineSystem getEngineSystem() {
-        return this.engineSystem;
+    public EngineStarter getEngineSystem() {
+        return this.engineStarter;
     }
 
     public void destroyGame() {
@@ -98,13 +112,13 @@ public class Game {
         return this.proxy;
     }
 
-    public static class EngineSystem {
+    public static class EngineStarter implements IEngine {
         public static final Object logicLocker = new Object();
         private Thread thread;
         private boolean threadHasStarted;
         private final ResourceManager resourceManager;
 
-        public EngineSystem() {
+        public EngineStarter() {
             this.thread = null;
             this.threadHasStarted = false;
             this.resourceManager = new ResourceManager();
@@ -120,6 +134,7 @@ public class Game {
                 Game.getGame().getLogManager().warn("Engine thread is currently running!");
                 return;
             }
+            this.resourceManager.init();
             this.thread = new Thread(() -> {
                 try {
                     Game.getGame().shouldBeClosed = false;
@@ -127,15 +142,13 @@ public class Game {
                     this.preLoading();
                     this.postLoading();
                     Game.getGame().getScreen().startScreen();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
                 } finally {
                     synchronized (PhysicThreadManager.locker) {
                         PhysicThreadManager.locker.notifyAll();
                     }
                     Game.getGame().getPhysicThreadManager().destroy();
-                    synchronized (Game.EngineSystem.logicLocker) {
-                        Game.EngineSystem.logicLocker.notifyAll();
+                    synchronized (EngineStarter.logicLocker) {
+                        EngineStarter.logicLocker.notifyAll();
                     }
                 }
             });
@@ -143,7 +156,7 @@ public class Game {
             this.thread.start();
         }
 
-        private void preLoading() throws InterruptedException {
+        private void preLoading() {
             ProgressBar progressBar = new ProgressBar();
             progressBar.setProgress(0);
             progressBar.showBar();
@@ -158,8 +171,8 @@ public class Game {
         }
 
         private void postLoading() {
-            synchronized (EngineSystem.logicLocker) {
-                EngineSystem.logicLocker.notifyAll();
+            synchronized (EngineStarter.logicLocker) {
+                EngineStarter.logicLocker.notifyAll();
             }
             this.threadHasStarted = true;
         }

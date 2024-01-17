@@ -5,5 +5,5 @@ import ru.BouH.engine.render.scene.fabric.base.RenderFabric;
 public interface IRenderObject {
     RenderFabric renderFabric();
 
-    boolean isHasRender();
+    boolean hasRender();
 }

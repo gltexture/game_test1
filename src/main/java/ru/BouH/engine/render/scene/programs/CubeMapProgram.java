@@ -1,21 +1,24 @@
 package ru.BouH.engine.render.scene.programs;
 
 import org.lwjgl.opengl.GL30;
-import ru.BouH.engine.render.scene.objects.texture.samples.CubeMapPNGTexture;
-import ru.BouH.engine.render.scene.objects.texture.samples.PNGTexture;
+import ru.BouH.engine.game.resources.ResourceManager;
+import ru.BouH.engine.game.resources.assets.materials.textures.TextureSample;
 
 public class CubeMapProgram {
+    public static final String folder = "/textures/cubemaps/";
+
     private int textureId;
 
-    public CubeMapProgram(String textureNamePng) {
-        this.generateTexture(textureNamePng);
+    public CubeMapProgram(String textureName, String format) {
+        CubeMapTextureArray cubeMapTextureArray = new CubeMapTextureArray(textureName, format);
+        this.generateTexture(cubeMapTextureArray);
     }
 
-    public CubeMapProgram(CubeMapPNGTexture cubeMapPNGTexture) {
-        this.generateTexture(cubeMapPNGTexture);
+    public CubeMapProgram(CubeMapTextureArray cubeMapTextureArray) {
+        this.generateTexture(cubeMapTextureArray);
     }
 
-    private void generateTexture(CubeMapPNGTexture cubeMapPNGTexture) {
+    private void generateTexture(CubeMapTextureArray cubeMapTextureArray) {
         this.textureId = GL30.glGenTextures();
 
         GL30.glBindTexture(GL30.GL_TEXTURE_CUBE_MAP, this.textureId);
@@ -26,26 +29,8 @@ public class CubeMapProgram {
         GL30.glTexParameteri(GL30.GL_TEXTURE_CUBE_MAP, GL30.GL_TEXTURE_WRAP_R, GL30.GL_CLAMP_TO_EDGE);
 
         for (int i = 0; i < 6; i++) {
-            PNGTexture pngTexture = cubeMapPNGTexture.getPngTextures()[i];
-            GL30.glTexImage2D(GL30.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL30.GL_RGB16, pngTexture.getWidth(), pngTexture.getHeight(), 0, GL30.GL_RGBA, GL30.GL_UNSIGNED_BYTE, pngTexture.getPNGInBuffer());
-        }
-
-        GL30.glBindTexture(GL30.GL_TEXTURE_CUBE_MAP, 0);
-    }
-
-    private void generateTexture(String textureNamePng) {
-        this.textureId = GL30.glGenTextures();
-
-        GL30.glBindTexture(GL30.GL_TEXTURE_CUBE_MAP, this.textureId);
-        GL30.glTexParameteri(GL30.GL_TEXTURE_CUBE_MAP, GL30.GL_TEXTURE_MIN_FILTER, GL30.GL_LINEAR);
-        GL30.glTexParameteri(GL30.GL_TEXTURE_CUBE_MAP, GL30.GL_TEXTURE_MAG_FILTER, GL30.GL_LINEAR);
-        GL30.glTexParameteri(GL30.GL_TEXTURE_CUBE_MAP, GL30.GL_TEXTURE_WRAP_T, GL30.GL_CLAMP_TO_EDGE);
-        GL30.glTexParameteri(GL30.GL_TEXTURE_CUBE_MAP, GL30.GL_TEXTURE_WRAP_S, GL30.GL_CLAMP_TO_EDGE);
-        GL30.glTexParameteri(GL30.GL_TEXTURE_CUBE_MAP, GL30.GL_TEXTURE_WRAP_R, GL30.GL_CLAMP_TO_EDGE);
-
-        for (int i = 0; i < 6; i++) {
-            PNGTexture pngTexture = PNGTexture.createTexture("cubemaps/" + textureNamePng + "_" + (i + 1) + ".png");
-            GL30.glTexImage2D(GL30.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL30.GL_RGB16, pngTexture.getWidth(), pngTexture.getHeight(), 0, GL30.GL_RGBA, GL30.GL_UNSIGNED_BYTE, pngTexture.getPNGInBuffer());
+            TextureSample textureSample = cubeMapTextureArray.getTextureArray()[i];
+            GL30.glTexImage2D(GL30.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL30.GL_RGB16, textureSample.getWidth(), textureSample.getHeight(), 0, GL30.GL_RGBA, GL30.GL_UNSIGNED_BYTE, textureSample.getImageBuffer());
         }
 
         GL30.glBindTexture(GL30.GL_TEXTURE_CUBE_MAP, 0);
@@ -58,5 +43,27 @@ public class CubeMapProgram {
     public void cleanCubeMap() {
         GL30.glDeleteTextures(this.getTextureId());
         GL30.glBindTexture(GL30.GL_TEXTURE_CUBE_MAP, 0);
+    }
+
+    public static class CubeMapTextureArray {
+        private final TextureSample[] textures;
+
+        @SuppressWarnings("all")
+        public CubeMapTextureArray(String name, String format) {
+            this.textures = new TextureSample[6];
+            for (int i = 0; i < 6; i++) {
+                StringBuilder builder = new StringBuilder();
+                builder.append(CubeMapProgram.folder);
+                builder.append(name);
+                builder.append("_");
+                builder.append(i + 1);
+                builder.append(format);
+                this.textures[i] = ResourceManager.createTexture(builder.toString());
+            }
+        }
+
+        public TextureSample[] getTextureArray() {
+            return this.textures;
+        }
     }
 }

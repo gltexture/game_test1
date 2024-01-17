@@ -185,7 +185,7 @@ public class Screen {
     }
 
     private void updateScreen() {
-        GL11.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        GL11.glClearColor(0.0f, 0.0f, 0.1f, 1.0f);
         this.getRenderWorld().onWorldStart();
         this.getScene().preRender();
         if (LocalPlayer.VALID_PL) {

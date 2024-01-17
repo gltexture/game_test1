@@ -2,7 +2,7 @@ package ru.BouH.engine.render.scene.world;
 
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.exception.GameException;
-import ru.BouH.engine.game.resource.assets.models.Mesh;
+import ru.BouH.engine.game.resources.assets.models.Model;
 import ru.BouH.engine.physics.entities.player.EntityPlayerSP;
 import ru.BouH.engine.physics.world.World;
 import ru.BouH.engine.physics.world.object.WorldItem;
@@ -10,15 +10,15 @@ import ru.BouH.engine.proxy.IWorld;
 import ru.BouH.engine.render.environment.Environment;
 import ru.BouH.engine.render.environment.light.ILight;
 import ru.BouH.engine.render.frustum.FrustumCulling;
-import ru.BouH.engine.render.scene.objects.data.RenderData;
 import ru.BouH.engine.render.scene.objects.items.PhysicsObject;
 import ru.BouH.engine.game.synchronizing.Syncer;
+import ru.BouH.engine.render.scene.preforms.RenderObjectData;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public final class SceneWorld implements IWorld {
-    public static Set<Mesh<?>> toCleanSet = new HashSet<>();
+    public static Set<Model<?>> toCleanSet = new HashSet<>();
     public static float elapsedRenderTicks;
     private final List<PhysicsObject> entityList = new ArrayList<>();
     private final Environment environment;
@@ -44,11 +44,11 @@ public final class SceneWorld implements IWorld {
         return this.entityList;
     }
 
-    public void addItem(WorldItem worldItem, RenderData renderData) throws GameException {
+    public void addItem(WorldItem worldItem, RenderObjectData renderData) throws GameException {
         if (renderData == null) {
             throw new GameException("Wrong render parameters: " + worldItem.toString());
         }
-        this.addPhysEntity(renderData.getPhysRender(this, worldItem));
+        this.addPhysEntity(renderData.constructPhysicsObject(this, worldItem));
     }
     public static PhysicsObject PL = null;
 
@@ -116,7 +116,7 @@ public final class SceneWorld implements IWorld {
     public void onWorldEnd() {
         Game.getGame().getLogManager().log("Cleaning meshes!");
         this.removeAllEntities();
-        SceneWorld.toCleanSet.forEach(Mesh::clean);
+        SceneWorld.toCleanSet.forEach(Model::clean);
         Game.getGame().getLogManager().log("Successfully cleaned meshes!");
     }
 

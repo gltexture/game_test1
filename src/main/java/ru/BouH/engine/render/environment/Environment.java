@@ -1,7 +1,7 @@
 package ru.BouH.engine.render.environment;
 
 import org.joml.Vector3f;
-import ru.BouH.engine.game.resource.ResourceManager;
+import ru.BouH.engine.game.resources.ResourceManager;
 import ru.BouH.engine.render.environment.light.LightManager;
 import ru.BouH.engine.render.environment.light.PointLight;
 import ru.BouH.engine.render.environment.sky.Sky;

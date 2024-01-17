@@ -2,13 +2,12 @@ package ru.BouH.engine.render.scene.scene_render;
 
 import org.joml.Matrix4d;
 import org.lwjgl.opengl.GL30;
-import ru.BouH.engine.game.resource.ResourceManager;
+import ru.BouH.engine.game.resources.ResourceManager;
 import ru.BouH.engine.render.RenderManager;
 import ru.BouH.engine.render.environment.sky.SkyBox;
 import ru.BouH.engine.render.scene.Scene;
 import ru.BouH.engine.render.scene.SceneRenderBase;
-import ru.BouH.engine.render.scene.programs.UniformBufferUtils;
-import ru.BouH.engine.game.resource.assets.shaders.ShaderManager;
+import ru.BouH.engine.game.resources.assets.shaders.ShaderManager;
 import ru.BouH.engine.render.scene.scene_render.utility.RenderGroup;
 
 public class SkyRender extends SceneRenderBase {
@@ -31,12 +30,8 @@ public class SkyRender extends SceneRenderBase {
             matrix4d.m31(0);
             matrix4d.m32(0);
             this.skyShaders.getUtils().performModelViewMatrix3d(matrix4d);
-            GL30.glBindVertexArray(skyBox.getModel3DInfo().getVao());
-            GL30.glEnableVertexAttribArray(0);
             this.skyShaders.getUtils().setCubeMapTexture(skyBox.getCubeMap());
-            GL30.glDrawElements(GL30.GL_TRIANGLES, skyBox.getModel3DInfo().getTotalVertices(), GL30.GL_UNSIGNED_INT, 0);
-            GL30.glDisableVertexAttribArray(0);
-            GL30.glBindVertexArray(0);
+            Scene.renderModel(skyBox.getModel3DInfo());
             this.skyShaders.unBind();
             GL30.glDepthFunc(GL30.GL_LESS);
             GL30.glEnable(GL30.GL_CULL_FACE);

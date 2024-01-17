@@ -1,6 +1,8 @@
-layout (location=0) in vec3 position;
-layout (location=1) in vec2 texture;
-layout (location=2) in vec3 vertex_normal;
+layout (location=0) in vec3 Aposition;
+layout (location=1) in vec2 Atexture;
+layout (location=2) in vec3 Avertex_normal;
+layout (location=3) in vec2 Atangent;
+layout (location=4) in vec3 Abitangent;
 
 struct PointLight
 {
@@ -29,13 +31,9 @@ layout (std140, binding = 2) uniform Misc {
     float w_tick;
 };
 
-out vec2 out_texture;
+out vec2 texture_coordinates;
 out vec3 mv_vertex_normal;
 out vec3 mv_vert_pos;
-out vec3 out_view_position;
-out vec3 out_texture_3d;
-out vec4 out_world_position;
-out mat4 out_model_view_matrix;
 
 uniform mat4 model_view_matrix;
 uniform mat4 projection_matrix;
@@ -43,16 +41,10 @@ uniform mat4 model_matrix;
 
 void main()
 {
-    vec4 mv_pos = model_view_matrix * vec4(position, 1.0f);
+    vec4 mv_pos = model_view_matrix * vec4(Aposition, 1.0f);
     gl_Position = projection_matrix * mv_pos;
 
-    out_texture = texture;
-    mv_vertex_normal = normalize(model_view_matrix * vec4(vertex_normal, 0.0f)).xyz;
+    texture_coordinates = Atexture;
+    mv_vertex_normal = normalize(model_view_matrix * vec4(Avertex_normal, 0.0f)).xyz;
     mv_vert_pos = mv_pos.xyz;
-
-    out_world_position = model_matrix * vec4(position, 1.0);
-    out_view_position = mv_pos.xyz;
-    out_texture_3d = position;
-
-    out_model_view_matrix = model_view_matrix;
 }

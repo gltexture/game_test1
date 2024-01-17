@@ -1,17 +1,16 @@
 package ru.BouH.engine.render.scene.objects.gui.hud;
 
+import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL30;
-import ru.BouH.engine.game.resource.ResourceManager;
-import ru.BouH.engine.game.resource.assets.models.Mesh;
-import ru.BouH.engine.game.resource.assets.models.formats.Format2D;
-import ru.BouH.engine.game.resource.assets.shaders.ShaderManager;
+import ru.BouH.engine.game.resources.ResourceManager;
+import ru.BouH.engine.game.resources.assets.models.mesh.Mesh;
+import ru.BouH.engine.game.resources.assets.models.Model;
+import ru.BouH.engine.game.resources.assets.models.formats.Format2D;
+import ru.BouH.engine.game.resources.assets.shaders.ShaderManager;
 import ru.BouH.engine.render.scene.fabric.base.RenderFabric;
 import ru.BouH.engine.render.scene.fabric.RenderGui;
 import ru.BouH.engine.render.scene.objects.gui.AbstractGui;
 import ru.BouH.engine.render.scene.objects.gui.font.FontTexture;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class GuiText extends AbstractGui {
     private static final RenderGui renderGui = new RenderGui();
@@ -58,8 +57,8 @@ public class GuiText extends AbstractGui {
         return this.width;
     }
 
-    private Mesh<Format2D> createModel() {
-        Mesh<Format2D> mesh = new Mesh<>(new Format2D());
+    private Model<Format2D> createModel() {
+        Mesh mesh = new Mesh();
         char[] chars = this.getText().toCharArray();
 
         float startX = 0.0f;
@@ -102,7 +101,7 @@ public class GuiText extends AbstractGui {
         this.width = startX;
         mesh.bakeMesh();
 
-        return mesh;
+        return new Model<>(new Format2D(), mesh);
     }
 
     @Override
@@ -111,12 +110,13 @@ public class GuiText extends AbstractGui {
     }
 
     @Override
-    public boolean isHasRender() {
+    public boolean hasRender() {
         return this.getModel2DInfo() != null;
     }
 
     @Override
     public void performGuiTexture() {
-        this.getFontTexture().getTexture().performTexture(GL30.GL_TEXTURE0);
+        GL30.glActiveTexture(GL13.GL_TEXTURE0);
+        this.getFontTexture().getTexture().bindTexture();
     }
 }

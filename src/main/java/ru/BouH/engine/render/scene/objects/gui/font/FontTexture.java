@@ -1,7 +1,7 @@
 package ru.BouH.engine.render.scene.objects.gui.font;
 
 import ru.BouH.engine.game.Game;
-import ru.BouH.engine.render.scene.objects.texture.samples.PNGTexture;
+import ru.BouH.engine.game.resources.assets.materials.textures.TextureSample;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -17,7 +17,7 @@ public class FontTexture {
     private final Font font;
     private final FontCode fontCode;
     private final Map<Character, CharInfo> charMap = new HashMap<>();
-    private PNGTexture texture;
+    private TextureSample texture;
     private int height;
     private int width;
 
@@ -60,14 +60,14 @@ public class FontTexture {
         } catch (IOException e) {
             Game.getGame().getLogManager().error(e.getMessage());
         }
-        this.texture = PNGTexture.createTexture(inputStream);
+        this.texture = TextureSample.createTextureIS("font", inputStream);
     }
 
     public CharInfo getCharInfo(char c) {
         return this.charMap.get(c);
     }
 
-    public PNGTexture getTexture() {
+    public TextureSample getTexture() {
         return this.texture;
     }
 

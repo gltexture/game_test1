@@ -6,16 +6,15 @@ import org.lwjgl.glfw.GLFW;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.controller.binding.Binding;
 import ru.BouH.engine.game.controller.input.Keyboard;
-import ru.BouH.engine.game.resource.ResourceManager;
-import ru.BouH.engine.game.resource.assets.models.Mesh;
-import ru.BouH.engine.game.resource.assets.models.formats.Format2D;
+import ru.BouH.engine.game.resources.ResourceManager;
+import ru.BouH.engine.game.resources.assets.materials.textures.TextureSample;
+import ru.BouH.engine.game.resources.assets.models.Model;
+import ru.BouH.engine.game.resources.assets.models.formats.Format2D;
 import ru.BouH.engine.physics.entities.player.EntityPlayerSP;
 import ru.BouH.engine.render.RenderManager;
 import ru.BouH.engine.render.scene.SceneRenderBase;
 import ru.BouH.engine.render.scene.objects.gui.hud.GuiPicture;
 import ru.BouH.engine.render.scene.objects.gui.hud.GuiText;
-import ru.BouH.engine.render.scene.objects.texture.samples.Color3FA;
-import ru.BouH.engine.render.scene.objects.texture.samples.PNGTexture;
 import ru.BouH.engine.render.scene.scene_render.utility.UniformConstants;
 import ru.BouH.engine.render.screen.Screen;
 
@@ -39,27 +38,27 @@ public class GUI {
         }
         GUI.renderText(sceneRenderBase, partialTicks, 0, i1 + 20, "speed: " + String.format("%.2f", entityPlayerSP.getObjectSpeed()), 0xffffff);
 
-        Vector2d vector2d = GUI.getScaledPictureDimensions(ResourceManager.renderAssets.pngGuiPic1, 0.1f);
+        //Vector2d vector2d = GUI.getScaledPictureDimensions(ResourceManager.renderAssets.pngGuiPic1, 0.1f);
         //GUI.renderPicture(sceneRenderBase, partialTicks, (int) (width - vector2d.x - 2), 2, (int) vector2d.x, (int) vector2d.y, ResourceManager.renderAssets.pngGuiPic1);
     }
 
-    private static Vector2d getScaledPictureDimensions(PNGTexture PNGTexture, float scale) {
-        if (PNGTexture == null || !PNGTexture.isValid()) {
+    private static Vector2d getScaledPictureDimensions(TextureSample textureSample, float scale) {
+        if (textureSample == null || !textureSample.isValid()) {
             return new Vector2d(0.0f);
         }
         double width = Game.getGame().getScreen().getWidth();
         double height = Game.getGame().getScreen().getHeight();
         Vector2d WH = new Vector2d(width / Screen.defaultW, height / Screen.defaultH).mul(scale);
         double picScale = Math.min(WH.x, WH.y);
-        return new Vector2d(PNGTexture.getWidth() * picScale, PNGTexture.getHeight() * picScale);
+        return new Vector2d(textureSample.getWidth() * picScale, textureSample.getHeight() * picScale);
     }
 
-    private static void renderPicture(SceneRenderBase sceneRenderBase, double partialTicks, int x, int y, int w, int h, PNGTexture PNGTexture) {
-        if (PNGTexture == null) {
+    private static void renderPicture(SceneRenderBase sceneRenderBase, double partialTicks, int x, int y, int w, int h, TextureSample textureSample) {
+        if (textureSample == null || !textureSample.isValid()) {
             return;
         }
-        GuiPicture guiPicture = new GuiPicture(PNGTexture, ResourceManager.shaderAssets.guiShader, x, y, w, h);
-        Mesh<Format2D> model2D = guiPicture.getModel2DInfo();
+        GuiPicture guiPicture = new GuiPicture(textureSample, ResourceManager.shaderAssets.guiShader, x, y, w, h);
+        Model<Format2D> model2D = guiPicture.getModel2DInfo();
         if (model2D != null) {
             guiPicture.getShaderManager().bind();
             GUI.performMatrix(guiPicture, model2D);
@@ -76,14 +75,21 @@ public class GUI {
         GuiText guiText = new GuiText(s, ResourceManager.shaderAssets.guiShader, x, y);
         guiText.getShaderManager().bind();
         GUI.performMatrix(guiText, guiText.getModel2DInfo());
-        float[] hex = Color3FA.HEX2RGB(HEX);
+        float[] hex = GUI.HEX2RGB(HEX);
         guiText.getShaderManager().performUniform(UniformConstants.colour, new Vector4d(hex[0], hex[1], hex[2], 1.0f));
         guiText.renderFabric().onRender(partialTicks, sceneRenderBase, guiText);
         guiText.getShaderManager().unBind();
         guiText.getModel2DInfo().clean();
     }
 
-    private static void performMatrix(AbstractGui abstractGui, Mesh<Format2D> model2D) {
+    private static void performMatrix(AbstractGui abstractGui, Model<Format2D> model2D) {
         abstractGui.getShaderManager().performUniform(UniformConstants.projection_model_matrix, RenderManager.instance.getOrthographicModelMatrix(model2D));
+    }
+
+    public static float[] HEX2RGB(int hex) {
+        int r = (hex & 0xFFFFFF) >> 16;
+        int g = (hex & 0xFFFF) >> 8;
+        int b = hex & 0xFF;
+        return new float[]{r / 255.0f, g / 255.0f, b / 255.0f};
     }
 }

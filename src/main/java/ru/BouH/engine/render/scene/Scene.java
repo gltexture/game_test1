@@ -1,24 +1,32 @@
 package ru.BouH.engine.render.scene;
 
-import org.joml.Vector2d;
-import org.joml.Vector2i;
-import org.joml.Vector3d;
+import org.joml.*;
+import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL43;
+import org.lwjgl.system.MemoryUtil;
 import ru.BouH.engine.game.Game;
 import ru.BouH.engine.game.controller.IController;
-import ru.BouH.engine.game.resource.ResourceManager;
-import ru.BouH.engine.game.resource.assets.models.Mesh;
-import ru.BouH.engine.game.resource.assets.models.basic.MeshHelper;
-import ru.BouH.engine.game.resource.assets.models.formats.Format2D;
+import ru.BouH.engine.game.resources.ResourceManager;
+import ru.BouH.engine.game.resources.assets.materials.Material;
+import ru.BouH.engine.game.resources.assets.materials.textures.ColorSample;
+import ru.BouH.engine.game.resources.assets.materials.textures.IImageSample;
+import ru.BouH.engine.game.resources.assets.materials.textures.ISample;
+import ru.BouH.engine.game.resources.assets.models.Model;
+import ru.BouH.engine.game.resources.assets.models.basic.MeshHelper;
+import ru.BouH.engine.game.resources.assets.models.formats.Format2D;
+import ru.BouH.engine.game.resources.assets.models.formats.Format3D;
+import ru.BouH.engine.game.resources.assets.models.mesh.ModelNode;
+import ru.BouH.engine.game.resources.assets.shaders.UniformBufferObject;
 import ru.BouH.engine.physics.world.timer.PhysicThreadManager;
 import ru.BouH.engine.proxy.LocalPlayer;
 import ru.BouH.engine.render.RenderManager;
+import ru.BouH.engine.render.environment.light.LightManager;
+import ru.BouH.engine.render.environment.light.PointLight;
 import ru.BouH.engine.render.frustum.FrustumCulling;
 import ru.BouH.engine.render.scene.objects.items.PhysicsObject;
 import ru.BouH.engine.render.scene.programs.FrameBufferObjectProgram;
-import ru.BouH.engine.game.resource.assets.shaders.ShaderManager;
-import ru.BouH.engine.render.scene.programs.UniformBufferUtils;
+import ru.BouH.engine.game.resources.assets.shaders.ShaderManager;
 import ru.BouH.engine.render.scene.scene_render.utility.UniformConstants;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 import ru.BouH.engine.render.scene.world.camera.AttachedCamera;
@@ -32,7 +40,9 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.Math;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -114,6 +124,101 @@ public class Scene implements IScene {
 
     public Window getWindow() {
         return this.window;
+    }
+
+    public static void renderModel(Model<?> model) {
+        Scene.renderModel(model, GL30.GL_TRIANGLES);
+    }
+
+    public static void renderModel(Model<?> model, int code) {
+        if (model == null) {
+            return;
+        }
+        for (ModelNode modelNode : model.getMeshDataGroup().getModelNodeList()) {
+            GL30.glBindVertexArray(modelNode.getMesh().getVao());
+            for (int a : modelNode.getMesh().getAttributePointers()) {
+                GL30.glEnableVertexAttribArray(a);
+            }
+            GL30.glDrawElements(code, modelNode.getMesh().getTotalVertices(), GL30.GL_UNSIGNED_INT, 0);
+            for (int a : modelNode.getMesh().getAttributePointers()) {
+                GL30.glDisableVertexAttribArray(a);
+            }
+            GL30.glBindVertexArray(0);
+        }
+    }
+
+    public static void renderEntity(PhysicsObject physicsObject) {
+        if (physicsObject == null || physicsObject.getModel3D() == null) {
+            return;
+        }
+        ShaderManager shaderManager = physicsObject.getShaderManager();
+        Model<Format3D> model = physicsObject.getModel3D();
+        shaderManager.getUtils().performModelViewMatrix3d(model);
+        shaderManager.performUniform("texture_scaling", physicsObject.getRenderData().getModelTextureScaling());
+        for (ModelNode modelNode : model.getMeshDataGroup().getModelNodeList()) {
+            Scene.performModelMaterialOnShader(physicsObject.getRenderData().getOverObjectMaterial() != null ? physicsObject.getRenderData().getOverObjectMaterial() : modelNode.getMaterial(), shaderManager);
+            GL30.glBindVertexArray(modelNode.getMesh().getVao());
+            for (int a : modelNode.getMesh().getAttributePointers()) {
+                GL30.glEnableVertexAttribArray(a);
+            }
+            GL30.glDrawElements(GL30.GL_TRIANGLES, modelNode.getMesh().getTotalVertices(), GL30.GL_UNSIGNED_INT, 0);
+            for (int a : modelNode.getMesh().getAttributePointers()) {
+                GL30.glDisableVertexAttribArray(a);
+            }
+            GL30.glBindVertexArray(0);
+        }
+    }
+
+    public static void activeGlTexture(int code) {
+        GL30.glActiveTexture(GL13.GL_TEXTURE0 + code);
+    }
+
+    public static void performModelMaterialOnShader(Material material, ShaderManager shaderManager) {
+        ISample diffuse = material.getDiffuse();
+        IImageSample emissive = material.getEmissive();
+        IImageSample metallic = material.getMetallic();
+        IImageSample normals = material.getNormals();
+        IImageSample specular = material.getSpecular();
+
+        if (diffuse != null) {
+            if (diffuse instanceof IImageSample) {
+                final int code = 0;
+                IImageSample imageSample = ((IImageSample) diffuse);
+                Scene.activeGlTexture(code);
+                imageSample.bindTexture();
+                shaderManager.performUniform("diffuse_mode", 1);
+                shaderManager.performUniform("diffuse_map", code);
+            } else {
+                if (diffuse instanceof ColorSample) {
+                    shaderManager.performUniform("diffuse_mode", 0);
+                    shaderManager.performUniform("diffuse_color", ((ColorSample) diffuse).getColor());
+                }
+            }
+        }
+        if (emissive != null) {
+            final int code = 1;
+            Scene.activeGlTexture(code);
+            emissive.bindTexture();
+            shaderManager.performUniform("emissive_map", code);
+        }
+        if (metallic != null) {
+            final int code = 2;
+            Scene.activeGlTexture(code);
+            metallic.bindTexture();
+            shaderManager.performUniform("metallic_map", code);
+        }
+        if (normals != null) {
+            final int code = 3;
+            Scene.activeGlTexture(code);
+            normals.bindTexture();
+            shaderManager.performUniform("normals_map", code);
+        }
+        if (specular != null) {
+            final int code = 4;
+            Scene.activeGlTexture(code);
+            specular.bindTexture();
+            shaderManager.performUniform("specular_map", code);
+        }
     }
 
     private void collectRenderBases() {
@@ -229,7 +334,8 @@ public class Scene implements IScene {
             sceneRenderBase.onStopRender();
             Game.getGame().getLogManager().log("Scene " + sceneRenderBase.getRenderGroup().getId() + " successfully stopped!");
         }
-        ResourceManager.shaderAssets.destroyShaders();
+        Game.getGame().getLogManager().log("Destroying resources!");
+        Game.getGame().getResourceManager().destroy();
         Game.getGame().getLogManager().log("Scene rendering stopped");
     }
 
@@ -291,14 +397,14 @@ public class Scene implements IScene {
         }
 
         public void onRender(double partialTicks, List<SceneRenderBase> mainGroup, List<SceneRenderBase> sideGroup) {
-            UniformBufferUtils.updateLightBuffers(Scene.this);
+            this.updateLightBuffers();
             Scene.this.getGameUboShader().bind();
-            Mesh<Format2D> mesh = MeshHelper.generatePlane2DMeshInverted(new Vector2d(0.0d), new Vector2d(this.getWindowDimensions().x, this.getWindowDimensions().y), 0);
+            Model<Format2D> model = MeshHelper.generatePlane2DModelInverted(new Vector2d(0.0d), new Vector2d(this.getWindowDimensions().x, this.getWindowDimensions().y), 0);
 
             GL30.glEnable(GL30.GL_STENCIL_TEST);
             this.renderSceneInFbo(partialTicks, mainGroup);
-            this.twoPassBlurShader(partialTicks, mesh);
-            this.renderMixedScene(partialTicks, mesh);
+            this.twoPassBlurShader(partialTicks, model);
+            this.renderMixedScene(partialTicks, model);
             this.renderSideGroup(partialTicks, sideGroup);
             GL30.glDisable(GL30.GL_STENCIL_TEST);
 
@@ -307,8 +413,52 @@ public class Scene implements IScene {
                 this.wantsTakeScreenshot = false;
             }
 
-            mesh.clean();
+            model.clean();
             Scene.this.getGameUboShader().unBind();
+        }
+
+        public void updateLightBuffers() {
+            SceneWorld sceneWorld1 = this.getRenderWorld();
+            LightManager lightManager = sceneWorld1.getEnvironment().getLightManager();
+            Matrix4d view = RenderManager.instance.getViewMatrix();
+            Vector3f getAngle = lightManager.getNormalisedSunAngle(view);
+
+            float sunLightX = getAngle.x;
+            float sunLightY = getAngle.y;
+            float sunLightZ = getAngle.z;
+
+            FloatBuffer value1Buffer = MemoryUtil.memAllocFloat(5);
+            value1Buffer.put(lightManager.calcAmbientLight());
+            value1Buffer.put(lightManager.getSunBrightness());
+            value1Buffer.put(sunLightX);
+            value1Buffer.put(sunLightY);
+            value1Buffer.put(sunLightZ);
+            value1Buffer.flip();
+
+            Scene.this.getGameUboShader().performUniformBuffer(ResourceManager.shaderAssets.SunLight, value1Buffer);
+            Scene.this.getGameUboShader().performUniformBuffer(ResourceManager.shaderAssets.Misc, new float[]{SceneWorld.elapsedRenderTicks});
+            this.updatePointLightBuffer(view, ResourceManager.shaderAssets.PointLights);
+            MemoryUtil.memFree(value1Buffer);
+        }
+
+        private void updatePointLightBuffer(Matrix4d view, UniformBufferObject uniformBufferObject) {
+            FloatBuffer value1Buffer = MemoryUtil.memAllocFloat(7 * LightManager.MAX_POINT_LIGHTS);
+            List<PointLight> pointLightList = this.getRenderWorld().getEnvironment().getLightManager().getPointLightList();
+            int activeLights = pointLightList.size();
+            for (int i = 0; i < activeLights; i++) {
+                PointLight pointLight = pointLightList.get(i);
+                float[] f1 = LightManager.getNormalisedPointLightArray(view, pointLight);
+                value1Buffer.put(f1[0]);
+                value1Buffer.put(f1[1]);
+                value1Buffer.put(f1[2]);
+                value1Buffer.put(f1[3]);
+                value1Buffer.put(f1[4]);
+                value1Buffer.put(f1[5]);
+                value1Buffer.put(f1[6]);
+                value1Buffer.flip();
+                Scene.this.getGameUboShader().performUniformBuffer(uniformBufferObject, i * 32, value1Buffer);
+            }
+            MemoryUtil.memFree(value1Buffer);
         }
 
         private void renderSideGroup(double partialTicks, List<SceneRenderBase> sideGroup) {
@@ -325,16 +475,16 @@ public class Scene implements IScene {
         }
 
 
-        private void twoPassBlurShader(double partialTicks, Mesh<Format2D> mesh) {
+        private void twoPassBlurShader(double partialTicks, Model<Format2D> model) {
             this.fboBlur.bindFBO();
             this.getBlurShader().bind();
-            this.getBlurShader().performUniform(UniformConstants.projection_model_matrix, RenderManager.instance.getOrthographicModelMatrix(mesh));
+            this.getBlurShader().performUniform(UniformConstants.projection_model_matrix, RenderManager.instance.getOrthographicModelMatrix(model));
             this.getBlurShader().performUniform(UniformConstants.texture_sampler, 0);
             this.getBlurShader().performArrayUniform("kernel", this.blurKernel);
             GL30.glActiveTexture(GL30.GL_TEXTURE0);
             this.sceneFbo.bindTextureFBO(1);
             this.glClear();
-            this.renderTexture(mesh);
+            Scene.renderModel(model);
             this.sceneFbo.unBindTextureFBO();
 
             this.fboBlur.bindTextureFBO();
@@ -345,9 +495,9 @@ public class Scene implements IScene {
             this.fboBlur.unBindFBO();
         }
 
-        private void renderMixedScene(double partialTicks, Mesh<Format2D> mesh) {
+        private void renderMixedScene(double partialTicks, Model<Format2D> model) {
             this.getPostProcessingShader().bind();
-            this.getPostProcessingShader().performUniform(UniformConstants.projection_model_matrix, RenderManager.instance.getOrthographicModelMatrix(mesh));
+            this.getPostProcessingShader().performUniform(UniformConstants.projection_model_matrix, RenderManager.instance.getOrthographicModelMatrix(model));
             this.getPostProcessingShader().performUniform(UniformConstants.texture_sampler, 0);
             this.getPostProcessingShader().performUniform("blur_sampler", 1);
             this.getPostProcessingShader().performUniform("post_mode", Scene.testTrigger ? 1 : this.getCurrentRenderPostMode());
@@ -356,7 +506,7 @@ public class Scene implements IScene {
             GL30.glActiveTexture(GL30.GL_TEXTURE1);
             this.fboBlur.bindTextureFBO();
             this.glClear();
-            this.renderTexture(mesh);
+            Scene.renderModel(model);
             this.fboBlur.unBindTextureFBO();
             this.sceneFbo.unBindTextureFBO();
             this.getPostProcessingShader().unBind();
@@ -421,18 +571,6 @@ public class Scene implements IScene {
             } catch (IOException e) {
                 Game.getGame().getLogManager().error(e.getMessage());
             }
-        }
-
-        private void renderTexture(Mesh<Format2D> mesh) {
-            GL30.glDisable(GL30.GL_DEPTH_TEST);
-            GL30.glBindVertexArray(mesh.getVao());
-            GL30.glEnableVertexAttribArray(0);
-            GL30.glEnableVertexAttribArray(1);
-            GL30.glDrawElements(GL30.GL_TRIANGLES, mesh.getTotalVertices(), GL30.GL_UNSIGNED_INT, 0);
-            GL30.glDisableVertexAttribArray(0);
-            GL30.glDisableVertexAttribArray(1);
-            GL30.glBindVertexArray(0);
-            GL30.glEnable(GL30.GL_DEPTH_TEST);
         }
 
         public void takeScreenshot() {

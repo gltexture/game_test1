@@ -45,6 +45,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.l33tlabs.twl</groupId>
+            <artifactId>pngdecoder</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>bullet-platform</artifactId>
             <version>3.25-1.5.9</version>
@@ -70,14 +75,14 @@
             <version>1.76-0.9</version>
         </dependency>
         <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>33.0.0-jre</version>
+        </dependency>
+        <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
             <version>4.1.89.Final</version>
-        </dependency>
-        <dependency>
-            <groupId>org.l33tlabs.twl</groupId>
-            <artifactId>pngdecoder</artifactId>
-            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -193,6 +198,7 @@
             <artifactId>annotations</artifactId>
             <version>24.0.0</version>
         </dependency>
+
     </dependencies>
     <properties>
         <lwjgl.version>3.3.3</lwjgl.version>

@@ -2,7 +2,6 @@ package ru.BouH.engine.physics.world.timer;
 
 import org.bytedeco.bullet.BulletCollision.*;
 import org.bytedeco.bullet.BulletDynamics.*;
-import org.bytedeco.bullet.LinearMath.btIDebugDraw;
 import org.bytedeco.bullet.LinearMath.btVector3;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3d;
@@ -60,8 +59,8 @@ public class PhysicsTimer implements IPhysTimer {
         try {
             Game.getGame().getLogManager().debug("Starting physics!");
             this.getWorld().onWorldStart();
-            synchronized (Game.EngineSystem.logicLocker) {
-                Game.EngineSystem.logicLocker.wait();
+            synchronized (Game.EngineStarter.logicLocker) {
+                Game.EngineStarter.logicLocker.wait();
             }
             while (!Game.getGame().isShouldBeClosed()) {
                 synchronized (PhysicThreadManager.locker) {

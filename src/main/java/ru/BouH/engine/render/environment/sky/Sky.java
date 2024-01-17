@@ -1,11 +1,12 @@
 package ru.BouH.engine.render.environment.sky;
 
-import ru.BouH.engine.render.scene.objects.texture.samples.CubeMapPNGTexture;
+
+import ru.BouH.engine.render.scene.programs.CubeMapProgram;
 
 public class Sky {
     private final SkyBox skyBox;
 
-    public Sky(CubeMapPNGTexture cubeMapPNGTexture) {
+    public Sky(CubeMapProgram.CubeMapTextureArray cubeMapPNGTexture) {
         this.skyBox = new SkyBox(cubeMapPNGTexture);
     }
 

@@ -3,7 +3,7 @@ package ru.BouH.engine.render.scene.programs;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL43;
 import ru.BouH.engine.game.Game;
-import ru.BouH.engine.game.resource.assets.shaders.ShaderGroup;
+import ru.BouH.engine.game.resources.assets.shaders.ShaderGroup;
 
 public class ShaderProgram {
     private final int programId;
@@ -51,6 +51,7 @@ public class ShaderProgram {
         GL20.glCompileShader(id);
         if (GL20.glGetShaderi(id, GL20.GL_COMPILE_STATUS) == 0) {
             Game.getGame().getLogManager().error("Compile shader error: " + GL20.glGetShaderInfoLog(id, 4096));
+            Game.getGame().getLogManager().debug(shader);
         }
         GL20.glAttachShader(this.programId, id);
         return id;

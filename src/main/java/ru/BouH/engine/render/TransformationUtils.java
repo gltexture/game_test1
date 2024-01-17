@@ -4,9 +4,9 @@ import org.joml.Matrix4d;
 import org.joml.Quaterniond;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
-import ru.BouH.engine.game.resource.assets.models.Mesh;
-import ru.BouH.engine.game.resource.assets.models.formats.Format2D;
-import ru.BouH.engine.game.resource.assets.models.formats.Format3D;
+import ru.BouH.engine.game.resources.assets.models.Model;
+import ru.BouH.engine.game.resources.assets.models.formats.Format2D;
+import ru.BouH.engine.game.resources.assets.models.formats.Format3D;
 import ru.BouH.engine.render.scene.world.camera.ICamera;
 
 public class TransformationUtils {
@@ -16,11 +16,11 @@ public class TransformationUtils {
         this.viewMatrix = new Matrix4d();
     }
 
-    public final Matrix4d getModelMatrix(Mesh<Format3D> mesh) {
+    public final Matrix4d getModelMatrix(Model<Format3D> model) {
         Matrix4d m1 = new Matrix4d();
         Quaterniond quaterniond = new Quaterniond();
-        quaterniond.rotateXYZ(Math.toRadians(mesh.getFormat().getRotation().x), Math.toRadians(mesh.getFormat().getRotation().y), Math.toRadians(mesh.getFormat().getRotation().z));
-        return m1.identity().translationRotateScale(mesh.getFormat().getPosition(), quaterniond, mesh.getFormat().getScale());
+        quaterniond.rotateXYZ(Math.toRadians(model.getFormat().getRotation().x), Math.toRadians(model.getFormat().getRotation().y), Math.toRadians(model.getFormat().getRotation().z));
+        return m1.identity().translationRotateScale(model.getFormat().getPosition(), quaterniond, model.getFormat().getScale());
     }
 
     public final Matrix4d getProjectionMatrix(float fov, float width, float height, float zNear, float zFar) {
@@ -33,18 +33,18 @@ public class TransformationUtils {
         return m1.identity().setOrtho2D(left, right, bottom, top);
     }
 
-    public Matrix4d getOrthoModelMatrix(Mesh<Format2D> mesh, Matrix4d orthoMatrix) {
-        Vector2d rotation = mesh.getFormat().getRotation();
+    public Matrix4d getOrthoModelMatrix(Model<Format2D> model, Matrix4d orthoMatrix) {
+        Vector2d rotation = model.getFormat().getRotation();
         Matrix4d m1 = new Matrix4d();
-        m1.identity().translate(new Vector3d(mesh.getFormat().getPosition(), 0.0d)).rotateX(Math.toRadians(-rotation.x)).rotateY(Math.toRadians(-rotation.y)).scaleXY(mesh.getFormat().getScale().x, mesh.getFormat().getScale().y);
+        m1.identity().translate(new Vector3d(model.getFormat().getPosition(), 0.0d)).rotateX(Math.toRadians(-rotation.x)).rotateY(Math.toRadians(-rotation.y)).scaleXY(model.getFormat().getScale().x, model.getFormat().getScale().y);
         Matrix4d viewCurr = new Matrix4d(orthoMatrix);
         return viewCurr.mul(m1);
     }
 
-    public Matrix4d getModelViewMatrix(Mesh<Format3D> mesh, Matrix4d viewMatrix) {
-        Vector3d rotation = mesh.getFormat().getRotation();
+    public Matrix4d getModelViewMatrix(Model<Format3D> model, Matrix4d viewMatrix) {
+        Vector3d rotation = model.getFormat().getRotation();
         Matrix4d m1 = new Matrix4d();
-        m1.identity().translate(mesh.getFormat().getPosition()).rotateXYZ(Math.toRadians(-rotation.x), Math.toRadians(-rotation.y), Math.toRadians(-rotation.z)).scale(mesh.getFormat().getScale());
+        m1.identity().translate(model.getFormat().getPosition()).rotateXYZ(Math.toRadians(-rotation.x), Math.toRadians(-rotation.y), Math.toRadians(-rotation.z)).scale(model.getFormat().getScale());
         Matrix4d viewCurr = new Matrix4d(viewMatrix);
         return viewCurr.mul(m1);
     }

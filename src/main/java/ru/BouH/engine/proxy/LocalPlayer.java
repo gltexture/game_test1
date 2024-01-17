@@ -1,7 +1,7 @@
 package ru.BouH.engine.proxy;
 
 import org.joml.Vector3d;
-import ru.BouH.engine.game.resource.ResourceManager;
+import ru.BouH.engine.game.resources.ResourceManager;
 import ru.BouH.engine.physics.entities.Materials;
 import ru.BouH.engine.physics.entities.player.EntityPlayerSP;
 import ru.BouH.engine.physics.jb_objects.RigidBodyObject;
@@ -20,7 +20,7 @@ public class LocalPlayer {
     }
 
     public void addPlayerInWorlds(Proxy proxy) {
-        proxy.addItemInWorlds(this.getEntityPlayerSP(), ResourceManager.renderAssets.player);
+        proxy.addItemInWorlds(this.getEntityPlayerSP(), ResourceManager.renderDataAssets.player);
         LocalPlayer.VALID_PL = true;
     }
 }

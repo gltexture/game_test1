@@ -5,10 +5,11 @@ import org.jetbrains.annotations.NotNull;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
-import ru.BouH.engine.game.resource.assets.models.Mesh;
-import ru.BouH.engine.game.resource.assets.models.formats.Format3D;
-import ru.BouH.engine.game.resource.assets.shaders.ShaderManager;
+import ru.BouH.engine.game.resources.assets.models.Model;
+import ru.BouH.engine.game.resources.assets.models.formats.Format3D;
+import ru.BouH.engine.game.resources.assets.shaders.ShaderManager;
 import ru.BouH.engine.physics.brush.WorldBrush;
+import ru.BouH.engine.physics.entities.IRemoteController;
 import ru.BouH.engine.physics.jb_objects.JBulletEntity;
 import ru.BouH.engine.physics.world.object.IWorldDynamic;
 import ru.BouH.engine.physics.world.object.IWorldObject;
@@ -19,15 +20,15 @@ import ru.BouH.engine.render.frustum.FrustumCulling;
 import ru.BouH.engine.render.frustum.RenderABB;
 import ru.BouH.engine.render.scene.fabric.base.RenderFabric;
 import ru.BouH.engine.render.scene.objects.IRenderObject;
-import ru.BouH.engine.render.scene.objects.data.RenderData;
+import ru.BouH.engine.render.scene.preforms.RenderObjectData;
 import ru.BouH.engine.render.scene.world.SceneWorld;
 
 public abstract class PhysicsObject implements IRenderObject, IWorldObject, IWorldDynamic {
     private final RenderABB renderABB;
     private final SceneWorld sceneWorld;
     private final WorldItem worldItem;
-    private final RenderData renderData;
-    protected Mesh<Format3D> mesh;
+    private final RenderObjectData renderData;
+    protected Model<Format3D> model;
     protected Vector3d prevRenderPosition;
     protected Vector3d prevRenderRotation;
     protected Vector3d renderPosition;
@@ -39,7 +40,7 @@ public abstract class PhysicsObject implements IRenderObject, IWorldObject, IWor
     private boolean isDead;
     private ILight light;
 
-    public PhysicsObject(@NotNull SceneWorld sceneWorld, @NotNull WorldItem worldItem, @NotNull RenderData renderData) {
+    public PhysicsObject(@NotNull SceneWorld sceneWorld, @NotNull WorldItem worldItem, @NotNull RenderObjectData renderData) {
         this.renderABB = new RenderABB();
         this.worldItem = worldItem;
         this.renderPosition = new Vector3d(worldItem.getPosition());
@@ -55,8 +56,12 @@ public abstract class PhysicsObject implements IRenderObject, IWorldObject, IWor
         this.currentRotationInterpolation = new InterpolationPoints(this.getPrevRenderRotation(), this.getFixedRotation());
     }
 
-    protected void setModel() {
-        this.mesh = null;
+    public void setModel(Model<Format3D> model) {
+        this.model = model;
+    }
+
+    protected void initModel() {
+        this.setModel(new Model<>(new Format3D(), this.getRenderData().getMeshDataGroup()));
     }
 
     @Override
@@ -65,8 +70,8 @@ public abstract class PhysicsObject implements IRenderObject, IWorldObject, IWor
         if (this.getWorldItem().hasLight()) {
             this.addLight(this.getWorldItem().getLight());
         }
-        this.setModel();
-        if (this.isHasRender()) {
+        if (this.hasRender()) {
+            this.initModel();
             this.renderFabric().onStartRender(this);
         }
     }
@@ -77,7 +82,7 @@ public abstract class PhysicsObject implements IRenderObject, IWorldObject, IWor
         if (this.hasLight()) {
             this.removeLight();
         }
-        if (this.isHasRender()) {
+        if (this.hasRender()) {
             this.renderFabric().onStopRender(this);
         }
     }
@@ -132,18 +137,6 @@ public abstract class PhysicsObject implements IRenderObject, IWorldObject, IWor
         return this.getWorldItem().getScale();
     }
 
-    public boolean shouldInterpolatePos() {
-        return this.getRenderProperties().isLerpPosition();
-    }
-
-    public boolean shouldInterpolateRot() {
-        return this.getRenderProperties().isLerpRotation();
-    }
-
-    public RenderData.RenderProperties getRenderProperties() {
-        return this.getRenderData().getRenderProperties();
-    }
-
     @Override
     public void onUpdate(IWorld iWorld) {
         if (this.getWorldItem().hasLight() && !this.hasLight()) {
@@ -160,23 +153,21 @@ public abstract class PhysicsObject implements IRenderObject, IWorldObject, IWor
         }
     }
 
+    public boolean isEntityUnderUserControl() {
+        return this.getWorldItem() instanceof IRemoteController && ((IRemoteController) this.getWorldItem()).isValidController();
+    }
+
     public void updateRenderPos(double partialTicks) {
         Vector3d pos = this.getFixedPosition();
         Vector3d rot = this.getFixedRotation();
-
-        if (this.shouldInterpolatePos()) {
-            this.renderPosition.set(this.getCurrentPosState().interpolatedPoint(partialTicks));
+        this.renderPosition.set(this.getCurrentPosState().interpolatedPoint(partialTicks));
+        if (this.isEntityUnderUserControl()) {
+            this.renderRotation.set(rot);
         } else {
-            this.renderPosition.set(pos);
-        }
-
-        if (this.shouldInterpolateRot()) {
             Vector3d newRotation = new Vector3d();
             Quaterniond result = this.getQuaternionInterpolated(partialTicks);
             result.getEulerAnglesXYZ(newRotation);
             this.renderRotation.set(new Vector3d(Math.toDegrees(newRotation.x), Math.toDegrees(newRotation.y), Math.toDegrees(newRotation.z)));
-        } else {
-            this.renderRotation.set(rot);
         }
     }
 
@@ -249,8 +240,8 @@ public abstract class PhysicsObject implements IRenderObject, IWorldObject, IWor
         return new Vector3d(this.renderRotation);
     }
 
-    public Mesh<Format3D> getModel3D() {
-        return this.mesh;
+    public Model<Format3D> getModel3D() {
+        return this.model;
     }
 
     @Override
@@ -258,11 +249,11 @@ public abstract class PhysicsObject implements IRenderObject, IWorldObject, IWor
         return this.getRenderData().getRenderFabric();
     }
 
-    public boolean isHasRender() {
+    public boolean hasRender() {
         return this.renderFabric() != null;
     }
 
-    public RenderData getRenderData() {
+    public RenderObjectData getRenderData() {
         return this.renderData;
     }
 
@@ -271,7 +262,7 @@ public abstract class PhysicsObject implements IRenderObject, IWorldObject, IWor
     }
 
     public boolean isHasModel() {
-        return this.isHasRender() && this.getModel3D() != null;
+        return this.hasRender() && this.getModel3D() != null;
     }
 
     public SceneWorld getSceneWorld() {

@@ -27,7 +27,7 @@ public class FreeCamera extends Camera {
     @Override
     public void updateCamera(double partialTicks) {
         if (this.getController() != null) {
-            this.moveCamera(ControllerDispatcher.getOptionedXYZVec(this.getController()).mul(1));
+            this.moveCamera(ControllerDispatcher.getOptionedXYZVec(this.getController()));
             this.moveCameraRot(ControllerDispatcher.getOptionedDisplayVec(this.getController()));
         }
     }
@@ -53,20 +53,22 @@ public class FreeCamera extends Camera {
     }
 
     private void moveCamera(Vector3d direction) {
-        double moveX = 0.0d;
-        double moveY = 0.0d;
-        double moveZ = 0.0d;
-        if (direction.z != 0) {
-            moveX += Math.sin(Math.toRadians(this.getCamRotation().y)) * -1.0f * direction.z * FreeCamera.CAM_SPEED;
-            moveZ += Math.cos(Math.toRadians(this.getCamRotation().y)) * direction.z * FreeCamera.CAM_SPEED;
+        double[] motion = new double[3];
+        double[] input = new double[3];
+        input[0] = direction.x;
+        input[1] = direction.y;
+        input[2] = direction.z;
+        if (input[2] != 0) {
+            motion[0] += Math.sin(Math.toRadians(this.getCamRotation().y)) * -1.0f * input[2];
+            motion[2] += Math.cos(Math.toRadians(this.getCamRotation().y)) * input[2];
         }
-        if (direction.x != 0) {
-            moveX += Math.sin(Math.toRadians(this.getCamRotation().y - 90)) * -1.0f * direction.x * FreeCamera.CAM_SPEED;
-            moveZ += Math.cos(Math.toRadians(this.getCamRotation().y - 90)) * direction.x * FreeCamera.CAM_SPEED;
+        if (input[0] != 0) {
+            motion[0] += Math.sin(Math.toRadians(this.getCamRotation().y - 90)) * -1.0f * input[0];
+            motion[2] += Math.cos(Math.toRadians(this.getCamRotation().y - 90)) * input[0];
         }
-        if (direction.y != 0) {
-            moveY += direction.y * FreeCamera.CAM_SPEED * 0.675f;
+        if (input[1] != 0) {
+            motion[1] += input[1];
         }
-        this.addCameraPos(new Vector3d(moveX, moveY, moveZ));
+        this.addCameraPos(new Vector3d(motion[0], motion[1], motion[2]).mul(FreeCamera.CAM_SPEED));
     }
 }

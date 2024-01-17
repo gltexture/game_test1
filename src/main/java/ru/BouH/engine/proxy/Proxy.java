@@ -7,7 +7,7 @@ import ru.BouH.engine.physics.entities.player.EntityPlayerSP;
 import ru.BouH.engine.physics.world.object.WorldItem;
 import ru.BouH.engine.physics.world.timer.PhysicsTimer;
 import ru.BouH.engine.render.environment.light.ILight;
-import ru.BouH.engine.render.scene.objects.data.RenderData;
+import ru.BouH.engine.render.scene.preforms.RenderObjectData;
 import ru.BouH.engine.render.screen.Screen;
 
 public class Proxy {
@@ -24,7 +24,7 @@ public class Proxy {
         this.localPlayer = new LocalPlayer(this.physicsTimer.getWorld(), new Vector3d(390.0d, 1.0d, 0.0d));
     }
 
-    public void addItemInWorlds(WorldItem worldItem, RenderData renderData) {
+    public void addItemInWorlds(WorldItem worldItem, RenderObjectData renderData) {
         try {
             this.physicsTimer.getWorld().addItem(worldItem);
             this.screen.getRenderWorld().addItem(worldItem, renderData);

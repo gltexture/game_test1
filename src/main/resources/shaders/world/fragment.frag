@@ -1,29 +1,22 @@
-in vec2 out_texture;
+in vec2 texture_coordinates;
 in vec3 mv_vertex_normal;
 in vec3 mv_vert_pos;
-in vec3 out_texture_3d;
 
 layout (location = 0) out vec4 frag_color;
 layout (location = 1) out vec4 bright_color;
 
-in vec3 out_view_position;
-in vec4 out_world_position;
-in mat4 out_model_view_matrix;
 uniform vec3 camera_pos;
-uniform vec2 dimensions;
-
-uniform vec3 quads_c1;
-uniform vec3 quads_c2;
-
-uniform vec4 object_rgb;
 uniform sampler2D texture_sampler;
-uniform sampler2D normal_map;
-uniform samplerCube cube_map_sampler;
 
+uniform int diffuse_mode;
 uniform vec2 texture_scaling;
-uniform int use_texture;
-uniform int use_normal_map;
-uniform int enable_light;
+uniform samplerCube ambient_cubemap;
+uniform vec4 diffuse_color;
+uniform sampler2D diffuse_map;
+uniform sampler2D normals_map;
+uniform sampler2D emissive_map;
+uniform sampler2D specular_map;
+uniform sampler2D metallic_map;
 
 struct PointLight
 {
@@ -52,30 +45,31 @@ layout (std140, binding = 2) uniform Misc {
     float w_tick;
 };
 
-vec4 get_quads(vec2);
-vec4 setup_colors();
 vec4 calc_sun_light(vec3, vec3, vec3);
 vec4 calc_point_light(PointLight, vec3, vec3);
 vec4 calc_light_factor(vec3, float, vec3, vec3, vec3);
 vec4 calc_light();
-float calc_shadows(vec4, int);
-float calc_dist_proj_shadow(vec4, vec2, int);
-float texture_proj(vec4, vec2, int);
-vec3 calc_normal_map(vec3, mat4);
-int calc_cascade_index();
 
-vec2 get_tex_coord_scaled() {
-    return out_texture * texture_scaling;
+vec2 scaled_coordinates() {
+    return texture_coordinates * texture_scaling;
 }
 
 void main()
 {
-    vec4 lightFactor = enable_light == 1 ? calc_light() : vec4(1.);
-    vec4 fin_col = setup_colors() * lightFactor;
-    frag_color = fin_col;
+    vec4 diffuse_texture = texture(diffuse_map, scaled_coordinates());
+    vec4 emissive_texture = texture(emissive_map, scaled_coordinates());
+    vec4 diffuse = diffuse_mode == 1 ? diffuse_texture : diffuse_color;
+
+    vec4 lightFactor = calc_light();
+    vec4 final = diffuse * lightFactor;
+    frag_color = final;
 
     float brightness = frag_color.r + frag_color.g + frag_color.b;
-    bright_color = brightness >= 8.0 ? frag_color : vec4(0., 0., 0., 1.);
+    float distance_to_tx = distance(mv_vert_pos, camera_pos);
+
+    brightness *= distance_to_tx <= 30. ? 1. : (1. - smoothstep(0., 1., min(distance_to_tx / 90., 1.)));
+
+    bright_color = brightness >= 8. ? frag_color : vec4(0., 0., 0., 1.);
 }
 
 vec4 calc_light() {
@@ -93,20 +87,8 @@ vec4 calc_light() {
     return lightFactors;
 }
 
-vec3 calc_normal_map(vec3 vNorm, mat4 mvm) {
-    vec3 normalMap = texture2D(normal_map, get_tex_coord_scaled()).rgb * 2.0 - 1.0;
-    vec4 transformedNormal = mvm * vec4(normalMap, 0.0);
-    vec3 correctedNormal = normalize(transformedNormal.xyz) + vNorm;
-    return normalize(correctedNormal + vNorm);
-}
-
-vec4 setup_colors() {
-    int i1 = use_texture;
-    return i1 == 0 ? texture2D(texture_sampler, get_tex_coord_scaled()) : i1 == 1 ? object_rgb : i1 == 2 ? get_quads(get_tex_coord_scaled()) : vec4(1., 0., 0., 1.);
-}
-
 vec4 calc_light_factor(vec3 colors, float brightness, vec3 vPos, vec3 light_dir, vec3 vNormal) {
-    vec3 new_normal = use_normal_map == 1 ? calc_normal_map(vNormal, out_model_view_matrix) : vNormal;
+    vec3 new_normal = vNormal;
     vec4 diffuseC = vec4(0.);
     vec4 specularC = vec4(0.);
 
@@ -118,10 +100,8 @@ vec4 calc_light_factor(vec3 colors, float brightness, vec3 vPos, vec3 light_dir,
     vec3 from_light = light_dir;
     vec3 reflectionF = normalize(from_light + camDir);
     specularF = max(dot(new_normal, reflectionF), 0.);
-    specularF = pow(specularF, 10.0);
+    specularF = pow(specularF, 16.0);
     specularC = brightness * specularF * vec4(colors, 1.);
-
-    vec4 reflected = texture(cube_map_sampler, reflectionF);
 
     return dot(vNormal, from_light) + 0.0001 >= 0 ? (diffuseC + specularC) : vec4(0.);
 }
@@ -144,13 +124,4 @@ vec4 calc_point_light(PointLight light, vec3 vPos, vec3 vNormal) {
     float dist = length(light_dir);
     float attenuation_factor = at_base + linear * dist + expo * pow(dist, 2);
     return light_c / attenuation_factor;
-}
-
-vec4 get_quads(vec2 texture_c) {
-    vec4 c1 = vec4(quads_c1, 1);
-    vec4 c2 = vec4(quads_c2, 1);
-    vec2 v2 = texture_c;
-    int i = int(v2.x * 2);
-    int j = int(v2.y * 2);
-    return ((i % 2 == 0) != (j % 2 == 0)) ? c1 : c2;
 }
