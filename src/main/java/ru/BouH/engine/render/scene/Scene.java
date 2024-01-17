@@ -148,11 +148,14 @@ public class Scene implements IScene {
     }
 
     public static void renderEntity(PhysicsObject physicsObject) {
-        if (physicsObject == null || physicsObject.getModel3D() == null) {
+        if (physicsObject == null) {
+            return;
+        }
+        Model<Format3D> model = physicsObject.getModel3D();
+        if (model == null || model.getMeshDataGroup() == null) {
             return;
         }
         ShaderManager shaderManager = physicsObject.getShaderManager();
-        Model<Format3D> model = physicsObject.getModel3D();
         shaderManager.getUtils().performModelViewMatrix3d(model);
         shaderManager.performUniform("texture_scaling", physicsObject.getRenderData().getModelTextureScaling());
         for (ModelNode modelNode : model.getMeshDataGroup().getModelNodeList()) {

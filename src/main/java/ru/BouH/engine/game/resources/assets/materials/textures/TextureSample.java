@@ -140,10 +140,14 @@ public class TextureSample implements IImageSample {
     }
 
     public void bindTexture() {
+        if (!this.isValid()) {
+            Game.getGame().getLogManager().error("Tried to bind invalid texture");
+        }
         GL30.glBindTexture(GL30.GL_TEXTURE_2D, this.getTextureId());
     }
 
     public void clear() {
+        this.isValid = false;
         STBImage.stbi_image_free(this.getImageBuffer());
         GL30.glBindTexture(GL30.GL_TEXTURE_2D, 0);
         GL30.glDeleteTextures(this.getTextureId());

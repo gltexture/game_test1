@@ -5,11 +5,14 @@ import org.jetbrains.annotations.NotNull;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 import ru.BouH.engine.game.Game;
+import ru.BouH.engine.game.resources.ResourceManager;
 import ru.BouH.engine.game.resources.assets.models.Model;
+import ru.BouH.engine.game.resources.assets.models.basic.constructor.IEntityModelConstructor;
 import ru.BouH.engine.game.resources.assets.models.formats.Format3D;
 import ru.BouH.engine.game.resources.assets.shaders.ShaderManager;
 import ru.BouH.engine.physics.brush.WorldBrush;
 import ru.BouH.engine.physics.entities.IRemoteController;
+import ru.BouH.engine.physics.entities.PhysEntity;
 import ru.BouH.engine.physics.jb_objects.JBulletEntity;
 import ru.BouH.engine.physics.world.object.IWorldDynamic;
 import ru.BouH.engine.physics.world.object.IWorldObject;
@@ -71,7 +74,11 @@ public abstract class PhysicsObject implements IRenderObject, IWorldObject, IWor
             this.addLight(this.getWorldItem().getLight());
         }
         if (this.hasRender()) {
-            this.initModel();
+            if (this.getRenderData().getEntityModelConstructor() != null) {
+                this.setModel(new Model<>(new Format3D(), this.getRenderData().getEntityModelConstructor().constructMeshDataGroup(this.getWorldItem())));
+            } else {
+                this.initModel();
+            }
             this.renderFabric().onStartRender(this);
         }
     }

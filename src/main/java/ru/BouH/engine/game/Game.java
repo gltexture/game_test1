@@ -68,7 +68,7 @@ public class Game {
         Game.startScreen = new Game();
         Game.getGame().getLogManager().log("Starting game!");
         Game.getGame().engineStarter = new EngineStarter();
-        Game.getGame().engineStarter.startSystem();
+        Game.getGame().getEngineSystem().startSystem();
     }
 
     public EngineStarter getEngineSystem() {
